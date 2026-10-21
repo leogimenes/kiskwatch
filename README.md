@@ -20,12 +20,14 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Captura ao vivo via Npcap | ✅ |
 | Build: skills, stigmas e tabuleiros Daevanion do perfil oficial | ✅ |
 | Build: pontos possíveis, fontes e custo em cristais (dados da dbaion2.ru, baixados pelo app) | ✅ |
+| Build: Daevanion completo com ícones e detalhe das skills no clique | ✅ |
+| Overlay de DPS: dano e cura por jogador, All/Mob/Boss, gravações no painel | 🧪 parser próprio, a validar no jogo |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona
 
-- `crates/core`: o núcleo sem janela nem rede. Acha a conexão do jogo entre tudo que foi capturado (`dispatch.rs`), separa os pacotes do fluxo TCP do jogo, abre os bundles LZ4, decodifica os registros de bosses e pets, e calcula a agenda e os avisos. Testável em qualquer sistema: `cargo test -p kiskwatch-core`.
-- `src-tauri`: o app (Tauri 2). `pcap.rs` captura o tráfego via Npcap/libpcap. Três janelas: o painel e dois overlays transparentes (timers e pets), sempre no topo, que podem deixar os cliques passarem para o jogo. Guarda o estado em `state.json` na pasta de dados do app.
+- `crates/core`: o núcleo sem janela nem rede. Acha a conexão do jogo entre tudo que foi capturado (`dispatch.rs`), separa os pacotes do fluxo TCP do jogo, abre os bundles LZ4, decodifica os registros de bosses, pets e combate (`combat.rs`, somado por jogador em `dps.rs`), e calcula a agenda e os avisos. Testável em qualquer sistema: `cargo test -p kiskwatch-core`.
+- `src-tauri`: o app (Tauri 2). `pcap.rs` captura o tráfego via Npcap/libpcap. Quatro janelas: o painel e três overlays transparentes (timers, pets e DPS), sempre no topo, que podem deixar os cliques passarem para o jogo. Guarda o estado em `state.json` na pasta de dados do app.
 - `src`: as telas (TypeScript + Vite).
 - `data`: dados do jogo (pets, drops, spawns, Kibelisks, agenda, servidores), gerados de A2Tools-Plugins.
 
@@ -51,6 +53,10 @@ A cada pull request, o CI gera o instalador do Windows como artefato para teste.
 ```sh
 git clone --depth 1 https://github.com/taengu/A2Tools-Plugins ../A2Tools-Plugins
 npm run import-data -- ../A2Tools-Plugins
+
+# skills de DoT, skills de recurso e códigos dos chefes, para o DPS
+git clone --depth 1 https://github.com/taengu/A2Tools-DPS-Meter ../A2Tools-DPS-Meter
+node scripts/import-a2tools-combat.mjs ../A2Tools-DPS-Meter
 ```
 
 ## Créditos

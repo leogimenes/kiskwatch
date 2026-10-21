@@ -29,6 +29,26 @@ pub struct Settings {
     /// The farm route, in order: each pet and the monster to farm it on.
     pub route: Vec<RouteStop>,
     pub a11y: Accessibility,
+    pub dps: DpsSettings,
+}
+
+/// The DPS tracker overlay.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct DpsSettings {
+    pub overlay: bool,
+    /// "hit": start recording on your first hit; "button": only by hand.
+    pub start: String,
+    /// Damage counted: "all", "mob" or "boss".
+    pub target: String,
+    /// The bars: "damage", "heal" or "both" (stacked).
+    pub bars: String,
+}
+
+impl Default for DpsSettings {
+    fn default() -> Self {
+        Self { overlay: false, start: "hit".into(), target: "all".into(), bars: "damage".into() }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,6 +70,7 @@ impl Default for Settings {
             pinned_pets: Vec::new(),
             route: Vec::new(),
             a11y: Accessibility::default(),
+            dps: DpsSettings::default(),
         }
     }
 }
@@ -121,6 +142,8 @@ pub struct Saved {
     pub pet_queue: BTreeMap<u32, kiskwatch_core::pets::PetQueue>,
     /// The character followed on the Build tab, from the official profile.
     pub profile: Option<crate::profile::Profile>,
+    /// The DPS tracker's recordings, newest first.
+    pub fights: Vec<kiskwatch_core::dps::Fight>,
 }
 
 /// A soul the game said the player picked up.
@@ -132,6 +155,8 @@ pub struct SoulSeen {
 }
 
 pub const SOULS_KEPT: usize = 100;
+/// Recordings kept; the oldest go first.
+pub const FIGHTS_KEPT: usize = 200;
 
 impl Saved {
     pub fn boss(&self, server: u32, boss: u32) -> Option<&BossOnMap> {

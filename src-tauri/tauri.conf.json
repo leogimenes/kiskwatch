@@ -50,6 +50,22 @@
         "resizable": true,
         "shadow": false,
         "visible": false
+      },
+      {
+        "label": "dps",
+        "title": "Kiskwatch DPS",
+        "url": "dps.html",
+        "width": 340,
+        "height": 360,
+        "x": 400,
+        "y": 120,
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": true,
+        "shadow": false,
+        "visible": false
       }
     ],
     "security": {

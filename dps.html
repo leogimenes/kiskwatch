@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kiskwatch DPS</title>
+    <link rel="stylesheet" href="/src/overlay.css" />
+    <link rel="stylesheet" href="/src/dps.css" />
+  </head>
+  <body>
+    <div id="frame">
+      <div class="bar dps-head" data-tauri-drag-region>
+        <span data-tauri-drag-region>DPS</span>
+        <span id="dps-status" data-tauri-drag-region></span>
+      </div>
+      <div class="dps-controls">
+        <input id="dps-name" maxlength="50" placeholder="Nome da gravação" aria-label="Nome da gravação" />
+        <button id="dps-toggle" type="button"></button>
+      </div>
+      <div class="dps-controls chips">
+        <div id="dps-target" class="chip-group" role="group" aria-label="Alvo"></div>
+        <div id="dps-bars" class="chip-group" role="group" aria-label="Barras"></div>
+      </div>
+      <ol id="dps-rows" aria-live="polite"></ol>
+    </div>
+    <script type="module" src="/src/dps.ts"></script>
+  </body>
+</html>
