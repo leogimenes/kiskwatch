@@ -114,6 +114,8 @@ pub struct Saved {
     pub boss_maps: BTreeMap<u32, BTreeMap<u32, BossMap>>,
     /// The last souls picked up, by server, newest last.
     pub souls: BTreeMap<u32, Vec<SoulSeen>>,
+    /// The character followed on the Build tab, from the official profile.
+    pub profile: Option<crate::profile::Profile>,
 }
 
 /// A soul the game said the player picked up.
