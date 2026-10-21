@@ -13,4 +13,9 @@ Kiskwatch é distribuído sob a GPL-3.0 (veja `LICENSE`) porque reaproveita cód
   - Formato dos registros de pets (`00 90`, `0D 90`, `14 90`) do plugin Pet Soul Tracker.
   - `data/*.json`: gerados por `scripts/import-a2tools-data.mjs` a partir de `pet-souls/pets.js`, `pet-souls/sources.js` e `event-timers/schedule.js`.
 
+Dados consultados em tempo de execução (não distribuídos com o Kiskwatch):
+
+- Perfil público dos personagens no site oficial do AION 2 (aion2.plaync.com). Endpoints como documentados por https://github.com/nuriland/aion2-api (MIT).
+- Pontos de skill, fontes e tabuleiros Daevanion da https://dbaion2.ru, baixados pelo app e guardados em cache na pasta de dados.
+
 Kiskwatch não tem afiliação com a NCSoft nem com os autores do A2Tools.

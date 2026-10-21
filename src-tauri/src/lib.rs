@@ -2,7 +2,9 @@
 //! alarm clock, and live capture of what the game says (`pcap`, read by
 //! `kiskwatch_core::dispatch`).
 
+mod gamedata;
 mod pcap;
+mod profile;
 mod state;
 
 use std::sync::Mutex;
@@ -267,6 +269,48 @@ fn get_souls(state: State<App>) -> Vec<SoulSeen> {
     saved.souls.get(&saved.settings.server_id).cloned().unwrap_or_default()
 }
 
+/// Characters by name on the official site, on the selected server.
+#[tauri::command]
+async fn search_characters(state: State<'_, App>, name: String) -> Result<Vec<profile::Hit>, String> {
+    let (region, server) = {
+        let s = &state.saved.lock().unwrap().settings;
+        (s.region(), s.server_id)
+    };
+    profile::search(region, server, name.trim()).await
+}
+
+/// Read a character's public profile and follow it on the Build tab. With no
+/// character given, read the followed one again.
+#[tauri::command]
+async fn load_profile(app: AppHandle, state: State<'_, App>, server_id: Option<u32>, character_id: Option<String>) -> Result<(), String> {
+    let (region, server_id, character_id) = {
+        let saved = state.saved.lock().unwrap();
+        let current = saved.profile.as_ref();
+        let server_id = server_id.or(current.map(|p| p.server_id)).ok_or("nenhum personagem escolhido")?;
+        let character_id = character_id.or(current.map(|p| p.character_id.clone())).ok_or("nenhum personagem escolhido")?;
+        ((server_id / 100) % 10, server_id, character_id)
+    };
+    let fetched = profile::fetch(region, server_id, &character_id, now_ms()).await?;
+    state.saved.lock().unwrap().profile = Some(fetched);
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+    Ok(())
+}
+
+/// A game data file for the Build tab (see `gamedata`).
+#[tauri::command]
+async fn game_data(app: AppHandle, name: String) -> Result<serde_json::Value, String> {
+    gamedata::get(&app, &name).await
+}
+
+/// Stop following the character.
+#[tauri::command]
+fn clear_profile(app: AppHandle, state: State<App>) {
+    state.saved.lock().unwrap().profile = None;
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct CaptureStatus {
     #[serde(flatten)]
@@ -331,7 +375,7 @@ pub fn run() {
             std::thread::spawn(move || read_capture(handle, rx));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status, search_characters, load_profile, clear_profile, game_data])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

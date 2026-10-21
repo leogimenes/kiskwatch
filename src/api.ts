@@ -34,9 +34,51 @@ export interface PetProgress {
   points: number;
 }
 
+/** A character's official profile, as the site sends it. */
+export interface Profile {
+  server_id: number;
+  character_id: string;
+  name: string;
+  info: ProfileInfo;
+  equipment: ProfileEquipment;
+  boards: Record<string, BoardDetail>;
+  fetched_ms: number;
+}
+
+export interface ProfileInfo {
+  profile?: {
+    characterName: string; characterLevel: number; className: string; combatPower: number; raceId: number; raceName: string;
+    serverName: string; titleName?: string; profileImage?: string;
+  };
+  daevanion?: { boardList?: { id: number; name: string; icon: string; open: number; openNodeCount: number; totalNodeCount: number }[] };
+}
+
+export interface ProfileSkill {
+  id: number; name: string; category: string; skillLevel: number; needLevel: number; acquired: number; equip: number; icon: string;
+}
+
+export interface ProfileEquipment {
+  skill?: { skillList?: ProfileSkill[] };
+}
+
+export interface BoardNode {
+  nodeId: number; row: number; col: number; open: number; grade: string; type: string; name: string; effectList: { desc: string }[];
+}
+
+export interface BoardDetail {
+  nodeList?: BoardNode[];
+  openStatEffectList?: { desc: string }[];
+  openSkillEffectList?: { desc: string }[];
+}
+
+export interface Hit {
+  character_id: string; name: string; level: number; server_id: number; server_name: string; race: number; pc_id: number;
+}
+
 export interface Saved {
   settings: Settings;
   pets: Record<string, { pets: Record<string, PetProgress> }>;
+  profile: Profile | null;
 }
 
 export interface TimerRow {
@@ -83,6 +125,10 @@ export const setPet = (pet: number, level: number, points: number) => invoke("se
 export const setClickThrough = (on: boolean) => invoke("set_click_through", { on });
 export const captureStatus = () => invoke<CaptureStatus>("capture_status");
 export const getSouls = () => invoke<SoulSeen[]>("get_souls");
+export const searchCharacters = (name: string) => invoke<Hit[]>("search_characters", { name });
+export const loadProfile = (serverId?: number, characterId?: string) => invoke("load_profile", { serverId, characterId });
+export const clearProfile = () => invoke("clear_profile");
+export const gameData = <T>(name: "skill-points" | "daevanion") => invoke<T>("game_data", { name });
 export { openUrl } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);

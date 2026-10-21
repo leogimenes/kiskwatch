@@ -6,6 +6,7 @@ import {
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming } from "./farm";
 import { Stop, leg, plan, totals } from "./route";
+import { renderBuild } from "./build";
 import { applyLook, chime } from "./look";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -657,6 +658,7 @@ async function refresh() {
   renderConfig(saved.settings);
   renderTimers();
   renderPets();
+  renderBuild(saved);
   renderCapture();
 }
 

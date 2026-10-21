@@ -18,7 +18,8 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Rota de farm (caminho mínimo com Kibelisks, sem IA) | ✅ no mapa e no overlay de pets |
 | Acessibilidade (texto, contraste, daltonismo, animações, som) | ✅ |
 | Captura ao vivo via Npcap | ✅ |
-| Build (Skills, Stigmas, Daevanion) | ⏳ |
+| Build: skills, stigmas e tabuleiros Daevanion do perfil oficial | ✅ |
+| Build: pontos possíveis, fontes e custo em cristais (dados da dbaion2.ru, baixados pelo app) | ✅ |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona

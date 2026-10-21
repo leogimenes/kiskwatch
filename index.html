@@ -103,7 +103,15 @@
       </section>
 
       <section id="tab-build" class="tab">
-        <p class="hint">Painel de Skills, Stigmas e Daevanion: próximo passo, usando o perfil oficial do personagem.</p>
+        <div id="char-pick" class="char-pick">
+          <form id="char-search" class="filters">
+            <input id="char-name" type="search" placeholder="Nome do personagem" aria-label="Nome do personagem" required />
+            <button type="submit">Buscar no site oficial</button>
+            <span id="char-status" class="hint" aria-live="polite"></span>
+          </form>
+          <ul id="char-hits" class="hits"></ul>
+        </div>
+        <div id="build"></div>
       </section>
 
       <section id="tab-config" class="tab">
