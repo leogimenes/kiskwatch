@@ -7,6 +7,8 @@ Kiskwatch é distribuído sob a GPL-3.0 (veja `LICENSE`) porque reaproveita cód
   - `crates/core/src/boss_map.rs`: leitura do mapa de field bosses (`01 91`), com `Serialize`/`Deserialize` adicionados.
   - `crates/core/src/varint.rs`: `read_varint` copiado do `stream_processor.rs`.
   - `crates/core/src/testdata/boss_map_*.hex`: capturas de teste.
+  - `src-tauri/src/pcap.rs`: FFI da libpcap/Npcap, listagem de dispositivos, filtro de captura e leitura dos quadros, de `pcap_capturer.rs`.
+  - `crates/core/src/dispatch.rs`: a ideia de achar a conexão do jogo pela taxa do terminador `0E 00 36`, de `capture_dispatcher.rs` (código próprio).
 - **A2Tools Plugins**: https://github.com/taengu/A2Tools-Plugins (GPL-3.0)
   - Formato dos registros de pets (`00 90`, `0D 90`, `14 90`) do plugin Pet Soul Tracker.
   - `data/*.json`: gerados por `scripts/import-a2tools-data.mjs` a partir de `pet-souls/pets.js`, `pet-souls/sources.js` e `event-timers/schedule.js`.

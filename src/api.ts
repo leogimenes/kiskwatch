@@ -38,6 +38,14 @@ export interface Alarm {
   start_ms: number;
 }
 
+export interface CaptureStatus {
+  running: boolean;
+  error: string | null;
+  devices: string[];
+  locked: boolean;
+  last_event_ms: number;
+}
+
 export const ALARM_LEADS = [60, 30, 15, 10, 5, 2, 1];
 
 export const getTimers = () => invoke<TimerRow[]>("get_timers");
@@ -46,6 +54,7 @@ export const setSettings = (settings: Settings) => invoke("set_settings", { sett
 export const setAlarm = (id: string, leads: number[]) => invoke("set_alarm", { id, leads });
 export const setPet = (pet: number, level: number, points: number) => invoke("set_pet", { pet, level, points });
 export const setClickThrough = (on: boolean) => invoke("set_click_through", { on });
+export const captureStatus = () => invoke<CaptureStatus>("capture_status");
 export const ingestHex = (hex: string) => invoke<number>("ingest_hex", { hex });
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);

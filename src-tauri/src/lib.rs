@@ -1,12 +1,14 @@
-//! The desktop app: the panel and overlay windows, the saved state, and the
-//! alarm clock. What the game says comes in through `ingest` (live capture
-//! with Npcap is the next step; until then a recorded stream can be fed in).
+//! The desktop app: the panel and overlay windows, the saved state, the
+//! alarm clock, and live capture of what the game says (`pcap`, read by
+//! `kiskwatch_core::dispatch`).
 
+mod pcap;
 mod state;
 
 use std::sync::Mutex;
 use std::time::Duration;
 
+use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
 use kiskwatch_core::schedule::{self, Event};
 use kiskwatch_core::stream::{GameEvent, GameStream};
 use serde::Serialize;
@@ -20,6 +22,8 @@ const FIELD_BOSSES_JSON: &str = include_str!("../../data/field_bosses.json");
 pub struct App {
     saved: Mutex<Saved>,
     stream: Mutex<GameStream>,
+    capture: std::sync::Arc<Mutex<pcap::CaptureState>>,
+    dispatch: Mutex<(DispatchStatus, i64)>,
     events: Vec<Event>,
     field_bosses: std::collections::BTreeMap<u32, FieldBoss>,
 }
@@ -54,6 +58,8 @@ impl App {
         Self {
             saved: Mutex::new(saved),
             stream: Mutex::new(GameStream::new()),
+            capture: Default::default(),
+            dispatch: Mutex::new((DispatchStatus { locked: false, server_port: None }, 0)),
             events: serde_json::from_str(EVENTS_JSON).expect("data/events.json"),
             field_bosses: serde_json::from_str::<std::collections::BTreeMap<String, FieldBoss>>(FIELD_BOSSES_JSON)
                 .expect("data/field_bosses.json")
@@ -251,6 +257,49 @@ fn ingest_hex(app: AppHandle, state: State<App>, hex: String) -> Result<usize, S
     Ok(n)
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct CaptureStatus {
+    #[serde(flatten)]
+    capture: pcap::CaptureState,
+    /// The game's connection has been found.
+    locked: bool,
+    /// When the game last said something Kiskwatch reads (unix ms; 0: never).
+    last_event_ms: i64,
+}
+
+#[tauri::command]
+fn capture_status(state: State<App>) -> CaptureStatus {
+    let capture = state.capture.lock().unwrap().clone();
+    let (dispatch, last_event_ms) = *state.dispatch.lock().unwrap();
+    CaptureStatus { capture, locked: dispatch.locked, last_event_ms }
+}
+
+/// Read captured segments, find the game's connection, and fold in what it says.
+fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
+    let mut dispatcher = Dispatcher::new();
+    for seg in segments {
+        let now = now_ms();
+        let events = dispatcher.offer(seg, now);
+        let state = app.state::<App>();
+        let changed_lock = {
+            let mut d = state.dispatch.lock().unwrap();
+            let changed = d.0 != dispatcher.status();
+            d.0 = dispatcher.status();
+            if !events.is_empty() {
+                d.1 = now;
+            }
+            changed
+        };
+        let changed = events.into_iter().fold(false, |acc, e| state.apply(e) | acc);
+        if changed {
+            save(&app, &state);
+        }
+        if changed || changed_lock {
+            let _ = app.emit("state-changed", ());
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -262,9 +311,13 @@ pub fn run() {
                 let _ = w.set_ignore_cursor_events(click_through);
             }
             tauri::async_runtime::spawn(alarm_clock(app.handle().clone()));
+            let (tx, rx) = std::sync::mpsc::sync_channel(8192);
+            pcap::start(tx, app.state::<App>().capture.clone());
+            let handle = app.handle().clone();
+            std::thread::spawn(move || read_capture(handle, rx));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, ingest_hex])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, ingest_hex, capture_status])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

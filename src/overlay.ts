@@ -11,11 +11,11 @@ let rows: TimerRow[] = [];
 
 function render() {
   const now = Date.now();
-  const watched = rows.filter((r) => r.leads.length && (r.start_ms != null || r.up)).slice(0, SHOWN);
+  const watched = rows.filter((r) => r.leads.length).slice(0, SHOWN);
   next.replaceChildren(
     ...watched.map((r) => {
       const li = document.createElement("li");
-      const when = r.up ? "vivo" : r.start_ms! <= now ? "agora" : countdown(r.start_ms! - now);
+      const when = r.up ? "vivo" : r.start_ms == null ? "abra o mapa" : r.start_ms <= now ? "agora" : countdown(r.start_ms - now);
       li.innerHTML = `<span class="name"></span><span class="when"></span>`;
       (li.firstChild as HTMLElement).textContent = t(r.name);
       (li.lastChild as HTMLElement).textContent = when;

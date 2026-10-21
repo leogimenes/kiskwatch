@@ -10,18 +10,18 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 |---|---|
 | Agenda de eventos, resets e bosses agendados | ✅ com contagem regressiva no fuso da região |
 | Avisos no overlay (1h, 30, 15, 10, 5, 2, 1 min) | ✅ com som |
-| Field bosses pelo mapa do jogo (`01 91`) | ✅ decodificação; falta a captura ao vivo |
+| Field bosses pelo mapa do jogo (`01 91`) | ✅ ao abrir o mapa no jogo |
 | Pets: nível, almas, quanto falta, filtros, ordenação | ✅ com edição manual |
-| Pets: leitura automática (`00 90`, `0D 90`, `14 90`) | ✅ decodificação; falta a captura ao vivo |
+| Pets: leitura automática (`00 90`, `0D 90`, `14 90`) | ✅ no login e a cada alma coletada |
 | Mapa dos spawns dos pets faltantes | 🟡 esquemático, sem a arte do mapa |
-| Captura ao vivo via Npcap | ⏳ próximo passo |
+| Captura ao vivo via Npcap | ✅ |
 | Build (Skills, Stigmas, Daevanion) | ⏳ |
 | Sugestões por IA | ⏳ |
 
 ## Como funciona
 
-- `crates/core`: o núcleo sem janela nem rede. Separa os pacotes do fluxo TCP do jogo, abre os bundles LZ4, decodifica os registros de bosses e pets, e calcula a agenda e os avisos. Testável em qualquer sistema: `cargo test -p kiskwatch-core`.
-- `src-tauri`: o app (Tauri 2). Duas janelas: o painel e o overlay transparente, sempre no topo, que pode deixar os cliques passarem para o jogo. Guarda o estado em `state.json` na pasta de dados do app.
+- `crates/core`: o núcleo sem janela nem rede. Acha a conexão do jogo entre tudo que foi capturado (`dispatch.rs`), separa os pacotes do fluxo TCP do jogo, abre os bundles LZ4, decodifica os registros de bosses e pets, e calcula a agenda e os avisos. Testável em qualquer sistema: `cargo test -p kiskwatch-core`.
+- `src-tauri`: o app (Tauri 2). `pcap.rs` captura o tráfego via Npcap/libpcap. Duas janelas: o painel e o overlay transparente, sempre no topo, que pode deixar os cliques passarem para o jogo. Guarda o estado em `state.json` na pasta de dados do app.
 - `src`: as telas (TypeScript + Vite).
 - `data`: dados do jogo (pets, drops, spawns, Kibelisks, agenda, servidores), gerados de A2Tools-Plugins.
 
@@ -29,7 +29,9 @@ O app só **lê** uma cópia do tráfego de rede (como o A2Tools e a Questlog). 
 
 ## Desenvolvimento
 
-Requisitos: Rust estável e Node 22. No Windows, o WebView2 já vem no Windows 10/11. Para a captura ao vivo, futuramente, o [Npcap](https://npcap.com).
+Requisitos: Rust estável e Node 22. No Windows, o WebView2 já vem no Windows 10/11.
+
+Para ler o jogo, o Kiskwatch precisa do [Npcap](https://npcap.com/#download) instalado (marque "WinPcap API-compatible Mode"). Se o selo no topo do painel disser "Captura desligada", passe o mouse sobre ele para ver o motivo; em geral é o Npcap faltando ou o app sem permissão (abra como administrador).
 
 ```sh
 npm install

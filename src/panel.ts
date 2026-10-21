@@ -1,6 +1,6 @@
 // The panel: timers with their alarms, the pet collection and its map, settings.
 import {
-  ALARM_LEADS, Saved, TimerRow, countdown, getSaved, getTimers, ingestHex, onStateChanged, setAlarm, setClickThrough,
+  ALARM_LEADS, Saved, captureStatus, TimerRow, countdown, getSaved, getTimers, ingestHex, onStateChanged, setAlarm, setClickThrough,
   setPet, setSettings,
 } from "./api";
 import { Drop, GENUS, PETS, Pet, REGIONS, SERVERS, name, soulsToMax, t } from "./data";
@@ -61,6 +61,7 @@ function startText(row: TimerRow, now: number) {
   if (row.kind === "field-boss") {
     if (row.up) return "vivo agora";
     if (row.start_ms == null) return "abra o mapa no jogo";
+    if (row.start_ms <= now) return "já deve ter voltado";
   }
   if (row.start_ms == null) return "—";
   if (row.start_ms <= now && row.end_ms && row.end_ms > now) return `acontecendo (${countdown(row.end_ms - now)})`;
@@ -241,6 +242,22 @@ $("#ingest-go").addEventListener("click", async () => {
   }
 });
 
+// ---- Capture ----
+async function renderCapture() {
+  const pill = $("#capture");
+  const st = await captureStatus();
+  const [cls, text, tip] = st.error
+    ? ["off", "Captura desligada", st.error]
+    : st.locked
+      ? ["on", "Lendo o jogo", st.last_event_ms ? `Último dado do jogo: ${new Date(st.last_event_ms).toLocaleTimeString()}` : "Conectado ao jogo"]
+      : st.running
+        ? ["wait", "Procurando o jogo…", `Capturando em: ${st.devices.join(", ")}`]
+        : ["off", "Captura iniciando…", ""];
+  pill.className = `capture ${cls}`;
+  pill.textContent = text;
+  pill.title = tip;
+}
+
 // ---- Refresh ----
 async function refresh() {
   [saved, timers] = await Promise.all([getSaved(), getTimers()]);
@@ -250,10 +267,12 @@ async function refresh() {
   clickThrough.checked = saved.settings.click_through;
   renderTimers();
   renderPets();
+  renderCapture();
 }
 
 onStateChanged(refresh);
 refresh();
 setInterval(tickCountdowns, 1000);
+setInterval(renderCapture, 5000);
 // Scheduled events roll over to their next showing.
 setInterval(async () => { timers = await getTimers(); renderTimers(); }, 30_000);

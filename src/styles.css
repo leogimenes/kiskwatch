@@ -22,6 +22,10 @@ a { color: var(--accent); }
 .tabs { display: flex; gap: 4px; }
 .tabs button, button { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
 .tabs button.active { background: var(--accent); color: #0b1220; border-color: var(--accent); }
+.capture { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.capture.on { color: #0b1a0b; background: var(--natura); border-color: var(--natura); }
+.capture.wait { color: var(--gold); border-color: var(--gold); }
+.capture.off { color: var(--fera); border-color: var(--fera); }
 .server { margin-left: auto; display: flex; gap: 6px; align-items: center; color: var(--muted); }
 select, input, textarea { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font: inherit; }
 main { padding: 16px; }

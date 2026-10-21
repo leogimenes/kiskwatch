@@ -2,6 +2,7 @@
 //! card, so it builds and tests anywhere.
 
 pub mod boss_map;
+pub mod dispatch;
 pub mod framing;
 pub mod pets;
 pub mod schedule;
