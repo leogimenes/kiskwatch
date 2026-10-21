@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kiskwatch</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <h1>Kiskwatch</h1>
+      <nav class="tabs">
+        <button data-tab="timers" class="active">Timers</button>
+        <button data-tab="pets">Pets</button>
+        <button data-tab="build">Build</button>
+        <button data-tab="config">Configurações</button>
+      </nav>
+      <label class="server">Servidor
+        <select id="region"></select>
+        <select id="server"></select>
+      </label>
+    </header>
+
+    <main>
+      <section id="tab-timers" class="tab active">
+        <p class="hint">Abra o mapa no jogo para atualizar os field bosses. Marque os avisos que quer receber no overlay.</p>
+        <table class="list">
+          <thead><tr><th>Evento</th><th>Onde</th><th>Começa em</th><th>Avisos</th></tr></thead>
+          <tbody id="timers"></tbody>
+        </table>
+      </section>
+
+      <section id="tab-pets" class="tab">
+        <div id="pet-summary" class="summary"></div>
+        <div class="filters">
+          <input id="pet-search" type="search" placeholder="Buscar pet ou monstro" />
+          <select id="pet-genus"><option value="">Todos os gêneros</option></select>
+          <select id="pet-region"><option value="">Todas as regiões</option></select>
+          <select id="pet-level">
+            <option value="">Qualquer nível</option>
+            <option value="0">Nível 0</option><option value="1">Nível 1</option>
+            <option value="2">Nível 2</option><option value="3">Nível 3</option>
+          </select>
+          <label>Faltando ao menos <input id="pet-min" type="number" min="0" max="105" value="1" /></label>
+          <select id="pet-sort">
+            <option value="missing-desc">Mais almas faltando</option>
+            <option value="missing-asc">Menos almas faltando</option>
+            <option value="level">Nível</option>
+            <option value="name">Nome</option>
+          </select>
+          <label><input id="pet-chests" type="checkbox" /> Incluir pets só de baú</label>
+        </div>
+        <div class="pets-layout">
+          <table class="list">
+            <thead><tr><th>Pet</th><th>Nível</th><th>Almas</th><th>Faltam</th><th>Onde dropa</th></tr></thead>
+            <tbody id="pets"></tbody>
+          </table>
+          <aside class="map-panel">
+            <h2>Mapa</h2>
+            <select id="map-select"></select>
+            <svg id="map" viewBox="0 0 1000 1000" role="img" aria-label="Spawns dos pets faltantes"></svg>
+            <p class="hint">Cada ponto é o centro dos spawns de um monstro que dropa almas de um pet filtrado. O fundo do mapa ainda não está incluído.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="tab-build" class="tab">
+        <p class="hint">Painel de Skills, Stigmas e Daevanion: próximo passo, usando o perfil oficial do personagem.</p>
+      </section>
+
+      <section id="tab-config" class="tab">
+        <label class="row"><input id="click-through" type="checkbox" /> Overlay deixa os cliques passarem para o jogo</label>
+        <p class="hint">Desmarque para arrastar e redimensionar o overlay.</p>
+        <h2>Dados de teste</h2>
+        <p class="hint">Enquanto a captura ao vivo não está pronta, cole aqui bytes do servidor em hexadecimal (por exemplo, uma gravação de pacotes).</p>
+        <textarea id="ingest" rows="6" spellcheck="false"></textarea>
+        <button id="ingest-go">Processar</button> <span id="ingest-result"></span>
+        <h2>Créditos</h2>
+        <p class="hint">Decodificação de pacotes e dados do jogo vêm do <a href="https://github.com/taengu/A2Tools-DPS-Meter" target="_blank">A2Tools</a> e dos <a href="https://github.com/taengu/A2Tools-Plugins" target="_blank">A2Tools Plugins</a> (GPL-3.0). Kiskwatch também é GPL-3.0.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/panel.ts"></script>
+  </body>
+</html>

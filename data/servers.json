@@ -1,0 +1,3002 @@
+[
+ {
+  "id": 1101,
+  "name": "Siel",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1102,
+  "name": "Nezekan",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1103,
+  "name": "Vaizel",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1104,
+  "name": "Kaisinel",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1105,
+  "name": "Yustiel",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1106,
+  "name": "Ariel",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1107,
+  "name": "Fregion",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1108,
+  "name": "Meslamtaeda",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1109,
+  "name": "Hithanya",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1110,
+  "name": "Nania",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1111,
+  "name": "Tahabata",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1112,
+  "name": "Luteros",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1113,
+  "name": "Phernos",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1114,
+  "name": "Daminu",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1115,
+  "name": "Kasika",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1116,
+  "name": "Bakarma",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1117,
+  "name": "Tsenka",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1118,
+  "name": "Kochi",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1119,
+  "name": "Ishtar",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1120,
+  "name": "Tiamat",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1121,
+  "name": "Poeta",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1122,
+  "name": "Verteron",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1123,
+  "name": "Nathara",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1124,
+  "name": "Talisra",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1125,
+  "name": "Zumion",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1126,
+  "name": "Nahid",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1127,
+  "name": "Asahr",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1128,
+  "name": "Caelid",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1129,
+  "name": "Laveis",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1130,
+  "name": "Perion",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1131,
+  "name": "Dramata",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1132,
+  "name": "Reda",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1133,
+  "name": "Auldor",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1134,
+  "name": "Vakron",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1135,
+  "name": "Narun",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1136,
+  "name": "Gartua",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1137,
+  "name": "Chloris",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1138,
+  "name": "Ione",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1139,
+  "name": "Teina",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1140,
+  "name": "Dymones",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1141,
+  "name": "Bargott",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1142,
+  "name": "Atheron",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1143,
+  "name": "Ruthilis",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1144,
+  "name": "Siliator",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1145,
+  "name": "Idris",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1146,
+  "name": "Satia",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1147,
+  "name": "Estian",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1148,
+  "name": "Rahu",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1149,
+  "name": "Rhanman",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1150,
+  "name": "Hebran",
+  "region": 1,
+  "side": "elyos"
+ },
+ {
+  "id": 1201,
+  "name": "Siel",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1202,
+  "name": "Nezekan",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1203,
+  "name": "Vaizel",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1204,
+  "name": "Kaisinel",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1205,
+  "name": "Yustiel",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1206,
+  "name": "Ariel",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1207,
+  "name": "Fregion",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1208,
+  "name": "Meslamtaeda",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1209,
+  "name": "Hithanya",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1210,
+  "name": "Nania",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1211,
+  "name": "Tahabata",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1212,
+  "name": "Luteros",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1213,
+  "name": "Phernos",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1214,
+  "name": "Daminu",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1215,
+  "name": "Kasika",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1216,
+  "name": "Bakarma",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1217,
+  "name": "Tsenka",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1218,
+  "name": "Kochi",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1219,
+  "name": "Ishtar",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1220,
+  "name": "Tiamat",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1221,
+  "name": "Poeta",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1222,
+  "name": "Verteron",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1223,
+  "name": "Nathara",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1224,
+  "name": "Talisra",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1225,
+  "name": "Zumion",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1226,
+  "name": "Nahid",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1227,
+  "name": "Asahr",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1228,
+  "name": "Caelid",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1229,
+  "name": "Laveis",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1230,
+  "name": "Perion",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1231,
+  "name": "Dramata",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1232,
+  "name": "Reda",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1233,
+  "name": "Auldor",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1234,
+  "name": "Vakron",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1235,
+  "name": "Narun",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1236,
+  "name": "Gartua",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1237,
+  "name": "Chloris",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1238,
+  "name": "Ione",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1239,
+  "name": "Teina",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1240,
+  "name": "Dymones",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1241,
+  "name": "Bargott",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1242,
+  "name": "Atheron",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1243,
+  "name": "Ruthilis",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1244,
+  "name": "Siliator",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1245,
+  "name": "Idris",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1246,
+  "name": "Satia",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1247,
+  "name": "Estian",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1248,
+  "name": "Rahu",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1249,
+  "name": "Rhanman",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1250,
+  "name": "Hebran",
+  "region": 2,
+  "side": "elyos"
+ },
+ {
+  "id": 1301,
+  "name": "Siel",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1302,
+  "name": "Nezekan",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1303,
+  "name": "Vaizel",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1304,
+  "name": "Kaisinel",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1305,
+  "name": "Yustiel",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1306,
+  "name": "Ariel",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1307,
+  "name": "Fregion",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1308,
+  "name": "Meslamtaeda",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1309,
+  "name": "Hithanya",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1310,
+  "name": "Nania",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1311,
+  "name": "Tahabata",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1312,
+  "name": "Luteros",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1313,
+  "name": "Phernos",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1314,
+  "name": "Daminu",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1315,
+  "name": "Kasika",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1316,
+  "name": "Bakarma",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1317,
+  "name": "Tsenka",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1318,
+  "name": "Kochi",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1319,
+  "name": "Ishtar",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1320,
+  "name": "Tiamat",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1321,
+  "name": "Poeta",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1322,
+  "name": "Verteron",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1323,
+  "name": "Nathara",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1324,
+  "name": "Talisra",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1325,
+  "name": "Zumion",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1326,
+  "name": "Nahid",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1327,
+  "name": "Asahr",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1328,
+  "name": "Caelid",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1329,
+  "name": "Laveis",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1330,
+  "name": "Perion",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1331,
+  "name": "Dramata",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1332,
+  "name": "Reda",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1333,
+  "name": "Auldor",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1334,
+  "name": "Vakron",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1335,
+  "name": "Narun",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1336,
+  "name": "Gartua",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1337,
+  "name": "Chloris",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1338,
+  "name": "Ione",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1339,
+  "name": "Teina",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1340,
+  "name": "Dymones",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1341,
+  "name": "Bargott",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1342,
+  "name": "Atheron",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1343,
+  "name": "Ruthilis",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1344,
+  "name": "Siliator",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1345,
+  "name": "Idris",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1346,
+  "name": "Satia",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1347,
+  "name": "Estian",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1348,
+  "name": "Rahu",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1349,
+  "name": "Rhanman",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1350,
+  "name": "Hebran",
+  "region": 3,
+  "side": "elyos"
+ },
+ {
+  "id": 1401,
+  "name": "Siel",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1402,
+  "name": "Nezekan",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1403,
+  "name": "Vaizel",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1404,
+  "name": "Kaisinel",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1405,
+  "name": "Yustiel",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1406,
+  "name": "Ariel",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1407,
+  "name": "Fregion",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1408,
+  "name": "Meslamtaeda",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1409,
+  "name": "Hithanya",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1410,
+  "name": "Nania",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1411,
+  "name": "Tahabata",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1412,
+  "name": "Luteros",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1413,
+  "name": "Phernos",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1414,
+  "name": "Daminu",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1415,
+  "name": "Kasika",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1416,
+  "name": "Bakarma",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1417,
+  "name": "Tsenka",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1418,
+  "name": "Kochi",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1419,
+  "name": "Ishtar",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1420,
+  "name": "Tiamat",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1421,
+  "name": "Poeta",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1422,
+  "name": "Verteron",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1423,
+  "name": "Nathara",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1424,
+  "name": "Talisra",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1425,
+  "name": "Zumion",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1426,
+  "name": "Nahid",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1427,
+  "name": "Asahr",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1428,
+  "name": "Caelid",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1429,
+  "name": "Laveis",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1430,
+  "name": "Perion",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1431,
+  "name": "Dramata",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1432,
+  "name": "Reda",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1433,
+  "name": "Auldor",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1434,
+  "name": "Vakron",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1435,
+  "name": "Narun",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1436,
+  "name": "Gartua",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1437,
+  "name": "Chloris",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1438,
+  "name": "Ione",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1439,
+  "name": "Teina",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1440,
+  "name": "Dymones",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1441,
+  "name": "Bargott",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1442,
+  "name": "Atheron",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1443,
+  "name": "Ruthilis",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1444,
+  "name": "Siliator",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1445,
+  "name": "Idris",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1446,
+  "name": "Satia",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1447,
+  "name": "Estian",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1448,
+  "name": "Rahu",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1449,
+  "name": "Rhanman",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1450,
+  "name": "Hebran",
+  "region": 4,
+  "side": "elyos"
+ },
+ {
+  "id": 1501,
+  "name": "Siel",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1502,
+  "name": "Nezekan",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1503,
+  "name": "Vaizel",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1504,
+  "name": "Kaisinel",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1505,
+  "name": "Yustiel",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1506,
+  "name": "Ariel",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1507,
+  "name": "Fregion",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1508,
+  "name": "Meslamtaeda",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1509,
+  "name": "Hithanya",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1510,
+  "name": "Nania",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1511,
+  "name": "Tahabata",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1512,
+  "name": "Luteros",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1513,
+  "name": "Phernos",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1514,
+  "name": "Daminu",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1515,
+  "name": "Kasika",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1516,
+  "name": "Bakarma",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1517,
+  "name": "Tsenka",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1518,
+  "name": "Kochi",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1519,
+  "name": "Ishtar",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1520,
+  "name": "Tiamat",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1521,
+  "name": "Poeta",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1522,
+  "name": "Verteron",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1523,
+  "name": "Nathara",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1524,
+  "name": "Talisra",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1525,
+  "name": "Zumion",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1526,
+  "name": "Nahid",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1527,
+  "name": "Asahr",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1528,
+  "name": "Caelid",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1529,
+  "name": "Laveis",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1530,
+  "name": "Perion",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1531,
+  "name": "Dramata",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1532,
+  "name": "Reda",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1533,
+  "name": "Auldor",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1534,
+  "name": "Vakron",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1535,
+  "name": "Narun",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1536,
+  "name": "Gartua",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1537,
+  "name": "Chloris",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1538,
+  "name": "Ione",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1539,
+  "name": "Teina",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1540,
+  "name": "Dymones",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1541,
+  "name": "Bargott",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1542,
+  "name": "Atheron",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1543,
+  "name": "Ruthilis",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1544,
+  "name": "Siliator",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1545,
+  "name": "Idris",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1546,
+  "name": "Satia",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1547,
+  "name": "Estian",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1548,
+  "name": "Rahu",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1549,
+  "name": "Rhanman",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 1550,
+  "name": "Hebran",
+  "region": 5,
+  "side": "elyos"
+ },
+ {
+  "id": 2101,
+  "name": "Israphel",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2102,
+  "name": "Zikel",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2103,
+  "name": "Triniel",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2104,
+  "name": "Lumiel",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2105,
+  "name": "Marchutan",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2106,
+  "name": "Azphel",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2107,
+  "name": "Ereshkigal",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2108,
+  "name": "Beritra",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2109,
+  "name": "Nemon",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2110,
+  "name": "Hadala",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2111,
+  "name": "Ludra",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2112,
+  "name": "Ulgorn",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2113,
+  "name": "Munin",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2114,
+  "name": "Odar",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2115,
+  "name": "Zemurru",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2116,
+  "name": "Kromede",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2117,
+  "name": "Quai",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2118,
+  "name": "Baba",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2119,
+  "name": "Fafnir",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2120,
+  "name": "Indnath",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2121,
+  "name": "Ishalgen",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2122,
+  "name": "Altgard",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2123,
+  "name": "Agnita",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2124,
+  "name": "Atiel",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2125,
+  "name": "Valdemar",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2126,
+  "name": "Lagta",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2127,
+  "name": "Gerod",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2128,
+  "name": "Urd",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2129,
+  "name": "Ecco",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2130,
+  "name": "Giselle",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2131,
+  "name": "Kashapa",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2132,
+  "name": "Stof",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2133,
+  "name": "Berk",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2134,
+  "name": "Nuakum",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2135,
+  "name": "Grisilla",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2136,
+  "name": "Santras",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2137,
+  "name": "Reuben",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2138,
+  "name": "Hugo",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2139,
+  "name": "Kraki",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2140,
+  "name": "Hystan",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2141,
+  "name": "Rathman",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2142,
+  "name": "Sigebert",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2143,
+  "name": "Nazmun",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2144,
+  "name": "Gelcos",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2145,
+  "name": "Paton",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2146,
+  "name": "Pelleir",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2147,
+  "name": "Elvida",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2148,
+  "name": "Ketu",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2149,
+  "name": "Pydeon",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2150,
+  "name": "Notun",
+  "region": 1,
+  "side": "asmodian"
+ },
+ {
+  "id": 2201,
+  "name": "Israphel",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2202,
+  "name": "Zikel",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2203,
+  "name": "Triniel",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2204,
+  "name": "Lumiel",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2205,
+  "name": "Marchutan",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2206,
+  "name": "Azphel",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2207,
+  "name": "Ereshkigal",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2208,
+  "name": "Beritra",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2209,
+  "name": "Nemon",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2210,
+  "name": "Hadala",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2211,
+  "name": "Ludra",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2212,
+  "name": "Ulgorn",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2213,
+  "name": "Munin",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2214,
+  "name": "Odar",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2215,
+  "name": "Zemurru",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2216,
+  "name": "Kromede",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2217,
+  "name": "Quai",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2218,
+  "name": "Baba",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2219,
+  "name": "Fafnir",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2220,
+  "name": "Indnath",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2221,
+  "name": "Ishalgen",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2222,
+  "name": "Altgard",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2223,
+  "name": "Agnita",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2224,
+  "name": "Atiel",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2225,
+  "name": "Valdemar",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2226,
+  "name": "Lagta",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2227,
+  "name": "Gerod",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2228,
+  "name": "Urd",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2229,
+  "name": "Ecco",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2230,
+  "name": "Giselle",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2231,
+  "name": "Kashapa",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2232,
+  "name": "Stof",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2233,
+  "name": "Berk",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2234,
+  "name": "Nuakum",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2235,
+  "name": "Grisilla",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2236,
+  "name": "Santras",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2237,
+  "name": "Reuben",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2238,
+  "name": "Hugo",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2239,
+  "name": "Kraki",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2240,
+  "name": "Hystan",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2241,
+  "name": "Rathman",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2242,
+  "name": "Sigebert",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2243,
+  "name": "Nazmun",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2244,
+  "name": "Gelcos",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2245,
+  "name": "Paton",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2246,
+  "name": "Pelleir",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2247,
+  "name": "Elvida",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2248,
+  "name": "Ketu",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2249,
+  "name": "Pydeon",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2250,
+  "name": "Notun",
+  "region": 2,
+  "side": "asmodian"
+ },
+ {
+  "id": 2301,
+  "name": "Israphel",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2302,
+  "name": "Zikel",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2303,
+  "name": "Triniel",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2304,
+  "name": "Lumiel",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2305,
+  "name": "Marchutan",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2306,
+  "name": "Azphel",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2307,
+  "name": "Ereshkigal",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2308,
+  "name": "Beritra",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2309,
+  "name": "Nemon",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2310,
+  "name": "Hadala",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2311,
+  "name": "Ludra",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2312,
+  "name": "Ulgorn",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2313,
+  "name": "Munin",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2314,
+  "name": "Odar",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2315,
+  "name": "Zemurru",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2316,
+  "name": "Kromede",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2317,
+  "name": "Quai",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2318,
+  "name": "Baba",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2319,
+  "name": "Fafnir",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2320,
+  "name": "Indnath",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2321,
+  "name": "Ishalgen",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2322,
+  "name": "Altgard",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2323,
+  "name": "Agnita",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2324,
+  "name": "Atiel",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2325,
+  "name": "Valdemar",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2326,
+  "name": "Lagta",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2327,
+  "name": "Gerod",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2328,
+  "name": "Urd",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2329,
+  "name": "Ecco",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2330,
+  "name": "Giselle",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2331,
+  "name": "Kashapa",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2332,
+  "name": "Stof",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2333,
+  "name": "Berk",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2334,
+  "name": "Nuakum",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2335,
+  "name": "Grisilla",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2336,
+  "name": "Santras",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2337,
+  "name": "Reuben",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2338,
+  "name": "Hugo",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2339,
+  "name": "Kraki",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2340,
+  "name": "Hystan",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2341,
+  "name": "Rathman",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2342,
+  "name": "Sigebert",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2343,
+  "name": "Nazmun",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2344,
+  "name": "Gelcos",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2345,
+  "name": "Paton",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2346,
+  "name": "Pelleir",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2347,
+  "name": "Elvida",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2348,
+  "name": "Ketu",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2349,
+  "name": "Pydeon",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2350,
+  "name": "Notun",
+  "region": 3,
+  "side": "asmodian"
+ },
+ {
+  "id": 2401,
+  "name": "Israphel",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2402,
+  "name": "Zikel",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2403,
+  "name": "Triniel",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2404,
+  "name": "Lumiel",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2405,
+  "name": "Marchutan",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2406,
+  "name": "Azphel",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2407,
+  "name": "Ereshkigal",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2408,
+  "name": "Beritra",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2409,
+  "name": "Nemon",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2410,
+  "name": "Hadala",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2411,
+  "name": "Ludra",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2412,
+  "name": "Ulgorn",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2413,
+  "name": "Munin",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2414,
+  "name": "Odar",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2415,
+  "name": "Zemurru",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2416,
+  "name": "Kromede",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2417,
+  "name": "Quai",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2418,
+  "name": "Baba",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2419,
+  "name": "Fafnir",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2420,
+  "name": "Indnath",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2421,
+  "name": "Ishalgen",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2422,
+  "name": "Altgard",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2423,
+  "name": "Agnita",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2424,
+  "name": "Atiel",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2425,
+  "name": "Valdemar",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2426,
+  "name": "Lagta",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2427,
+  "name": "Gerod",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2428,
+  "name": "Urd",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2429,
+  "name": "Ecco",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2430,
+  "name": "Giselle",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2431,
+  "name": "Kashapa",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2432,
+  "name": "Stof",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2433,
+  "name": "Berk",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2434,
+  "name": "Nuakum",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2435,
+  "name": "Grisilla",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2436,
+  "name": "Santras",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2437,
+  "name": "Reuben",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2438,
+  "name": "Hugo",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2439,
+  "name": "Kraki",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2440,
+  "name": "Hystan",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2441,
+  "name": "Rathman",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2442,
+  "name": "Sigebert",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2443,
+  "name": "Nazmun",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2444,
+  "name": "Gelcos",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2445,
+  "name": "Paton",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2446,
+  "name": "Pelleir",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2447,
+  "name": "Elvida",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2448,
+  "name": "Ketu",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2449,
+  "name": "Pydeon",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2450,
+  "name": "Notun",
+  "region": 4,
+  "side": "asmodian"
+ },
+ {
+  "id": 2501,
+  "name": "Israphel",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2502,
+  "name": "Zikel",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2503,
+  "name": "Triniel",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2504,
+  "name": "Lumiel",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2505,
+  "name": "Marchutan",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2506,
+  "name": "Azphel",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2507,
+  "name": "Ereshkigal",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2508,
+  "name": "Beritra",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2509,
+  "name": "Nemon",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2510,
+  "name": "Hadala",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2511,
+  "name": "Ludra",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2512,
+  "name": "Ulgorn",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2513,
+  "name": "Munin",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2514,
+  "name": "Odar",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2515,
+  "name": "Zemurru",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2516,
+  "name": "Kromede",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2517,
+  "name": "Quai",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2518,
+  "name": "Baba",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2519,
+  "name": "Fafnir",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2520,
+  "name": "Indnath",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2521,
+  "name": "Ishalgen",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2522,
+  "name": "Altgard",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2523,
+  "name": "Agnita",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2524,
+  "name": "Atiel",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2525,
+  "name": "Valdemar",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2526,
+  "name": "Lagta",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2527,
+  "name": "Gerod",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2528,
+  "name": "Urd",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2529,
+  "name": "Ecco",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2530,
+  "name": "Giselle",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2531,
+  "name": "Kashapa",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2532,
+  "name": "Stof",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2533,
+  "name": "Berk",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2534,
+  "name": "Nuakum",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2535,
+  "name": "Grisilla",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2536,
+  "name": "Santras",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2537,
+  "name": "Reuben",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2538,
+  "name": "Hugo",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2539,
+  "name": "Kraki",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2540,
+  "name": "Hystan",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2541,
+  "name": "Rathman",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2542,
+  "name": "Sigebert",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2543,
+  "name": "Nazmun",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2544,
+  "name": "Gelcos",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2545,
+  "name": "Paton",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2546,
+  "name": "Pelleir",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2547,
+  "name": "Elvida",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2548,
+  "name": "Ketu",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2549,
+  "name": "Pydeon",
+  "region": 5,
+  "side": "asmodian"
+ },
+ {
+  "id": 2550,
+  "name": "Notun",
+  "region": 5,
+  "side": "asmodian"
+ }
+]

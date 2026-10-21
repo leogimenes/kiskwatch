@@ -1,0 +1,22 @@
+[package]
+name = "kiskwatch"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "Kiskwatch: overlay and panel to follow your AION 2 characters"
+
+[lib]
+name = "kiskwatch_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+kiskwatch-core = { path = "../crates/core" }
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["time", "sync", "macros"] }
+chrono = "0.4"
+chrono-tz = "0.10"

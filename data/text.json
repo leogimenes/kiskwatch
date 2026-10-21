@@ -1,0 +1,3438 @@
+{
+ "=daily": {
+  "pt": "Reset diário",
+  "en": "Daily reset"
+ },
+ "=rift": {
+  "pt": "Fenda Espaço-Temporal",
+  "en": "Spacetime Rift"
+ },
+ "=weekly": {
+  "pt": "Reset semanal",
+  "en": "Weekly reset"
+ },
+ "InputKeyMapping_UI_ShugoFesta_desc": {
+  "pt": "Shugo Festa",
+  "en": "Shugo Festival"
+ },
+ "Post_10120101_sender_name": {
+  "pt": "Invasão Dimensional",
+  "en": "Dimensional Invasion"
+ },
+ "String_STR_M_AR1_BERITRAD_01_001_body": {
+  "pt": "Vigilante Kairah",
+  "en": "Watcher Kaira"
+ },
+ "String_STR_M_AR1_BERITRAD_01_002_body": {
+  "pt": "Executor Kairah",
+  "en": "Executor Kaira"
+ },
+ "String_STR_M_AR1_RADVIMA_01_CV02_001_body": {
+  "en": "Executor Tamasa"
+ },
+ "String_STR_M_AR1_RR_ABBOSS_01_001_body": {
+  "pt": "Senhor Guardião Nahma",
+  "en": "Guardian Lord Nahma"
+ },
+ "String_STR_M_AR1_WSA_ELEKING_01_V02_001_body": {
+  "pt": "Rei dos Espíritos Argo",
+  "en": "Argo, the Spirit King"
+ },
+ "String_STR_M_AR1_WSA_ELEKING_01_V02_002_body": {
+  "en": "Executor Argo"
+ },
+ "String_STR_M_D1_BCV_KrallElite_01_01_body": {
+  "pt": "Veterano Shujakan",
+  "en": "Veteran Shujakan"
+ },
+ "String_STR_M_D1_BCV_KrallElite_02_01_body": {
+  "pt": "Visionário Karuka",
+  "en": "Visionary Karuka"
+ },
+ "String_STR_M_D1_BR_AltKnife_08_001_body": {
+  "pt": "Profanador Newbold",
+  "en": "Desecrator Newbold"
+ },
+ "String_STR_M_D1_BR_DstrArchonE_01_001_body": {
+  "pt": "Arconte da Alma Perdida Axios",
+  "en": "Specter Archon Axios"
+ },
+ "String_STR_M_D1_BR_FighterM_01_body": {
+  "pt": "Capitão de Operações Especiais Linx",
+  "en": "Special Operations Leader Linx"
+ },
+ "String_STR_M_D1_DC_DranaVar_EL_01_body": {
+  "pt": "Danar Derretido",
+  "en": "Melted Danar"
+ },
+ "String_STR_M_D1_DR_DrakanElite_03_001_body": {
+  "pt": "Assessor Resana",
+  "en": "Advisor Resana"
+ },
+ "String_STR_M_D1_DR_SkurvWar_04_001_body": {
+  "pt": "Supervisor Geral Nutah",
+  "en": "High Overseer Nutah"
+ },
+ "String_STR_M_D1_EGC_BeritraD_04_001_body": {
+  "pt": "Arma de Guerra Drakan Guruta",
+  "en": "Drakan Battalion Weapon Guruta"
+ },
+ "String_STR_M_D1_FD_Shulack_05_01_body": {
+  "pt": "Hardirun Envenenado",
+  "en": "Addicted Hardirun"
+ },
+ "String_STR_M_D1_FieldBoss_BeritraD_01_001_body": {
+  "pt": "Dartan do Silêncio",
+  "en": "Silent Dartan"
+ },
+ "String_STR_M_D1_FieldBoss_Kashapa_01_body": {
+  "pt": "Dominador das Almas Kashapa",
+  "en": "Soul Ruler Kashapa"
+ },
+ "String_STR_M_D1_FieldBoss_Lagta_01_body": {
+  "pt": "Brigadeiro Lagta",
+  "en": "High Commander Lagta"
+ },
+ "String_STR_M_D1_IS_DracoElite_01_001_body": {
+  "pt": "Shylak Afiado",
+  "en": "Sharp Shylak"
+ },
+ "String_STR_M_D1_LF_Sarca_Elite_01_01_body": {
+  "pt": "Vishwada da Escuridão",
+  "en": "Dark Shadow Vishwada"
+ },
+ "String_STR_M_D1_MF_DranaVar_02_body": {
+  "pt": "Guerreiro Sanguinário Lannar",
+  "en": "Blood Warrior Lannar"
+ },
+ "String_STR_M_D1_MF_UrsussElite_01_001_body": {
+  "pt": "Predador Garsan",
+  "en": "Predator Garsan"
+ },
+ "String_STR_M_D1_PF_WaterEle_Elite_01_01_body": {
+  "pt": "Kelpina da Onda Azul",
+  "en": "Blue Wave Kelpina"
+ },
+ "String_STR_M_D1_SH_NornirVar_02_01_body": {
+  "pt": "Trid Enganadora",
+  "en": "Deceiver Trid"
+ },
+ "String_STR_M_D1_SW_DracoWar_01_V02_01_body": {
+  "pt": "Rajit Fiel",
+  "en": "Faithful Rajit"
+ },
+ "String_STR_M_D1_SW_Varg_03_01_body": {
+  "en": "Berserker Vargor"
+ },
+ "String_STR_M_D1_UC_SuraWar_05_01_body": {
+  "pt": "Guerreiro Negro Aed",
+  "en": "Black Warrior Aed"
+ },
+ "String_STR_M_D1_WGC_AltKnife_04_01_body": {
+  "pt": "Carrasco Barthien",
+  "en": "Executioner Barthien"
+ },
+ "String_STR_M_FE_IoE_OdiumGartua_01_body": {
+  "pt": "Gartua da Eternidade",
+  "en": "Eternal Gartua"
+ },
+ "String_STR_M_FE_IoE_OdiumGartua_02_body": {
+  "pt": "Gartua Imortal",
+  "en": "Immortal Gartua"
+ },
+ "String_STR_M_L1_AC_WaterEle_04_Named_01_body": {
+  "pt": "Lawa dos Tentáculos Negros",
+  "en": "Black Tentacle Lawa"
+ },
+ "String_STR_M_L1_AH_A_SuraMag_01_body": {
+  "pt": "Apóstata Layla",
+  "en": "Heretic Layla"
+ },
+ "String_STR_M_L1_AH_B_SpiritKnt_Named_body": {
+  "pt": "Centurião Demiros",
+  "en": "Centurion Demiros"
+ },
+ "String_STR_M_L1_AH_C_Guardit_Named_body": {
+  "pt": "Ansas Divino",
+  "en": "Divine Ansas"
+ },
+ "String_STR_M_L1_BF_Coradon_Named_01_body": {
+  "pt": "Korin em Flor",
+  "en": "Blooming Korin"
+ },
+ "String_STR_M_L1_BigMan02_Named_01_body": {
+  "pt": "Kutar Putrefato",
+  "en": "Rotten Kutar"
+ },
+ "String_STR_M_L1_CV_Keneir_Named_01_body": {
+  "pt": "Kernon do Oeste",
+  "en": "Kernon of the West"
+ },
+ "String_STR_M_L1_CV_Keneir_Named_02_body": {
+  "pt": "Neikel do Leste",
+  "en": "Neikel of the East"
+ },
+ "String_STR_M_L1_DP_BeritraD_04_Named_body": {
+  "pt": "K’nash, Arma de Vigilância",
+  "en": "Sentinel K'nash"
+ },
+ "String_STR_M_L1_DP_DrakanElite_03_Named_body": {
+  "pt": "Gestor de Colheita Moshav",
+  "en": "Harvest Manager Moshav"
+ },
+ "String_STR_M_L1_Nahid_C_BeritraB_01_002_body": {
+  "pt": "Pesquisador Setram",
+  "en": "Researcher Setram"
+ },
+ "String_STR_M_L1_OV_A_OwlElite_01_Named_body": {
+  "pt": "Guerreiro da Floresta Aullamu",
+  "en": "Forest Warrior Aullamu"
+ },
+ "String_STR_M_L1_OV_A_OwlMagic_01_Named_body": {
+  "pt": "Erudito Aulla",
+  "en": "Scholar Aulla"
+ },
+ "String_STR_M_L1_OV_C_OwlElite_01_CV01_Named_body": {
+  "pt": "Perseguidor Taulo",
+  "en": "Chaser Taulo"
+ },
+ "String_STR_M_L1_RI_Kasia_01_Named_01_body": {
+  "pt": "Kasia do Sonho Ilusório",
+  "en": "Phantasm Kasia"
+ },
+ "String_STR_M_L1_TF_Kalnif_Named_01_body": {
+  "pt": "Presa Sangrenta Pnyn",
+  "en": "Bloodfang Pnyn"
+ },
+ "String_STR_M_L1_TF_Ursuss_Named_01_body": {
+  "pt": "Saursus Furiosa",
+  "en": "Furious Saursus"
+ },
+ "String_STR_M_L1_VF_KrallElite_Named_01_body": {
+  "pt": "Combatente Insano Kusan",
+  "en": "Kusan the Mad Gladiator"
+ },
+ "String_STR_M_L1_VF_KrallElite_Named_02_body": {
+  "pt": "Sacerdote-Mor Garshim",
+  "en": "Ritualist Garshim"
+ },
+ "String_STR_M_L1_VF_Neuth_01_Named_01_body": {
+  "pt": "Soldado de Escolta Teegant",
+  "en": "Bodyguard Teegant"
+ },
+ "String_STR_Map_Abyss_Reshanta_A_body": {
+  "pt": "Piso Inferior de Reshanta do Caos",
+  "en": "Chaotic Lower Reshanta"
+ },
+ "String_STR_Map_World_D_A_body": {
+  "en": "Altgard"
+ },
+ "String_STR_Map_World_L_A_body": {
+  "en": "Verteron"
+ },
+ "String_UI_ARTIFACTWAR_HUD_EVENT_TITLE_body": {
+  "pt": "Cerco de Artefatos",
+  "en": "Artifact Siege"
+ },
+ "EnvObjData_E_AR1_PrimumLanding_TeleportArtifact_001_desc": {
+  "pt": "Raiz Leste de Latesran",
+  "en": "Latesran Eastern Root"
+ },
+ "EnvObjData_E_AR1_TeminonLanding_TeleportArtifact_001_desc": {
+  "pt": "Raiz Oeste de Latesran",
+  "en": "Latesran Western Root"
+ },
+ "EnvObjData_E_D1_AbandonedCampsite_TeleportArtifact_001_desc": {
+  "pt": "Acampamento Abandonado",
+  "en": "Abandoned Campsite"
+ },
+ "EnvObjData_E_D1_AmuntasHideout_TeleportArtifact_001_desc": {
+  "pt": "Esconderijo de Amunta",
+  "en": "Amunta's Hideout"
+ },
+ "EnvObjData_E_D1_CampOfPurakin_TeleportArtifact_001_desc": {
+  "pt": "Banca Shulack",
+  "en": "Shulak Street Stall"
+ },
+ "EnvObjData_E_D1_CheckpointofGarolik_TeleportArtifact_001_desc": {
+  "pt": "Posto de Controle de Galorik",
+  "en": "Galorik's Inspection Area"
+ },
+ "EnvObjData_E_D1_ColdwindShelter_TeleportArtifact_001_desc": {
+  "pt": "Refúgio do Vento Gélido",
+  "en": "Briskwind Shelter"
+ },
+ "EnvObjData_E_D1_CollapsedGully_TeleportArtifact_001_desc": {
+  "pt": "Fresta Desmoronada",
+  "en": "Collapsed Chasm"
+ },
+ "EnvObjData_E_D1_CollapsedHallOfFame_TeleportArtifact_001_desc": {
+  "pt": "Salão da Fama Desmoronado",
+  "en": "Collapsed Hall of Fame"
+ },
+ "EnvObjData_E_D1_CreionCamp_TeleportArtifact_001_desc": {
+  "pt": "Acampamento de Creion",
+  "en": "Creion Campsite"
+ },
+ "EnvObjData_E_D1_CreviceCave_TeleportArtifact_001_desc": {
+  "pt": "Caverna da Fresta",
+  "en": "Fissure Cave"
+ },
+ "EnvObjData_E_D1_DestroyedSite_TeleportArtifact_001_desc": {
+  "pt": "Retiro Temporário",
+  "en": "Temporary Retreat"
+ },
+ "EnvObjData_E_D1_FadedStump_TeleportArtifact_001_desc": {
+  "pt": "Toco Desbotado",
+  "en": "Faded Stump"
+ },
+ "EnvObjData_E_D1_FangsHideout_TeleportArtifact_001_desc": {
+  "pt": "Esconderijo da Presa",
+  "en": "Fang Hideout"
+ },
+ "EnvObjData_E_D1_ForestsHideout_TeleportArtifact_001_desc": {
+  "pt": "Esconderijo da Floresta",
+  "en": "Forest Hideout"
+ },
+ "EnvObjData_E_D1_FugitiveVillage_TeleportArtifact_001_desc": {
+  "pt": "Vila dos Foragidos",
+  "en": "Safe Haven"
+ },
+ "EnvObjData_E_D1_GraveKeeperTent_TeleportArtifact_001_desc": {
+  "pt": "Barraca do Coveiro",
+  "en": "Gravekeeper Camp"
+ },
+ "EnvObjData_E_D1_HiddenCave_TeleportArtifact_001_desc": {
+  "pt": "Caverna Escondida",
+  "en": "Hidden Cave"
+ },
+ "EnvObjData_E_D1_IdunsLake_TeleportArtifact_001_desc": {
+  "pt": "Lago de Idun",
+  "en": "Idun's Lake"
+ },
+ "EnvObjData_E_D1_IslandOfSpirit_TeleportArtifact_001_desc": {
+  "pt": "Morada do Guia",
+  "en": "Guide's Dwelling"
+ },
+ "EnvObjData_E_D1_KumricaCellar_TeleportArtifact_001_desc": {
+  "pt": "Caverna de Kumrica",
+  "en": "Kumrica's Cellar"
+ },
+ "EnvObjData_E_D1_MahindelRiverCliff_TeleportArtifact_001_desc": {
+  "pt": "Penhasco de Mahindel",
+  "en": "Mahindel Cliff"
+ },
+ "EnvObjData_E_D1_MinushanSite_TeleportArtifact_001_desc": {
+  "pt": "Ruínas de Minusha",
+  "en": "Minushan Site"
+ },
+ "EnvObjData_E_D1_MudCamp_TeleportArtifact_001_desc": {
+  "pt": "Acampamento do Lamaçal",
+  "en": "Mire Campsite"
+ },
+ "EnvObjData_E_D1_OldSanctum_TeleportArtifact_001_desc": {
+  "pt": "Crematório Abandonado",
+  "en": "Neglected Crematorium"
+ },
+ "EnvObjData_E_D1_QuairerkCamp_TeleportArtifact_001_desc": {
+  "pt": "Acampamento Quai",
+  "en": "Quai Campsite"
+ },
+ "EnvObjData_E_D1_RecoverySpring_TeleportArtifact_001_desc": {
+  "pt": "Fonte da Recuperação",
+  "en": "Healing Spring"
+ },
+ "EnvObjData_E_D1_SecretRendezvousPoint_TeleportArtifact_001_desc": {
+  "pt": "Ponto de Encontro Secreto",
+  "en": "Secret Rendezvous Point"
+ },
+ "EnvObjData_E_D1_ShulackStreetStall_TeleportArtifact_001_desc": {
+  "pt": "Posto de Troca Provisório do Martelo de Aço",
+  "en": "Steel Hammer Temporary Trading Post"
+ },
+ "EnvObjData_E_D1_SpiritsRetreat_TeleportArtifact_001_desc": {
+  "pt": "Recanto dos Guias",
+  "en": "Guide Rest Stop"
+ },
+ "EnvObjData_E_D1_StealerCamp_TeleportArtifact_001_desc": {
+  "pt": "Acampamento dos Saqueadores de Túmulos",
+  "en": "Graverobber Campsite"
+ },
+ "EnvObjData_E_D1_SteelHammerCamp_TeleportArtifact_001_desc": {
+  "pt": "Zona de Trabalho do Martelo de Aço",
+  "en": "Steel Hammer Workcamp"
+ },
+ "EnvObjData_E_D1_SteelHammerTradersPost_TeleportArtifact_001_desc": {
+  "pt": "Sede da Companhia Mercantil do Martelo de Aço",
+  "en": "Steel Hammer Merchants HQ"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_001_desc": {
+  "pt": "Rocha-Cogumelo da Colina Silenciosa",
+  "en": "Silent Hill Mushroom Rock"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_002_desc": {
+  "pt": "Ilha Aérea do Posto de Vigilância do Sacrário",
+  "en": "Sanctum Outpost Sky Island"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_004_desc": {
+  "pt": "Sombra Ressequida da Floresta de Moslan",
+  "en": "Moslan Forest Dry Shade"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_006_desc": {
+  "pt": "Ilha Isolada",
+  "en": "Remote Island"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_009_desc": {
+  "pt": "Penhasco das Ruínas de Basfelt",
+  "en": "Basfelt Ruins Cliff"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_010_desc": {
+  "pt": "Penhasco da Floresta de Moslan",
+  "en": "Moslan Forest Cliff"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_011_desc": {
+  "pt": "Colina Ensolarada da Floresta da Purificação",
+  "en": "Purifying Forest Sunny Hill"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_012_desc": {
+  "pt": "Encruzilhada das Colinas de Gribade",
+  "en": "Gribade Highland Crossroad"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_013_desc": {
+  "pt": "Beira do Penhasco da Colina da Batalha Feroz",
+  "en": "Battlescar Mound Clifftop"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_016_desc": {
+  "pt": "Precipício Leste das Colinas de Gribade",
+  "en": "Eastern Gribade Highland Cliff"
+ },
+ "EnvObjData_E_D1_TeleportArtifact_020_desc": {
+  "pt": "Penhasco de Urtumheim",
+  "en": "Uruthumheim Cliff"
+ },
+ "EnvObjData_E_D1_TemporaryBase_TeleportArtifact_001_desc": {
+  "pt": "Base de Investigação Temporária",
+  "en": "Temporary Investigation Base"
+ },
+ "EnvObjData_E_D1_VictoryDaevasStatue_TeleportArtifact_001_desc": {
+  "pt": "Estátua do Daeva Vitorioso",
+  "en": "Victorious Daeva's Statue"
+ },
+ "EnvObjData_E_D1_Watcherstent_TeleportArtifact_001_desc": {
+  "pt": "Tenda do Vigilante",
+  "en": "Watcher's Tent"
+ },
+ "EnvObjData_E_L1_AlamiaHighland_TeleportArtifact_001_desc": {
+  "pt": "Posto de Vigilância da Colina das Rochas",
+  "en": "Rock Hill Outpost"
+ },
+ "EnvObjData_E_L1_AlamiaHighland_TeleportArtifact_002_desc": {
+  "pt": "Posto Sentinela em Alerta",
+  "en": "Alert Observation Post"
+ },
+ "EnvObjData_E_L1_AlamiaHighland_TeleportArtifact_003_desc": {
+  "pt": "Colina da Purificação",
+  "en": "Hill of Purification"
+ },
+ "EnvObjData_E_L1_AlamiaHighland_TeleportArtifact_004_desc": {
+  "pt": "Ruínas do Planalto de Altamia",
+  "en": "Altamia Highland Ruins"
+ },
+ "EnvObjData_E_L1_AlamiaHighland_TeleportArtifact_005_desc": {
+  "pt": "Terras do Antigo Templo Divino de Zumion",
+  "en": "Ancient Zumion Temple Site"
+ },
+ "EnvObjData_E_L1_AltamiCanyon_TeleportArtifact_001_desc": {
+  "pt": "Acampamento do Desfiladeiro",
+  "en": "Canyon Campsite"
+ },
+ "EnvObjData_E_L1_AltamiCanyon_TeleportArtifact_002_desc": {
+  "pt": "Ilha Aérea do Desfiladeiro",
+  "en": "Canyon Sky Island"
+ },
+ "EnvObjData_E_L1_AltamiCanyon_TeleportArtifact_003_desc": {
+  "pt": "Cicatriz do Vento",
+  "en": "Scar of the Wind"
+ },
+ "EnvObjData_E_L1_CantasValley_TeleportArtifact_001_desc": {
+  "pt": "Acampamento do Vale do Kantas Ocidental",
+  "en": "Western Cantas Valley Camp"
+ },
+ "EnvObjData_E_L1_CantasValley_TeleportArtifact_002_desc": {
+  "pt": "Acampamento do Vale do Kantas Oriental",
+  "en": "Eastern Cantas Valley Campsite"
+ },
+ "EnvObjData_E_L1_CantasValley_TeleportArtifact_004_desc": {
+  "pt": "Barraca Costeira",
+  "en": "Coastal Camp"
+ },
+ "EnvObjData_E_L1_CantasValley_TeleportArtifact_005_desc": {
+  "pt": "Ilha Aérea do Vale do Kantas",
+  "en": "Cantas Valley Sky Island"
+ },
+ "EnvObjData_E_L1_CantasValley_TeleportArtifact_006_desc": {
+  "pt": "Cume da Árvore-Cogumelo do Vale do Kantas",
+  "en": "Cantas Valley Mushroom Tree Peak"
+ },
+ "EnvObjData_E_L1_CantasValley_TeleportArtifact_041_desc": {
+  "pt": "Topo da Árvore-Cogumelo do Vale do Kantas",
+  "en": "Cantas Valley Mushroom Tree Peak"
+ },
+ "EnvObjData_E_L1_CanyonEndCamp_TeleportArtifact_001_desc": {
+  "pt": "Acampamento da Extremidade do Planalto",
+  "en": "Highland's End Campsite"
+ },
+ "EnvObjData_E_L1_DranaPlantation_TeleportArtifact_001_desc": {
+  "pt": "Posto da Legião de Notos",
+  "en": "Notos Legion Outpost"
+ },
+ "EnvObjData_E_L1_DranaPlantation_TeleportArtifact_002_desc": {
+  "pt": "Recanto dos Trabalhadores Escravos",
+  "en": "Laborer's Rest Stop"
+ },
+ "EnvObjData_E_L1_DranaPlantation_TeleportArtifact_003_desc": {
+  "pt": "Posto de Transporte de Drana",
+  "en": "Drana Transport Hub"
+ },
+ "EnvObjData_E_L1_EllunRiverMarsh_TeleportArtifact_002_desc": {
+  "pt": "Posto de Vigilância do Pântano",
+  "en": "Marsh Outpost"
+ },
+ "EnvObjData_E_L1_EllunRiverMarsh_TeleportArtifact_003_desc": {
+  "pt": "Torre de Barreira de Verteron Desmoronada",
+  "en": "Collapsed Verteron Barrier Tower"
+ },
+ "EnvObjData_E_L1_EllunRiverMarsh_TeleportArtifact_004_desc": {
+  "pt": "Recanto dos Espíritos",
+  "en": "Spirit's Rest"
+ },
+ "EnvObjData_E_L1_EllunRiverMidstream_TeleportArtifact_001_desc": {
+  "pt": "Esconderijo em Frente às Ruínas",
+  "en": "Hideout in Front of the Ruins"
+ },
+ "EnvObjData_E_L1_EllunRiverMidstream_TeleportArtifact_002_desc": {
+  "pt": "Posto Provisório da Legião da Alvorada",
+  "en": "Dawn Legion Temporary Outpost"
+ },
+ "EnvObjData_E_L1_EllunRiverMidstream_TeleportArtifact_003_desc": {
+  "pt": "Acampamento de Exploração das Ruínas",
+  "en": "Ruin Exploration Campsite"
+ },
+ "EnvObjData_E_L1_EllunRiverMidstream_TeleportArtifact_004_desc": {
+  "pt": "Acampamento da Confraria da Ilusão",
+  "en": "Illusion Cavaliers' Campsite"
+ },
+ "EnvObjData_E_L1_EllunRiverMidstream_TeleportArtifact_040_desc": {
+  "pt": "Fazenda Pamos",
+  "en": "Pamos Farm"
+ },
+ "EnvObjData_E_L1_EllunRiverMidstream_TeleportArtifact_043_desc": {
+  "pt": "Lagoa do Curso Médio do Rio Ellun",
+  "en": "Ellun River Midstream Pond"
+ },
+ "EnvObjData_E_L1_GardenOfMiraju_TeleportArtifact_001_desc": {
+  "pt": "Recanto do Peregrino",
+  "en": "Pilgrim's Rest"
+ },
+ "EnvObjData_E_L1_GardenOfMiraju_TeleportArtifact_002_desc": {
+  "pt": "Mirante Oeste do Jardim do Deus da Ilusão",
+  "en": "Garden of the Illusion God West Observatory"
+ },
+ "EnvObjData_E_L1_GardenOfMiraju_TeleportArtifact_003_desc": {
+  "pt": "Mirante Leste do Jardim do Deus da Ilusão",
+  "en": "Garden of the Illusion God East Observatory"
+ },
+ "EnvObjData_E_L1_IslandofCrimson_TeleportArtifact_001_desc": {
+  "pt": "Posto da Ilha do Rubi",
+  "en": "Crimson Isle Outpost"
+ },
+ "EnvObjData_E_L1_KrakaFootPath_TeleportArtifact_001_desc": {
+  "pt": "Acampamento do Caminho da Colina Kraka",
+  "en": "Kraka Footpath Campsite"
+ },
+ "EnvObjData_E_L1_KrakaFootPath_TeleportArtifact_002_desc": {
+  "pt": "Ladeira de Kraka",
+  "en": "Kraka Uphill Path"
+ },
+ "EnvObjData_E_L1_KrakaFootPath_TeleportArtifact_003_desc": {
+  "pt": "Colina da Fortaleza da Brigada de Nahid",
+  "en": "Nahid Brigade Fortress Hill"
+ },
+ "EnvObjData_E_L1_KrakaFootPath_TeleportArtifact_039_desc": {
+  "pt": "Cusro Inferior do Esgoto do Caminho da Colina de Kraka",
+  "en": "Kraka Footpath Wastewater Downstream"
+ },
+ "EnvObjData_E_L1_OwllauVillage_TeleportArtifact_001_desc": {
+  "pt": "Filial Abandonada da Brisa",
+  "en": "Abandoned Wind Breeze Office"
+ },
+ "EnvObjData_E_L1_OwllauVillage_TeleportArtifact_002_desc": {
+  "pt": "Ilha Aérea da Aldeia Aullaeu",
+  "en": "Aullaeu Village Sky Island"
+ },
+ "EnvObjData_E_L1_OwllauVillage_TeleportArtifact_044_desc": {
+  "pt": "Floresta dos Exilados",
+  "en": "Forest of Exiles"
+ },
+ "EnvObjData_E_L1_PillgrimsRidgePath_TeleportArtifact_001_desc": {
+  "pt": "Estátua de Zumion",
+  "en": "Zumion Statue"
+ },
+ "EnvObjData_E_L1_PillgrimsRidgePath_TeleportArtifact_002_desc": {
+  "pt": "Caminho de Peregrinação do Templo Divino de Zumion",
+  "en": "Zumion Temple Pilgrimage Path"
+ },
+ "EnvObjData_E_L1_RedForest_TeleportArtifact_001_desc": {
+  "pt": "Ponto de Observação da Floresta Vermelha",
+  "en": "Scarlet Forest Observation Site"
+ },
+ "EnvObjData_E_L1_RedForest_TeleportArtifact_002_desc": {
+  "pt": "Floresta Decídua Vermelha",
+  "en": "Red Maple Forest"
+ },
+ "EnvObjData_E_L1_SouthernAlamiaHighland_TeleportArtifact_001_desc": {
+  "pt": "Acampamento dos Caçadores de Feras",
+  "en": "Beast Hunter Campsite"
+ },
+ "EnvObjData_E_L1_SouthernAlamiaHighland_TeleportArtifact_002_desc": {
+  "pt": "Falésia Sul de Altamia",
+  "en": "Southern Altamia Coastal Cliffs"
+ },
+ "EnvObjData_E_L1_TeleportArtifact_Verteron_Nahid_1_desc": {
+  "pt": "Usina de Resíduos de Nahid",
+  "en": "Nahid Disposal Plant"
+ },
+ "EnvObjData_E_L1_TolbasForest_TeleportArtifact_001_desc": {
+  "pt": "Sede da Associação Brisa",
+  "en": "Wind Breeze Merchants HQ"
+ },
+ "EnvObjData_E_L1_TolbasForest_TeleportArtifact_002_desc": {
+  "pt": "Base da Companhia Mercenária de Astin",
+  "en": "Astin Mercenaries Base"
+ },
+ "EnvObjData_E_L1_TolbasForest_TeleportArtifact_003_desc": {
+  "pt": "Região Fronteiriça da Aldeia Aullaeu",
+  "en": "Aullaeu Village Border"
+ },
+ "EnvObjData_E_L1_TolbasForest_TeleportArtifact_004_desc": {
+  "pt": "Parada Shugo do Sul",
+  "en": "Southern Shugo Station"
+ },
+ "EnvObjData_E_L1_TolbasForest_TeleportArtifact_005_desc": {
+  "pt": "Parada Shugo do Leste",
+  "en": "Eastern Shugo Station"
+ },
+ "EnvObjData_E_L1_TolbasForest_TeleportArtifact_006_desc": {
+  "pt": "Arredores da Floresta de Tolbas",
+  "en": "Tolbas Forest Outskirts"
+ },
+ "EnvObjData_E_L1_VerteronFotress_TeleportArtifact_001_desc": {
+  "pt": "Pilar Desmoronado",
+  "en": "Collapsed Pillar"
+ },
+ "EnvObjData_E_L1_VerteronFotress_TeleportArtifact_002_desc": {
+  "pt": "Vale da Fortaleza de Verteron",
+  "en": "Verteron Fortress Valley"
+ },
+ "EnvObjData_E_L1_VerteronFotress_TeleportArtifact_042_desc": {
+  "pt": "Entrada do Oratório da Ilusão",
+  "en": "Illusion Oratory Entrance"
+ },
+ "EnvObjData_E_L1_ZuminVillage_TeleportArtifact_001_desc": {
+  "pt": "Vila de Zumion",
+  "en": "Zumion Village"
+ },
+ "String_STR_ITEM_BOX_VEHICLESOUL_A_06_B_body": {
+  "pt": "Baú de Alma de Mascote: Intelectual (Vinculado)",
+  "en": "Pet Soul Chest: Cogni (Bound)"
+ },
+ "String_STR_ITEM_BOX_VEHICLESOUL_A_07_B_body": {
+  "pt": "Baú de Alma de Mascote: Feral (Vinculado)",
+  "en": "Pet Soul Chestt: Fera (Bound)"
+ },
+ "String_STR_ITEM_BOX_VEHICLESOUL_A_08_B_body": {
+  "pt": "Baú de Alma de Mascote: Natural (Vinculado)",
+  "en": "Pet Soul Chest: Natura (Bound)"
+ },
+ "String_STR_ITEM_BOX_VEHICLESOUL_A_09_B_body": {
+  "pt": "Baú de Alma de Mascote: Variante (Vinculado)",
+  "en": "Pet Soul Chest: Varian (Bound)"
+ },
+ "String_STR_ITEM_TOOLTIP_BattlePass_body": {
+  "pt": "Passe de Batalha",
+  "en": "Battle Pass"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ABYSSSWARM_01_A_01_B_body": {
+  "pt": "Alma: Enxame (Vinculado)",
+  "en": "Soul: Swarm (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ABYSSSWARM_01_CV01_A_01_B_body": {
+  "pt": "Alma: Enxame de Drana (Vinculado)",
+  "en": "Soul: Drana Swarm (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ABYSSSWARM_02_A_01_B_body": {
+  "pt": "Alma: Enxame Parasita (Vinculado)",
+  "en": "Soul: Parasite Swarm (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ADDSHULACK_03_A_01_B_body": {
+  "pt": "Alma: Shulack Carroceiro Envenenado (Vinculado)",
+  "en": "Soul: Addicted Shulak Cart Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_AGRINT_01_A_01_B_body": {
+  "pt": "Alma: Agrint (Vinculado)",
+  "en": "Soul: Agrint (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_AGRINT_01_CV01_A_01_B_body": {
+  "pt": "Alma: Agrint Cinzento (Vinculado)",
+  "en": "Soul: Ashen Agrint (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_AGRINT_01_V01_A_01_B_body": {
+  "pt": "Alma: Agrint Descarnado (Vinculado)",
+  "en": "Soul: Thin Agrint (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_AGRINT_01_V02_A_01_B_body": {
+  "pt": "Alma: Agrint Folha Seca (Vinculado)",
+  "en": "Soul: Dry Leaf Agrint (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_AGRINT_02_A_01_B_body": {
+  "pt": "Alma: Agrint Seco (Vinculado)",
+  "en": "Soul: Withered Agrint (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_AIRON_01_A_01_B_body": {
+  "pt": "Alma: Airon (Vinculado)",
+  "en": "Soul: Airon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ALTBUG_01_A_01_B_body": {
+  "pt": "Alma: Insetoide Cadavérico (Vinculado)",
+  "en": "Soul: Cadaver Insectoid (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ALTBUG_01_CV02_A_01_B_body": {
+  "pt": "Alma: Insetoide Cadavérico Aberrante (Vinculado)",
+  "en": "Soul: Mutated Cadaver Insectoid (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ASHGUARD_01_A_01_B_body": {
+  "pt": "Alma: Murute da Fumaça Negra (Vinculado)",
+  "en": "Soul: Black Smoke Murute (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BALGEST_01_A_01_B_body": {
+  "pt": "Alma: Balgest da Flama (Vinculado)",
+  "en": "Soul: Flame Barghest (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BASILISK_01_A_01_B_body": {
+  "pt": "Alma: Basilisco (Vinculado)",
+  "en": "Soul: Basilisk (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BASILISK_01_CV01_A_01_B_body": {
+  "pt": "Alma: Basilisco Cinzento (Vinculado)",
+  "en": "Soul: Ashen Basilisk (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BEE_01_A_01_B_body": {
+  "pt": "Alma: Abelha-rei (Vinculado)",
+  "en": "Soul: Giant Bee (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BEE_01_V01_A_01_B_body": {
+  "pt": "Alma: Abelha Mutante (Vinculado)",
+  "en": "Soul: Aberrant Bee (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BERITRA03_A_01_B_body": {
+  "pt": "Alma: Cão de Guarda Drakan (Vinculado)",
+  "en": "Soul: Drakan Guard Dog (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BERITRA06_A_01_B_body": {
+  "pt": "Alma: Dispositivo Explorador dos Drakan (Vinculado)",
+  "en": "Soul: Drakan Probe (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BERITRAD_04_A_01_B_body": {
+  "pt": "Alma: K’nash, Arma de Vigilância (Vinculado)",
+  "en": "Soul: Sentinel K'nash (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BIGMAN_01_A_01_B_body": {
+  "pt": "Alma: Monstro do Pântano (Vinculado)",
+  "en": "Soul: Swamp Monster (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BIGMAN_01_CV01_A_01_B_body": {
+  "pt": "Alma: Aberração Deformada (Vinculado)",
+  "en": "Soul: Distorted Mutant (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BIGMAN_01_V01_A_01_B_body": {
+  "pt": "Alma: Monstro da Floresta (Vinculado)",
+  "en": "Soul: Forest Monster (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BIGMAN_01_V02_A_01_B_body": {
+  "pt": "Alma: Targon do Pântano (Vinculado)",
+  "en": "Soul: Marsh Targon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BRAX_01_A_01_B_body": {
+  "pt": "Alma: Brax (Vinculado)",
+  "en": "Soul: Brax (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BUG_01_A_01_B_body": {
+  "pt": "Alma: Mutação de Valka (Vinculado)",
+  "en": "Soul: Mutated Insectoid Valka (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_BUG_02_A_01_B_body": {
+  "pt": "Alma: Inseto Venenoso Sram (Vinculado)",
+  "en": "Soul: Venomous Insect Sram (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CAVEBAT_01_A_01_B_body": {
+  "pt": "Alma: Morcego da Caverna (Vinculado)",
+  "en": "Soul: Cave Bat (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CHERUBIM_01_A_01_B_body": {
+  "pt": "Alma: Kerubar (Vinculado)",
+  "en": "Soul: Kerubar (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CHERUBIM_02_A_01_B_body": {
+  "pt": "Alma: Kerubian (Vinculado)",
+  "en": "Soul: Kerubian (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CHERUBIM_03_A_01_B_body": {
+  "pt": "Alma: Kerubiel (Vinculado)",
+  "en": "Soul: Kerubiel (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CONUTI_02_A_01_B_body": {
+  "pt": "Alma: Trabalhador Konutin (Vinculado)",
+  "en": "Soul: Konutin Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CORADON_01_A_01_B_body": {
+  "pt": "Alma: Coradon (Vinculado)",
+  "en": "Soul: Coradon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CORADON_01_V01_A_01_B_body": {
+  "pt": "Alma: Coradon Mutante (Vinculado)",
+  "en": "Soul: Aberrant Coradon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CORADON_01_V04_A_01_B_body": {
+  "pt": "Alma: Coradon da Eternidade (Vinculado)",
+  "en": "Soul: Eternal Coradon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CORPESPIDER_01_A_01_B_body": {
+  "pt": "Alma: Tipulídeo Moribundo Desalmado de Elite (Vinculado)",
+  "en": "Soul: Elite Soulless Corpse Gnat (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CORPESPIDER_01_V01_A_01_B_body": {
+  "pt": "Alma: Tipulídeo Moribundo Desalmado (Vinculado)",
+  "en": "Soul: Soulless Corpse Gnat (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CRAB_01_A_01_B_body": {
+  "pt": "Alma: Kensirid (Vinculado)",
+  "en": "Soul: Potcrab (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CRAB_01_V01_A_01_B_body": {
+  "pt": "Alma: Kensirid Mutante (Vinculado)",
+  "en": "Soul: Aberrant Potcrab (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CRESTLICH_01_A_01_B_body": {
+  "pt": "Alma: Crestlich (Vinculado)",
+  "en": "Soul: Crestlich (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_CRESTLICH_02_A_01_B_body": {
+  "pt": "Alma: Crestlich Macho (Vinculado)",
+  "en": "Soul: Male Crestlich (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DARKELE_01_A_01_B_body": {
+  "pt": "Alma: Espírito das Trevas (Vinculado)",
+  "en": "Soul: Black Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DIONAEA_01_A_01_B_body": {
+  "pt": "Alma: Dionae (Vinculado)",
+  "en": "Soul: Dionae (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DIONAEA_01_CV01_A_01_B_body": {
+  "pt": "Alma: Dionae da Floresta (Vinculado)",
+  "en": "Soul: Forest Dionae (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DIONAEA_01_V01_A_01_B_body": {
+  "pt": "Alma: Dionae Cinzento (Vinculado)",
+  "en": "Soul: Ashen Dionae (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRACUNI_01_A_01_B_body": {
+  "pt": "Alma: Herbalista Dracuni (Vinculado)",
+  "en": "Soul: Dracuni Herbalist (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRAKAN_02_A_01_B_body": {
+  "pt": "Alma: Vigilante Drakan (Vinculado)",
+  "en": "Soul: Drakan Watcher (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_01_A_01_B_body": {
+  "pt": "Alma: Aberração de Drana (Vinculado)",
+  "en": "Soul: Drana Mutant (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_01_CV01_A_01_B_body": {
+  "pt": "Alma: Aberração Desbotada (Vinculado)",
+  "en": "Soul: Faded Mutant (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_02_A_01_B_body": {
+  "pt": "Alma: Aberração Brutamonte de Drana (Vinculado)",
+  "en": "Soul: Drana Mutant Brute (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_02_CV01_A_01_B_body": {
+  "pt": "Alma: Aberração Desbotada de Brutamonte (Vinculado)",
+  "en": "Soul: Faded Mutant Brute (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_03_A_01_B_body": {
+  "pt": "Alma: Predador de Drana (Vinculado)",
+  "en": "Soul: Drana Predator (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_03_CV01_A_01_B_body": {
+  "pt": "Alma: Predador Desbotado (Vinculado)",
+  "en": "Soul: Faded Predator (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_04_A_01_B_body": {
+  "pt": "Alma: Criatura Contaminada de Drana (Vinculado)",
+  "en": "Soul: Drana Contaminant (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_04_CV01_A_01_B_body": {
+  "pt": "Alma: Corpo Flutuante Desbotado (Vinculado)",
+  "en": "Soul: Faded Floater (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_06_A_01_B_body": {
+  "pt": "Alma: Drana Coagulado (Vinculado)",
+  "en": "Soul: Congealed Drana (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRANAVAR_06_CV01_A_01_B_body": {
+  "pt": "Alma: Drana Desbotado (Vinculado)",
+  "en": "Soul: Faded Drana (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRATONA_01_A_01_B_body": {
+  "pt": "Alma: Dratona (Vinculado)",
+  "en": "Soul: Dratona (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRATONA_01_V01_A_01_B_body": {
+  "pt": "Alma: Peão Dratona (Vinculado)",
+  "en": "Soul: Dratona Tinkerer (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DRATONA_03_A_01_B_body": {
+  "pt": "Alma: Dratona de Elite (Vinculado)",
+  "en": "Soul: Elite Dratona (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DUDUKA_01_A_01_B_body": {
+  "pt": "Alma: Trabalhador Duduka (Vinculado)",
+  "en": "Soul: Duduka Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_DUDUKA_02_A_01_B_body": {
+  "pt": "Alma: Soldado Fundeiro Duduka (Vinculado)",
+  "en": "Soul: Duduka Trebuchet Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_EARTHELEOD_01_A_01_B_body": {
+  "pt": "Alma: Espírito da Pedra (Vinculado)",
+  "en": "Soul: Stone Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_EARTHELEOD_01_CV01_A_01_B_body": {
+  "pt": "Alma: Espírito da Pedra de Od (Vinculado)",
+  "en": "Soul: Odyle Stone Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_EARTHELE_01_A_01_B_body": {
+  "pt": "Alma: Espírito da Terra Inferior (Vinculado)",
+  "en": "Soul: Lesser Earth Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_EARTHELE_02_A_01_B_body": {
+  "pt": "Alma: Espírito da Terra Intermediário (Vinculado)",
+  "en": "Soul: Intermediate Earth Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_EARTHELE_03_A_01_B_body": {
+  "pt": "Alma: Espírito da Terra Superior (Vinculado)",
+  "en": "Soul: Superior Earth Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_EARTHELE_04_A_01_B_body": {
+  "pt": "Alma: Espírito da Terra Supremo (Vinculado)",
+  "en": "Soul: Ultimate Earth Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ELEGUARD_01_A_01_B_body": {
+  "pt": "Alma: Guerreiro de Escolta do Rei dos Espíritos (Vinculado)",
+  "en": "Soul: Spirit King's Bodyguard Warrior (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FAFBLOOD_02_A_01_B_body": {
+  "pt": "Alma: Sangue Venenoso (Vinculado)",
+  "en": "Soul: Poison Blood (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FAFBLOOD_02_CV01_A_01_B_body": {
+  "pt": "Alma: Mudthorn (Vinculado)",
+  "en": "Soul: Mudthorn (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FERK_01_A_01_B_body": {
+  "pt": "Alma: Feruk em Frenesi (Vinculado)",
+  "en": "Soul: Furious Feruk (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FIREELE_01_A_01_B_body": {
+  "pt": "Alma: Espírito do Fogo Inferior (Vinculado)",
+  "en": "Soul: Lesser Fire Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FIREELE_02_A_01_B_body": {
+  "pt": "Alma: Espírito do Fogo Intermediário (Vinculado)",
+  "en": "Soul: Intermediate Fire Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FIREELE_03_A_01_B_body": {
+  "pt": "Alma: Espírito do Fogo Superior (Vinculado)",
+  "en": "Soul: Superior Fire Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FIREELE_04_A_01_B_body": {
+  "pt": "Alma: Espírito do Fogo Supremo (Vinculado)",
+  "en": "Soul: Ultimate Fire Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FIREGUARD_01_A_01_B_body": {
+  "pt": "Alma: Ignus da Chama Vermelha (Vinculado)",
+  "en": "Soul: Red Spark Ignus (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FISH_01_A_01_B_body": {
+  "pt": "Alma: Skama (Vinculado)",
+  "en": "Soul: Skama (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FISH_01_V01_A_01_B_body": {
+  "pt": "Alma: Skama Mutante (Vinculado)",
+  "en": "Soul: Aberrant Skama (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTAR01_A_01_B_body": {
+  "pt": "Alma: Guardião da Floresta (Vinculado)",
+  "en": "Soul: Forest Guardian (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTAR01_V01_A_01_B_body": {
+  "pt": "Alma: Guardião da Floresta Ressecado (Vinculado)",
+  "en": "Soul: Dried Up Forest Guardian (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTARC_01_CV01_A_01_B_body": {
+  "pt": "Alma: Guardião da Floresta Aberrante (Vinculado)",
+  "en": "Soul: Mutated Forest Guardian (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTELE_01_A_01_B_body": {
+  "pt": "Alma: Espírito da Floresta (Vinculado)",
+  "en": "Soul: Forest Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTELE_01_CV01_A_01_B_body": {
+  "pt": "Alma: Espora de Drana (Vinculado)",
+  "en": "Soul: Drana Spore (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTELE_01_V01_A_01_B_body": {
+  "pt": "Alma: Espírito da Floresta Aberrante (Vinculado)",
+  "en": "Soul: Mutated Forest Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FORESTWISP_01_A_01_B_body": {
+  "pt": "Alma: Ânima da Floresta (Vinculado)",
+  "en": "Soul: Forest Specter (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FOSSA_01_A_01_B_body": {
+  "pt": "Alma: Fuça (Vinculado)",
+  "en": "Soul: Fossa (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FUNGUS_01_A_01_B_body": {
+  "pt": "Alma: Fungen (Vinculado)",
+  "en": "Soul: Fungen (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_FUNGY_01_A_01_B_body": {
+  "pt": "Alma: Fungie (Vinculado)",
+  "en": "Soul: Fungie (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GARGOYLE_01_A_01_B_body": {
+  "pt": "Alma: Estátua Guardiã da Pedra de Flama (Vinculado)",
+  "en": "Soul: Flame Stone Guardian Statue (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GARTUA_01_V01_A_01_B_body": {
+  "pt": "Alma: Espírito Ancestral (Vinculado)",
+  "en": "Soul: Ancient Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GRAVEBAT_01_A_01_B_body": {
+  "pt": "Alma: Vivele (Vinculado)",
+  "en": "Soul: Vivel (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GRAVERAT_01_A_01_B_body": {
+  "pt": "Alma: Rato de Túmulo (Vinculado)",
+  "en": "Soul: Grave Rat (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GRAVI_01_A_01_B_body": {
+  "pt": "Alma: Gravi (Vinculado)",
+  "en": "Soul: Gravi (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GRAVI_02_A_01_B_body": {
+  "pt": "Alma: Gravi Mágico (Vinculado)",
+  "en": "Soul: Magic Gravi (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GRAVI_03_A_01_B_body": {
+  "pt": "Alma: Gravi de Folha Grande (Vinculado)",
+  "en": "Soul: Large Leaf Gravi (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GUARDIT_01_A_01_B_body": {
+  "pt": "Alma: Guardite (Vinculado)",
+  "en": "Soul: Guardite (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GUARDIT_02_A_01_B_body": {
+  "pt": "Alma: Guardite de Vigilância (Vinculado)",
+  "en": "Soul: Watcher Guardite (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_GUARDIT_03_A_01_B_body": {
+  "pt": "Alma: Guardite de Elite (Vinculado)",
+  "en": "Soul: Elite Guardite (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_IMP_01_A_01_B_body": {
+  "pt": "Alma: Limpador de Cadáver (Vinculado)",
+  "en": "Soul: Cadaver Cleaner (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_JELLOFI_01_A_01_B_body": {
+  "pt": "Alma: Zelophi (Vinculado)",
+  "en": "Soul: Zelophi (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KAILIN_01_A_01_B_body": {
+  "pt": "Alma: Kailin (Vinculado)",
+  "en": "Soul: Kailin (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KAILIN_01_V01_A_01_B_body": {
+  "pt": "Alma: Kailin Jovem (Vinculado)",
+  "en": "Soul: Young Kailin (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALGOLEM_01_A_01_B_body": {
+  "pt": "Alma: Kalgolem (Vinculado)",
+  "en": "Soul: Kalgolem (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALGOLEM_01_V02_A_01_B_body": {
+  "pt": "Alma: Kalgolem de Drakana (Vinculado)",
+  "en": "Soul: Drakana Kalgolem (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALGOLEM_02_A_01_B_body": {
+  "pt": "Alma: Kalgolem Azul (Vinculado)",
+  "en": "Soul: Blue Kalgolem (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALNIFELITE_01_A_01_B_body": {
+  "pt": "Alma: Karnif de Elite (Vinculado)",
+  "en": "Soul: Elite Karnif (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALNIF_01_A_01_B_body": {
+  "pt": "Alma: Karnif (Vinculado)",
+  "en": "Soul: Karnif (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALNIF_01_V01_A_01_B_body": {
+  "pt": "Alma: Karnif Domesticado (Vinculado)",
+  "en": "Soul: Tamed Karnif (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KALNIF_02_A_01_B_body": {
+  "pt": "Alma: Karnif Modificado (Vinculado)",
+  "en": "Soul: Modified Karnif (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KENEIR_01_A_01_B_body": {
+  "pt": "Alma: Kernon (Vinculado)",
+  "en": "Soul: Kernon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KENEIR_01_V01_A_01_B_body": {
+  "pt": "Alma: Keneire de Elite (Vinculado)",
+  "en": "Soul: Elite Keneire (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRALLPRST_01_A_01_B_body": {
+  "pt": "Alma: Soldado Xamã Krall (Vinculado)",
+  "en": "Soul: Krall Warshaman (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRALLREG_01_A_01_B_body": {
+  "pt": "Alma: Trabalhador Escravo Krall (Vinculado)",
+  "en": "Soul: Krall Laborer (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRALLWAR_01_A_01_B_body": {
+  "pt": "Alma: Guerreiro Krall (Vinculado)",
+  "en": "Soul: Krall Warrior (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRALLWAR_01_V01_A_01_B_body": {
+  "pt": "Alma: Combatente Krall Aprimorado (Vinculado)",
+  "en": "Soul: Enhanced Krall Combatant (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRALLWAR_01_V02_A_01_B_body": {
+  "pt": "Alma: Sentinela Krall Aprimorado (Vinculado)",
+  "en": "Soul: Enhanced Krall Sentry (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRAOELITE_01_A_01_B_body": {
+  "pt": "Alma: Aberração de Krao (Vinculado)",
+  "en": "Soul: Krao Mutant (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRAOELITE_02_A_01_B_body": {
+  "pt": "Alma: Guardião do Selo Krao (Vinculado)",
+  "en": "Soul: Krao Seal Guardian (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRAOELITE_03_A_01_B_body": {
+  "pt": "Alma: Harcon (Vinculado)",
+  "en": "Soul: Harcon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KRAOWAR_01_A_01_B_body": {
+  "pt": "Alma: Cobaia de Krao (Vinculado)",
+  "en": "Soul: Krao Test Subject (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KURU_01_A_01_B_body": {
+  "pt": "Alma: Trabalhador Kuru (Vinculado)",
+  "en": "Soul: Kuru Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KURU_02_A_01_B_body": {
+  "pt": "Alma: Peão Kuru (Vinculado)",
+  "en": "Soul: Kuru Tinkerer (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_KURU_03_A_01_B_body": {
+  "pt": "Alma: Supervisor Kuru (Vinculado)",
+  "en": "Soul: Kuru Overseer (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_LEPISMA_01_A_01_B_body": {
+  "pt": "Alma: Slink (Vinculado)",
+  "en": "Soul: Slink (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_LEPISMA_01_V01_A_01_B_body": {
+  "pt": "Alma: Slink Jovem (Vinculado)",
+  "en": "Soul: Young Slink (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_LUFILINI_01_A_01_B_body": {
+  "pt": "Alma: Lupyllini Modificado (Vinculado)",
+  "en": "Soul: Modified Lupyllini (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_LUFILINI_01_V01_A_01_B_body": {
+  "pt": "Alma: Lupyllini Putrefato (Vinculado)",
+  "en": "Soul: Decomposed Lupyllini (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_LUFILINI_02_A_01_B_body": {
+  "pt": "Alma: Lupyllini (Vinculado)",
+  "en": "Soul: Lupyllini (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_LUFILINI_02_CV01_A_01_B_body": {
+  "pt": "Alma: Lupyllini Cinzento (Vinculado)",
+  "en": "Soul: Ashen Lupyllini (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_MANDURIRNG_01_A_01_B_body": {
+  "pt": "Alma: Fundeiro Manduri (Vinculado)",
+  "en": "Soul: Manduri Trebuchet Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_MANDURIWAR_01_A_01_B_body": {
+  "pt": "Alma: Briguento Manduri (Vinculado)",
+  "en": "Soul: Manduri Fighter (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_MANDURIWAR_01_V01_A_01_B_body": {
+  "pt": "Alma: Briguento Manduri de Elite (Vinculado)",
+  "en": "Soul: Elite Manduri Fighter (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_MOLE_01_A_01_B_body": {
+  "pt": "Alma: Armadon (Vinculado)",
+  "en": "Soul: Armadon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_MOLE_01_V01_A_01_B_body": {
+  "pt": "Alma: Armadon Mutante (Vinculado)",
+  "en": "Soul: Aberrant Armadon (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_MUTA_01_A_01_B_body": {
+  "pt": "Alma: Sylphen (Vinculado)",
+  "en": "Soul: Sylphen (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NAGAELITE_01_A_01_B_body": {
+  "pt": "Alma: Lakshmi Onírica (Vinculado)",
+  "en": "Soul: Phantasmal Lakshmi (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NAGAELITE_02_A_01_B_body": {
+  "pt": "Alma: Predador Saraswati (Vinculado)",
+  "en": "Soul: Predator Saraswati (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NAGAELITE_03_A_01_B_body": {
+  "pt": "Alma: Sacerdote de Elite Naga (Vinculado)",
+  "en": "Soul: Naga Elite Priest (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NAGAELITE_04_A_01_B_body": {
+  "pt": "Alma: Guerreiro Guardião Nagarante (Vinculado)",
+  "en": "Soul: Nagarant Guardian Warrior (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NEUTH_01_A_01_B_body": {
+  "pt": "Alma: Klaw (Vinculado)",
+  "en": "Soul: Klaw (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NEUTH_02_A_01_B_body": {
+  "pt": "Alma: Batedor Klaw (Vinculado)",
+  "en": "Soul: Klaw Scout (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_NEUTH_03_A_01_B_body": {
+  "pt": "Alma: Klaw de Elite (Vinculado)",
+  "en": "Soul: Elite Klaw (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_OCULAZEN_01_A_01_B_body": {
+  "pt": "Alma: Oculazen da Vigilância (Vinculado)",
+  "en": "Soul: Vigilant Oculazen (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_OCULAZEN_02_A_01_B_body": {
+  "pt": "Alma: Oculazen (Vinculado)",
+  "en": "Soul: Oculazen (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ODSPIDER_01_A_01_B_body": {
+  "pt": "Alma: Filhote de Aranha de Od (Vinculado)",
+  "en": "Soul: Baby Odyle Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ODSPIDER_03_A_01_B_body": {
+  "pt": "Alma: Aranha Cinzenta (Vinculado)",
+  "en": "Soul: Ashen Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ODSPIDER_03_V01_A_01_B_body": {
+  "pt": "Alma: Aranha do Galho Seco (Vinculado)",
+  "en": "Soul: Withered Branch Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ODSPIDER_04_A_01_B_body": {
+  "pt": "Alma: Aranha de Od Mutante Aberrante (Vinculado)",
+  "en": "Soul: Mutated Aberrant Odyle Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ODSPIDER_04_V01_A_01_B_body": {
+  "pt": "Alma: Aranha de Od Mutante (Vinculado)",
+  "en": "Soul: Aberrant Odyle Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_OWLMAG_01_A_01_B_body": {
+  "pt": "Alma: Xamã Aullaeu (Vinculado)",
+  "en": "Soul: Aullaeu Shaman (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_OWLSOLDIER_09_A_01_B_body": {
+  "pt": "Alma: Combatente Urugugu (Vinculado)",
+  "en": "Soul: Urugugu Brawler (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_OWLTROS_02_A_01_B_body": {
+  "pt": "Alma: Clone de Aultross (Vinculado)",
+  "en": "Soul: Aultross's Doppelganger (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_PAPIS_01_A_01_B_body": {
+  "pt": "Alma: Papis (Vinculado)",
+  "en": "Soul: Papis (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_PHAINI_01_A_01_B_body": {
+  "pt": "Alma: Crasaur (Vinculado)",
+  "en": "Soul: Crasaur (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_PINOBOSS_01_A_01_B_body": {
+  "pt": "Alma: Porteiro Pinopi (Vinculado)",
+  "en": "Soul: Gatekeeper Pinopi (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_PINO_01_A_01_B_body": {
+  "pt": "Alma: Pino (Vinculado)",
+  "en": "Soul: Pino (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_PINO_02_A_01_B_body": {
+  "pt": "Alma: Trabalhador Pino (Vinculado)",
+  "en": "Soul: Pino Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_PRETORBOSS_01_A_01_B_body": {
+  "pt": "Alma: Gestor do Véu Pretor (Vinculado)",
+  "en": "Soul: Pretor Veil Administrator (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_RAFFLESIA_01_A_01_B_body": {
+  "pt": "Alma: Nepenthes (Vinculado)",
+  "en": "Soul: Nepenthes (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_RAFFLESIA_01_CV01_A_01_B_body": {
+  "pt": "Alma: Raflésia (Vinculado)",
+  "en": "Soul: Rafflesia (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ROTAN_01_A_01_B_body": {
+  "pt": "Alma: Rotan da Lâmina Prateada (Vinculado)",
+  "en": "Soul: Silver Blade Rotan (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SCORPION_01_A_01_B_body": {
+  "pt": "Alma: Escorpião (Vinculado)",
+  "en": "Soul: Scorpion (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SKURVWAR_01_A_01_B_body": {
+  "pt": "Alma: Guerreiro Mumu (Vinculado)",
+  "en": "Soul: Mumu Warrior (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SKURVWAR_02_A_02_B_body": {
+  "pt": "Alma: Trabalhador Mumu (Vinculado)",
+  "en": "Soul: Mumu Worker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SKURVWAR_04_A_01_B_body": {
+  "pt": "Alma: Supervisor Mumu (Vinculado)",
+  "en": "Soul: Mumu Overseer (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SKYRAY_01_A_01_B_body": {
+  "pt": "Alma: Skyray (Vinculado)",
+  "en": "Soul: Skyray (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SLIME_01_A_01_B_body": {
+  "pt": "Alma: Slime (Vinculado)",
+  "en": "Soul: Slime (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SLIME_02_A_01_B_body": {
+  "pt": "Alma: Slime Contaminado (Vinculado)",
+  "en": "Soul: Contaminated Slime (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SLIME_02_CV01_A_01_B_body": {
+  "pt": "Alma: Slime de Drana (Vinculado)",
+  "en": "Soul: Drana Slime (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SPARKYOD_01_A_01_B_body": {
+  "pt": "Alma: Sparkie (Vinculado)",
+  "en": "Soul: Sparkie (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SPARKYOD_02_A_01_B_body": {
+  "pt": "Alma: Sparkie Gigante (Vinculado)",
+  "en": "Soul: Giant Sparkie (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SPECTER_01_A_01_B_body": {
+  "pt": "Alma: Espírito da Escuridão (Vinculado)",
+  "en": "Soul: Dark Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SPIDER_01_A_01_B_body": {
+  "pt": "Alma: Aranha (Vinculado)",
+  "en": "Soul: Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_SPIDER_01_V01_A_01_B_body": {
+  "pt": "Alma: Aranha Instável (Vinculado)",
+  "en": "Soul: Unstable Spider (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_STARTURTLE_01_A_01_B_body": {
+  "pt": "Alma: Tartarustrela (Vinculado)",
+  "en": "Soul: Starturtle (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_TAYGA_01_A_01_B_body": {
+  "pt": "Alma: Tayga (Vinculado)",
+  "en": "Soul: Tayga (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_TOG_01_A_01_B_body": {
+  "pt": "Alma: Tog (Vinculado)",
+  "en": "Soul: Tog (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_TOG_01_CV01_A_01_B_body": {
+  "pt": "Alma: Tog Mutante (Vinculado)",
+  "en": "Soul: Aberrant Tog (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_TOG_01_V01_A_01_B_body": {
+  "pt": "Alma: Tog Jovem (Vinculado)",
+  "en": "Soul: Young Tog (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_TOXFUNGUS_01_A_01_B_body": {
+  "pt": "Alma: Fungen de Esporos Venenosos de Elite (Vinculado)",
+  "en": "Soul: Elite Poisonous Spore Fungen (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_URSUSSELITE_01_A_01_B_body": {
+  "pt": "Alma: Ursus de Elite (Vinculado)",
+  "en": "Soul: Elite Ursus (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_URSUSS_01_A_01_B_body": {
+  "pt": "Alma: Ursus (Vinculado)",
+  "en": "Soul: Ursus (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_URSUSS_01_CV01_A_01_B_body": {
+  "pt": "Alma: Ursus Aberrante (Vinculado)",
+  "en": "Soul: Mutated Ursus (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_URSUSS_01_V01_A_01_B_body": {
+  "pt": "Alma: Ursus Jovem (Vinculado)",
+  "en": "Soul: Young Ursus (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_VARG_03_A_01_B_body": {
+  "pt": "Alma: Berserker Varg (Vinculado)",
+  "en": "Soul: Varg Berserker (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_VIROTARAG_01_A_01_B_body": {
+  "pt": "Alma: Herbalista Birota (Vinculado)",
+  "en": "Soul: Biruta Herbalist (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_VIROTAWAR_01_A_01_B_body": {
+  "pt": "Alma: Birota (Vinculado)",
+  "en": "Soul: Biruta (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WATERELE_01_A_01_B_body": {
+  "pt": "Alma: Espírito da Água Inferior (Vinculado)",
+  "en": "Soul: Lesser Water Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WATERELE_02_A_01_B_body": {
+  "pt": "Alma: Espírito da Água Intermediário (Vinculado)",
+  "en": "Soul: Intermediate Water Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WATERELE_03_A_01_B_body": {
+  "pt": "Alma: Espírito da Água Superior (Vinculado)",
+  "en": "Soul: Superior Water Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WATERELE_04_A_01_B_body": {
+  "pt": "Alma: Espírito da Água Supremo (Vinculado)",
+  "en": "Soul: Ultimate Water Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WINDELE_01_A_01_B_body": {
+  "pt": "Alma: Espírito do Vento Inferior (Vinculado)",
+  "en": "Soul: Lesser Wind Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WINDELE_02_A_01_B_body": {
+  "pt": "Alma: Espírito do Vento Intermediário (Vinculado)",
+  "en": "Soul: Intermediate Wind Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WINDELE_03_A_01_B_body": {
+  "pt": "Alma: Espírito do Vento Superior (Vinculado)",
+  "en": "Soul: Superior Wind Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_WINDELE_04_A_01_B_body": {
+  "pt": "Alma: Espírito do Vento Supremo (Vinculado)",
+  "en": "Soul: Ultimate Wind Spirit (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ZAIF_01_A_01_B_body": {
+  "pt": "Alma: Zaif (Vinculado)",
+  "en": "Soul: Zaif (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ZAIF_01_CV02_A_01_B_body": {
+  "pt": "Alma: Zaif Mutante (Vinculado)",
+  "en": "Soul: Aberrant Zaif (Bound)"
+ },
+ "String_STR_ITEM_VEHICLESOUL_ZAIF_01_V01_A_01_B_body": {
+  "pt": "Alma: Zaif Domesticado (Vinculado)",
+  "en": "Soul: Tamed Zaif (Bound)"
+ },
+ "String_STR_IslandOfEternity_Subzone4_body": {
+  "pt": "Ilha da Eternidade",
+  "en": "Eternal Isle"
+ },
+ "String_STR_IslandOfSpirit_Subzone_body": {
+  "pt": "Ilha dos Espíritos",
+  "en": "Spirit Isle"
+ },
+ "String_STR_IslandofCrimson_Subzone_body": {
+  "pt": "Ilha do Rubi",
+  "en": "Crimson Isle"
+ },
+ "String_STR_M_AR1_BSZ_ABYSSSWARM_01_001_body": {
+  "pt": "Enxame Mutante do Abismo",
+  "en": "Abyss Aberrant Swarn"
+ },
+ "String_STR_M_AR1_BSZ_KALNIF_02_001_body": {
+  "pt": "Karnif de Busca do Abismo",
+  "en": "Abyss Search Party Karnif"
+ },
+ "String_STR_M_AR1_BSZ_NEUTH_02_001_body": {
+  "pt": "Klaw Mutante do Abismo",
+  "en": "Abyss Aberrant Klaw"
+ },
+ "String_STR_M_AR1_BSZ_ROTAN_01_001_body": {
+  "pt": "Lâmina Desgastada Rotan do Abismo",
+  "en": "Abyss Old Blade Rotan"
+ },
+ "String_STR_M_AR1_DD_ABYSSSWARM_01_001_body": {
+  "pt": "Enxame do Abismo",
+  "en": "Abyss Swarm"
+ },
+ "String_STR_M_AR1_DD_KALNIF_02_001_body": {
+  "pt": "Karnif do Abismo",
+  "en": "Abyss Karnif"
+ },
+ "String_STR_M_AR1_DD_NEUTH_02_001_body": {
+  "pt": "Klaw do Abismo",
+  "en": "Abyss Klaw"
+ },
+ "String_STR_M_AR1_DD_ROTAN_01_001_body": {
+  "pt": "Rotan Enferrujado do Abismo",
+  "en": "Abyss Rusty Rotan"
+ },
+ "String_STR_M_AR1_RR_AGRINT_01_001_body": {
+  "pt": "Agrint da Raiz",
+  "en": "Root Agrint"
+ },
+ "String_STR_M_AR1_RR_DARKELE_01_001_body": {
+  "pt": "Espírito Corrompido do Abismo",
+  "en": "Abyss Corrupted Spirit"
+ },
+ "String_STR_M_AR1_RR_KALGOLEM_01_001_body": {
+  "pt": "Kalgolem da Raiz",
+  "en": "Root Kalgolem"
+ },
+ "String_STR_M_AR1_STI_ABYSSSWARM_01_001_body": {
+  "pt": "Aberração de Enxame do Abismo",
+  "en": "Abyss Swarm Mutant"
+ },
+ "String_STR_M_AR1_STI_AGRINT_01_001_body": {
+  "pt": "Agrint Sulfúrico",
+  "en": "Sulfur Agrint"
+ },
+ "String_STR_M_AR1_STI_AGRINT_01_V01_001_body": {
+  "pt": "Agrint Sulfúrico Descarnado",
+  "en": "Thin Sulfur Agrint"
+ },
+ "String_STR_M_AR1_STI_AGRINT_02_001_body": {
+  "pt": "Agrint Sulfúrico Seco",
+  "en": "Withered Sulfur Agrint"
+ },
+ "String_STR_M_AR1_STI_FISH_01_V01_001_body": {
+  "pt": "Skama Sulfúrico do Abismo",
+  "en": "Abyss Sulfur Skama"
+ },
+ "String_STR_M_AR1_STI_NAGAELITE_03_002_body": {
+  "pt": "Mago das Trevas Naga do Abismo",
+  "en": "Abyss Naga Dark Mage"
+ },
+ "String_STR_M_AR1_STI_NAGAELITE_04_001_body": {
+  "pt": "Combatente Nagarante do Abismo",
+  "en": "Abyss Nagarant Brawler"
+ },
+ "String_STR_M_AR1_STI_NAGAELITE_04_002_body": {
+  "pt": "Guerreiro Nagarante do Abismo",
+  "en": "Abyss Nagarant Warrior"
+ },
+ "String_STR_M_AR1_STI_NEUTH_01_001_body": {
+  "pt": "Aberração de Klaw do Abismo",
+  "en": "Abyss Klaw Mutant"
+ },
+ "String_STR_M_AR1_STI_SLIME_02_001_body": {
+  "pt": "Slime Sulfúrico do Abismo",
+  "en": "Abyss Sulfur Slime"
+ },
+ "String_STR_M_AR1_WSA_BERITRAC_03_001_body": {
+  "pt": "Fera Batedora Drakan do Abismo",
+  "en": "Abyss Drakan Scout Beast"
+ },
+ "String_STR_M_AR1_WSA_CORADON_01_V04_001_body": {
+  "pt": "Coradon do Abismo",
+  "en": "Abyss Coradon"
+ },
+ "String_STR_M_AR1_WSA_EARTHELEOD_01_001_body": {
+  "pt": "Espírito da Rocha Abissal",
+  "en": "Abyss Rock Spirit"
+ },
+ "String_STR_M_AR1_WSA_ELEGUARD_01_001_body": {
+  "pt": "Guerreiro Espírito da Árvore Velha",
+  "en": "Old Tree Spirit Warrior"
+ },
+ "String_STR_M_AR1_WSA_JELLOFI_01_001_body": {
+  "pt": "Zelophi do Abismo",
+  "en": "Abyss Zelophi"
+ },
+ "String_STR_M_AR1_WSA_KALGOLEM_02_001_body": {
+  "pt": "Kalgolem Abissal",
+  "en": "Abyssal Kalgolem"
+ },
+ "String_STR_M_AR1_WSA_LEPISMA_01_V01_body": {
+  "pt": "Slink Jovem do Abismo",
+  "en": "Abyss Young Slink"
+ },
+ "String_STR_M_AR1_WSA_LEPISMA_01_body": {
+  "pt": "Slink do Abismo",
+  "en": "Abyss Slink"
+ },
+ "String_STR_M_AR1_WSA_RAFFLESIA_01_001_body": {
+  "pt": "Nepenthes Repugnante do Abismo",
+  "en": "Abyss Nasty Nepenthes"
+ },
+ "String_STR_M_AR1_WSA_SPIDER_01_001_body": {
+  "pt": "Mutação de Insetoide de Od do Abismo",
+  "en": "Abyss Odyle Mutated Insectoid"
+ },
+ "String_STR_M_AR1_WSA_SPIDER_01_V01_001_body": {
+  "pt": "Mutação de Insetoide Vermelho do Abismo",
+  "en": "Abyss Red Mutated Insectoid"
+ },
+ "String_STR_M_AR2_Varg_03_001_body": {
+  "pt": "Berserker Varg",
+  "en": "Varg Berserker"
+ },
+ "String_STR_M_Cherubim_03_body": {
+  "en": "Kerubiel"
+ },
+ "String_STR_M_D1_BCV_BlackClaw_05_01_body": {
+  "pt": "Briguento Manduri da Garra Negra",
+  "en": "Black Claw Manduri Fighter"
+ },
+ "String_STR_M_D1_BCV_DranaManduriRanger_01_01_body": {
+  "pt": "Batedor Manduri da Garra Negra",
+  "en": "Black Claw Manduri Scout"
+ },
+ "String_STR_M_D1_BCV_DranaManduriWarrior_01_01_body": {
+  "pt": "Combatente Manduri da Garra Negra",
+  "en": "Black Claw Manduri Combatant"
+ },
+ "String_STR_M_D1_BCV_Duduka_01_body": {
+  "pt": "Trabalhador Duduka",
+  "en": "Duduka Worker"
+ },
+ "String_STR_M_D1_BCV_KrallWar_01_V01_01_body": {
+  "pt": "Soldado de Escolta do Chefe Tribal",
+  "en": "Chief's Bodyguard"
+ },
+ "String_STR_M_D1_BCV_KrallWar_03_01_body": {
+  "pt": "Observador Mumu",
+  "en": "Mumu Watcher"
+ },
+ "String_STR_M_D1_BR_Agrint_01_01_body": {
+  "pt": "Agrint das Ruínas",
+  "en": "Ruin Agrint"
+ },
+ "String_STR_M_D1_BR_CorpeSpider_01_01_body": {
+  "pt": "Tipulídeo Moribundo Desalmado",
+  "en": "Soulless Corpse Gnat"
+ },
+ "String_STR_M_D1_BR_Fossa_01_01_body": {
+  "pt": "Fera Domesticada",
+  "en": "Tamed Beast"
+ },
+ "String_STR_M_D1_BR_Imp_01_01_body": {
+  "pt": "Limpador de Cadáver Feroz",
+  "en": "Ferocious Cadaver Cleaner"
+ },
+ "String_STR_M_D1_CC_DranaMole_01_body": {
+  "pt": "Slime de Drana",
+  "en": "Drana Slime"
+ },
+ "String_STR_M_D1_CC_DranaWorm_01_body": {
+  "pt": "Kalgolem do Local da Queda",
+  "en": "Crash Site Kalgolem"
+ },
+ "String_STR_M_D1_Com_Bee_01_01_body": {
+  "pt": "Abelha de Armadura Negra",
+  "en": "Black Armor Bee"
+ },
+ "String_STR_M_D1_Com_Coradon_01_V01_01_body": {
+  "pt": "Coradon Mutante",
+  "en": "Aberrant Coradon"
+ },
+ "String_STR_M_D1_Com_Coradon_01_V04_01_body": {
+  "pt": "Coradon da Eternidade",
+  "en": "Eternal Coradon"
+ },
+ "String_STR_M_D1_Com_Kailin_01_01_body": {
+  "en": "Kailin"
+ },
+ "String_STR_M_D1_Com_Kailin_01_02_body": {
+  "pt": "Kailin Jovem",
+  "en": "Young Kailin"
+ },
+ "String_STR_M_D1_Com_Lepisma_01_01_body": {
+  "en": "Slink"
+ },
+ "String_STR_M_D1_Com_Lepisma_01_02_body": {
+  "pt": "Slink Jovem",
+  "en": "Young Slink"
+ },
+ "String_STR_M_D1_Com_Lufilini_01_01_body": {
+  "pt": "Lupyllini Putrefata",
+  "en": "Decomposed Lupyllini"
+ },
+ "String_STR_M_D1_Com_OdSpider_03_V01_01_body": {
+  "pt": "Aranha do Galho Seco",
+  "en": "Withered Branch Spider"
+ },
+ "String_STR_M_D1_Com_Papis_01_01_body": {
+  "pt": "Papis Desbotado",
+  "en": "Faded Papis"
+ },
+ "String_STR_M_D1_Com_Skyray_01_01_body": {
+  "pt": "Skyray do Lago",
+  "en": "Lake Skyray"
+ },
+ "String_STR_M_D1_Com_Tog_01_01_body": {
+  "en": "Tog"
+ },
+ "String_STR_M_D1_Com_Tog_01_03_body": {
+  "pt": "Tog Mutante",
+  "en": "Aberrant Tog"
+ },
+ "String_STR_M_D1_Com_VirotaRag_01_01_body": {
+  "pt": "Herbalista Birota",
+  "en": "Biruta Herbalist"
+ },
+ "String_STR_M_D1_Com_VirotaWar_01_01_body": {
+  "pt": "Birota Errante",
+  "en": "Biruta Wanderer"
+ },
+ "String_STR_M_D1_DC_CorpseBug_01_body": {
+  "pt": "Insetoide Cadavérico de Drana",
+  "en": "Drana Cadaver Insectoid"
+ },
+ "String_STR_M_D1_DC_DranaMole_01_body": {
+  "pt": "Toupeira de Casco Vermelho",
+  "en": "Red Shell Mole"
+ },
+ "String_STR_M_D1_DC_DranaPredator_01_body": {
+  "pt": "Predador de Drana",
+  "en": "Drana Predator"
+ },
+ "String_STR_M_D1_DC_DranaVar_A_01_body": {
+  "pt": "Aberração Distorcida",
+  "en": "Twisted Mutant"
+ },
+ "String_STR_M_D1_DC_Incomplete_01_body": {
+  "pt": "Drana Coagulado",
+  "en": "Congealed Drana"
+ },
+ "String_STR_M_D1_DC_Lufilini_01_V01_01_body": {
+  "pt": "Lupyllini Putrefato",
+  "en": "Decomposed Lupyllini"
+ },
+ "String_STR_M_D1_DR_Brax_01_body": {
+  "en": "Brax"
+ },
+ "String_STR_M_D1_DR_Crab_01_body": {
+  "pt": "Caranguejo de Musgo",
+  "en": "Moss Crab"
+ },
+ "String_STR_M_D1_DR_Drakan_02_01_body": {
+  "pt": "Gestor Drakan",
+  "en": "Drakan Manager"
+ },
+ "String_STR_M_D1_DR_Fossa_01_001_body": {
+  "pt": "Tayga Domesticado",
+  "en": "Tamed Tayga"
+ },
+ "String_STR_M_D1_DR_Lufilini_01_01_body": {
+  "pt": "Lupyllini Feroz",
+  "en": "Ferocious Lupyllini"
+ },
+ "String_STR_M_D1_DR_Muta_01_body": {
+  "en": "Sylphen"
+ },
+ "String_STR_M_D1_DR_SkurvWar_01_001_body": {
+  "pt": "Atalaia Mumu",
+  "en": "Mumu Watcher"
+ },
+ "String_STR_M_D1_DR_SkurvWar_02_001_body": {
+  "pt": "Trabalhador Mumu",
+  "en": "Mumu Worker"
+ },
+ "String_STR_M_D1_DR_SkurvWar_02_002_body": {
+  "pt": "Trabalhador Mumu Fugitivo",
+  "en": "Escaped Mumu Worker"
+ },
+ "String_STR_M_D1_DR_Starturtle_01_001_body": {
+  "pt": "Tartarustrela da Praia",
+  "en": "Beach Starturtle"
+ },
+ "String_STR_M_D1_DR_Ursuss_01_01_body": {
+  "en": "Ursus"
+ },
+ "String_STR_M_D1_DR_Ursuss_01_02_body": {
+  "pt": "Ursus Jovem",
+  "en": "Young Ursus"
+ },
+ "String_STR_M_D1_EGC_Airon_01_01_body": {
+  "pt": "Airon do Desfiladeiro",
+  "en": "Canyon Airon"
+ },
+ "String_STR_M_D1_EGC_Airon_01_02_body": {
+  "pt": "Filhote de Airon do Desfiladeiro",
+  "en": "Baby Canyon Airon"
+ },
+ "String_STR_M_D1_EGC_BeritraC_03_01_body": {
+  "pt": "Fera Armada da Patrulha dos Drakan",
+  "en": "Drakan Patrol Armed Beast"
+ },
+ "String_STR_M_D1_EGC_Drakan_02_01_body": {
+  "pt": "Vigilante da Patrulha Drakan",
+  "en": "Drakan Patrol Watcher"
+ },
+ "String_STR_M_D1_EGC_MOB_Duduka_02_body": {
+  "pt": "Soldado Fundeiro Duduka",
+  "en": "Duduka Slinger"
+ },
+ "String_STR_M_D1_EGC_SkurvWar_01_01_body": {
+  "pt": "Guerreiro Mumu de Gribade",
+  "en": "Gribade Mumu Warrior"
+ },
+ "String_STR_M_D1_EGC_Tayga_01_01_body": {
+  "pt": "Tayga de Busca",
+  "en": "Search Party Tayga"
+ },
+ "String_STR_M_D1_EGC_Tayga_01_02_body": {
+  "pt": "Tayga da Guarda",
+  "en": "Guard Troopers Tayga"
+ },
+ "String_STR_M_D1_EGC_Zaif_01_CV02_001_body": {
+  "pt": "Zaif Dourado",
+  "en": "Golden Zaif"
+ },
+ "String_STR_M_D1_FD_AbyssSwarm_01_01_body": {
+  "pt": "Insetoide de Minério Gigante",
+  "en": "Giant Ore Insectoid"
+ },
+ "String_STR_M_D1_FD_AbyssSwarm_02_01_body": {
+  "pt": "Insetoide de Minério Gigante Adulto",
+  "en": "Giant Ore Insectoid Adult"
+ },
+ "String_STR_M_D1_FD_AddShulack_03_001_body": {
+  "pt": "Carreteiro Shulack em Descontrole",
+  "en": "Rampaging Shulak Cart Worker"
+ },
+ "String_STR_M_D1_FD_DranaVar_02_CV01_body": {
+  "pt": "Aberração Desbotada de Brutamonte",
+  "en": "Faded Mutant Brute"
+ },
+ "String_STR_M_D1_FD_DranaVar_03_CV01_body": {
+  "pt": "Predador Desbotado",
+  "en": "Faded Predator"
+ },
+ "String_STR_M_D1_FD_DranaVar_04_CV01_body": {
+  "pt": "Corpo Flutuante Desbotado",
+  "en": "Faded Floater"
+ },
+ "String_STR_M_D1_FD_DranaVar_06_CV01_body": {
+  "pt": "Aglomeração Desbotada",
+  "en": "Faded Chunk"
+ },
+ "String_STR_M_D1_FD_FafBlood_02_CV01_001_body": {
+  "pt": "Mudthorn Envenenado",
+  "en": "Addicted Mudthorn"
+ },
+ "String_STR_M_D1_FD_Kalgolem_01_01_body": {
+  "pt": "Kalgolem Azul",
+  "en": "Blue Kalgolem"
+ },
+ "String_STR_M_D1_FD_Scorpion_01_01_body": {
+  "pt": "Escorpião de Minério",
+  "en": "Ore Scorpion"
+ },
+ "String_STR_M_D1_FD_SparkyOd_02_01_body": {
+  "pt": "Sparkie Luminoso de Fafnite",
+  "en": "Fafnite Luminous Sparkie"
+ },
+ "String_STR_M_D1_IOS_Agrint_01_CV01_01_body": {
+  "pt": "Agrint Instável",
+  "en": "Unstable Agrint"
+ },
+ "String_STR_M_D1_IOS_Crab_01_01_body": {
+  "pt": "Caranguejo de Musgo da Costa",
+  "en": "Coastal Moss Crab"
+ },
+ "String_STR_M_D1_IOS_Dracuni_01_01_body": {
+  "pt": "Coletor de Sangue Venenoso",
+  "en": "Poison Blood Gatherer"
+ },
+ "String_STR_M_D1_IOS_EarthEleOd_01_CV01_01_body": {
+  "pt": "Espírito de Od Desbotado",
+  "en": "Faded Odyle Spirit"
+ },
+ "String_STR_M_D1_IOS_FafBlood_02_V01_01_body": {
+  "pt": "Sangue Venenoso Instável",
+  "en": "Unstable Poison Blood"
+ },
+ "String_STR_M_D1_IOS_FireEle_01_01_body": {
+  "pt": "Espírito do Fogo Intermediário Instável",
+  "en": "Unstable Intermediate Fire Spirit"
+ },
+ "String_STR_M_D1_IOS_FireEle_03_01_body": {
+  "pt": "Espírito do Fogo Superior Instável",
+  "en": "Unstable Superior Fire Spirit"
+ },
+ "String_STR_M_D1_IOS_ForestArc_01_CV01_01_body": {
+  "pt": "Guardião da Floresta Instável",
+  "en": "Unstable Forest Guardian"
+ },
+ "String_STR_M_D1_IOS_Gravi_02_01_body": {
+  "pt": "Gravi Instável",
+  "en": "Unstable Gravi"
+ },
+ "String_STR_M_D1_IOS_Kailin_01_01_body": {
+  "pt": "Kailin Instável",
+  "en": "Unstable Kailin"
+ },
+ "String_STR_M_D1_IOS_Kailin_01_V01_01_body": {
+  "pt": "Kailin Jovem Instável",
+  "en": "Unstable Young Kailin"
+ },
+ "String_STR_M_D1_IOS_OdSpider_Spike_02_01_body": {
+  "pt": "Aranha Cinzenta Instável",
+  "en": "Unstable Ashen Spider"
+ },
+ "String_STR_M_D1_IOS_Rafflesia_01_CV01_01_body": {
+  "pt": "Raflésia Instável",
+  "en": "Unstable Rafflesia"
+ },
+ "String_STR_M_D1_IOS_Spider_01_V01_01_body": {
+  "pt": "Aranha de Sangue Venenoso Instável",
+  "en": "Unstable Poison Blood Spider"
+ },
+ "String_STR_M_D1_IOS_WaterEle_01_01_body": {
+  "pt": "Espírito da Água Intermediário Instável",
+  "en": "Unstable Intermediate Water Spirit"
+ },
+ "String_STR_M_D1_IOS_WaterEle_03_01_body": {
+  "pt": "Espírito da Água Superior Instável",
+  "en": "Unstable Superior Water Spirit"
+ },
+ "String_STR_M_D1_IS_FafBlood_02_CV01_001_body": {
+  "pt": "Traço do Subespaço",
+  "en": "Remnant of Subspace"
+ },
+ "String_STR_M_D1_IS_Oculazen_01_001_body": {
+  "en": "Oculazen"
+ },
+ "String_STR_M_D1_IoI_Agrint_01_001_body": {
+  "pt": "Agrint da Ilha",
+  "en": "Island Agrint"
+ },
+ "String_STR_M_D1_IoI_Cherubim_01_001_body": {
+  "en": "Kerubar"
+ },
+ "String_STR_M_D1_IoI_Cherubim_02_001_body": {
+  "en": "Kerubian"
+ },
+ "String_STR_M_D1_IoI_Crab_01_body": {
+  "pt": "Caranguejo de Musgo da Costa",
+  "en": "Coastal Moss Crab"
+ },
+ "String_STR_M_D1_IoI_DranaVar_02_001_body": {
+  "pt": "Aberração de Drana",
+  "en": "Drana Mutant"
+ },
+ "String_STR_M_D1_IoI_EarthEle_02_001_body": {
+  "pt": "Espírito da Terra Imortal",
+  "en": "Immortal Earth Spirit"
+ },
+ "String_STR_M_D1_IoI_EarthEle_03_001_body": {
+  "pt": "Espírito Guardião da Terra Imortal",
+  "en": "Immortal Earth Spirit Guardian"
+ },
+ "String_STR_M_D1_IoI_FireEle_02_001_body": {
+  "pt": "Espírito do Fogo Imortal",
+  "en": "Immortal Fire Spirit"
+ },
+ "String_STR_M_D1_IoI_FireEle_03_001_body": {
+  "pt": "Espírito Guardião do Fogo Imortal",
+  "en": "Immortal Fire Spirit Guardian"
+ },
+ "String_STR_M_D1_IoI_Kuru_01_001_body": {
+  "pt": "Trabalhador Kuru",
+  "en": "Kuru Worker"
+ },
+ "String_STR_M_D1_IoI_Kuru_02_001_body": {
+  "pt": "Peão Kuru",
+  "en": "Kuru Tinkerer"
+ },
+ "String_STR_M_D1_IoI_Kuru_03_001_body": {
+  "pt": "Supervisor Kuru",
+  "en": "Kuru Overseer"
+ },
+ "String_STR_M_D1_IoI_Lepisma_01_V01_001_body": {
+  "pt": "Slink da Costa",
+  "en": "Coastal Slink"
+ },
+ "String_STR_M_D1_IoI_Lufilini_03_001_body": {
+  "pt": "Lupyllini Modificado",
+  "en": "Modified Lupyllini"
+ },
+ "String_STR_M_D1_IoI_Phaini_01_001_body": {
+  "en": "Crasaur"
+ },
+ "String_STR_M_D1_IoI_Starturtle_01_001_body": {
+  "pt": "Tartarustrela",
+  "en": "Starturtle"
+ },
+ "String_STR_M_D1_IoI_WaterEle_02_001_body": {
+  "pt": "Espírito da Água Imortal",
+  "en": "Immortal Water Spirit"
+ },
+ "String_STR_M_D1_IoI_WaterEle_03_001_body": {
+  "pt": "Espírito Guardião da Água Imortal",
+  "en": "Immortal Water Spirit Guardian"
+ },
+ "String_STR_M_D1_IoI_WindEle_02_body": {
+  "pt": "Espírito do Vento Imortal",
+  "en": "Immortal Wind Spirit"
+ },
+ "String_STR_M_D1_IoI_WindEle_03_body": {
+  "pt": "Espírito Guardião do Vento Imortal",
+  "en": "Immortal Wind Spirit Guardian"
+ },
+ "String_STR_M_D1_LF_BeritraC_03_01_body": {
+  "pt": "Cão de Guarda da Brigada de Lagta",
+  "en": "Lagta Brigade Guard Dog"
+ },
+ "String_STR_M_D1_LF_BeritraC_06_01_body": {
+  "pt": "Explorador da Brigada de Lagta",
+  "en": "Lagta Brigade Seeker"
+ },
+ "String_STR_M_D1_MF_Agrint_01_body": {
+  "pt": "Elim Aberrante",
+  "en": "Mutated Elim"
+ },
+ "String_STR_M_D1_MF_BigMan_01_002_body": {
+  "pt": "Guardião da Floresta Queimado",
+  "en": "Burned Forester"
+ },
+ "String_STR_M_D1_MF_Dionaea_01_V01_001_body": {
+  "pt": "Dionae Cinzento",
+  "en": "Ashen Dionae"
+ },
+ "String_STR_M_D1_MF_DranaMole_01_003_body": {
+  "pt": "Basilisco das Cinzas Negras",
+  "en": "Black Ash Basilisk"
+ },
+ "String_STR_M_D1_MF_DranaMole_01_body": {
+  "pt": "Armadon Seco",
+  "en": "Withered Armadon"
+ },
+ "String_STR_M_D1_MF_ForestGuardianArcher_01_body": {
+  "pt": "Guardião da Floresta Aberrante",
+  "en": "Mutated Forest Guardian"
+ },
+ "String_STR_M_D1_MF_OdSpider_02_body": {
+  "pt": "Aranha Cinzenta",
+  "en": "Ashen Spider"
+ },
+ "String_STR_M_D1_MF_Ursuss_01_001_body": {
+  "pt": "Ursus Cinzento",
+  "en": "Ashen Ursus"
+ },
+ "String_STR_M_D1_PF_AshGuard_01_01_body": {
+  "pt": "Kalgolem Enfurecido",
+  "en": "Angry Kalgolem"
+ },
+ "String_STR_M_D1_PF_BigMan_01_01_body": {
+  "pt": "Guardião de Espíritos Corrompido",
+  "en": "Consumed Spirit Guardian"
+ },
+ "String_STR_M_D1_PF_DranaVar_01_CV01_01_body": {
+  "pt": "Aberração Desvanecida",
+  "en": "Faded Mutant"
+ },
+ "String_STR_M_D1_PF_EarthEleOd_01_01_body": {
+  "pt": "Espírito da Pedra Desbotado",
+  "en": "Faded Stone Spirit"
+ },
+ "String_STR_M_D1_PF_EarthEle_01_01_body": {
+  "pt": "Espírito do Húmus",
+  "en": "Corroded Soil Spirit"
+ },
+ "String_STR_M_D1_PF_FafBlood_02_01_body": {
+  "pt": "Sangue Venenoso Amaldiçoado",
+  "en": "Cursed Poison Blood"
+ },
+ "String_STR_M_D1_PF_FireEle_01_01_body": {
+  "pt": "Espírito da Flama",
+  "en": "Flame Spirit"
+ },
+ "String_STR_M_D1_PF_FireEle_02_01_body": {
+  "pt": "Espírito da Brasa Ardente",
+  "en": "Burning Ember Spirit"
+ },
+ "String_STR_M_D1_PF_Gravi_01_01_body": {
+  "pt": "Gravi Rosa",
+  "en": "Pink Gravi"
+ },
+ "String_STR_M_D1_PF_Gravi_02_body": {
+  "pt": "Gravi Mágico da Floresta da Purificação",
+  "en": "Purifying Forest Magic Gravi"
+ },
+ "String_STR_M_D1_PF_Gravi_03_02_body": {
+  "pt": "Gravi de Folha Grande",
+  "en": "Large Leaf Gravi"
+ },
+ "String_STR_M_D1_PF_Neuth_02_01_body": {
+  "pt": "Klaw Corrompido",
+  "en": "Consumed Klaw"
+ },
+ "String_STR_M_D1_PF_Phaini_01_01_body": {
+  "pt": "Crasaur Sensível",
+  "en": "Sensitive Crasaur"
+ },
+ "String_STR_M_D1_PF_Slime_01_01_body": {
+  "pt": "Slime Violento",
+  "en": "Unruly Slime"
+ },
+ "String_STR_M_D1_PF_SparkyOd_02_02_body": {
+  "pt": "Sparkie de Od do Galho Seco",
+  "en": "Withered Branch Odyle Sparkie"
+ },
+ "String_STR_M_D1_PF_Spider_01_V01_01_body": {
+  "pt": "Aranha de Rocha Flamejante",
+  "en": "Flame Rock Spider"
+ },
+ "String_STR_M_D1_PF_WaterEle_01_01_body": {
+  "pt": "Espírito do Respingo",
+  "en": "Water Mist Spirit"
+ },
+ "String_STR_M_D1_PF_WindEle_01_01_body": {
+  "pt": "Espírito da Ventania",
+  "en": "Whirlwind Spirit"
+ },
+ "String_STR_M_D1_PF_WindEle_02_01_body": {
+  "pt": "Espírito da Brisa",
+  "en": "Soft Breeze Spirit"
+ },
+ "String_STR_M_D1_SH_AltKnifeDog_01_001_body": {
+  "pt": "Fuça de Daeva Renegado",
+  "en": "Daeva Renegade Fossa"
+ },
+ "String_STR_M_D1_SH_BeritraC_05_01_body": {
+  "pt": "Soldado de Apoio Dratona",
+  "en": "Dratona Supporter"
+ },
+ "String_STR_M_D1_SH_BeritraC_06_01_body": {
+  "pt": "Dispositivo Explorador dos Drakan",
+  "en": "Drakan Probe"
+ },
+ "String_STR_M_D1_SH_Imp_01_01_body": {
+  "pt": "Limpador de Cadáver das Ruínas",
+  "en": "Ruins Corpse Cleaner"
+ },
+ "String_STR_M_D1_SH_Kalnif_01_001_body": {
+  "pt": "Karnif das Lâminas",
+  "en": "Blades Karnif"
+ },
+ "String_STR_M_D1_SH_Skyray_01_01_body": {
+  "pt": "Skyray de Tranein",
+  "en": "Tranein Skyray"
+ },
+ "String_STR_M_D1_SW_BeritraC_06_01_body": {
+  "pt": "Dispositivo Explorador do Posto de Vigilância",
+  "en": "Outpost Probe"
+ },
+ "String_STR_M_D1_SW_Dratona_01_01_body": {
+  "en": "Dratona"
+ },
+ "String_STR_M_D1_SW_Dratona_02_01_body": {
+  "pt": "Peão Dratona",
+  "en": "Dratona Tinkerer"
+ },
+ "String_STR_M_D1_SW_Oculazen_01_01_body": {
+  "pt": "Oculazen da Vigilância",
+  "en": "Vigilant Oculazen"
+ },
+ "String_STR_M_D1_UC_Agrint_01_001_body": {
+  "pt": "Agrint de Olho Vermelho",
+  "en": "Red Eye Agrint"
+ },
+ "String_STR_M_D1_UC_DranaSwarm_01_body": {
+  "pt": "Enxame Contaminado",
+  "en": "Contaminated Swarm"
+ },
+ "String_STR_M_D1_UC_GraveBat_01_001_body": {
+  "pt": "Vivele Vampiro",
+  "en": "Vampire Vivel"
+ },
+ "String_STR_M_D1_UC_GraveSoul_01_001_body": {
+  "pt": "Ânima Condensada",
+  "en": "Condensed Specter"
+ },
+ "String_STR_M_D1_UC_Kalnif_01_001_body": {
+  "pt": "Raflésia",
+  "en": "Rafflesia"
+ },
+ "String_STR_M_D1_WGC_AltKnife_03_01_body": {
+  "pt": "Fera Domesticada das Lâminas",
+  "en": "Tamed Blades Beast"
+ },
+ "String_STR_M_DarkEle_01_body": {
+  "pt": "Espírito das Trevas",
+  "en": "Black Spirit"
+ },
+ "String_STR_M_FE_IoE_Agrint_01_001_body": {
+  "pt": "Agrint da Eternidade",
+  "en": "Eternal Agrint"
+ },
+ "String_STR_M_FE_IoE_Cherubim_01_001_body": {
+  "pt": "Kerubar da Eternidade",
+  "en": "Eternal Kerubar"
+ },
+ "String_STR_M_FE_IoE_Cherubim_02_001_body": {
+  "pt": "Kerubian da Eternidade",
+  "en": "Eternal Kerubian"
+ },
+ "String_STR_M_FE_IoE_Cherubim_03_001_body": {
+  "pt": "Kerubiel da Eternidade",
+  "en": "Eternal Kerubiel"
+ },
+ "String_STR_M_FE_IoE_Crab_01_001_body": {
+  "pt": "Caranguejo de Musgo da Eternidade",
+  "en": "Eternal Moss Crab"
+ },
+ "String_STR_M_FE_IoE_DranaVar_02_01_body": {
+  "pt": "Aberração de Drana da Eternidade",
+  "en": "Eternal Drana Mutant"
+ },
+ "String_STR_M_FE_IoE_EarthEle_01_001_body": {
+  "pt": "Espírito da Terra da Eternidade",
+  "en": "Eternal Earth Spirit"
+ },
+ "String_STR_M_FE_IoE_EarthEle_02_001_body": {
+  "pt": "Espírito da Terra Feroz",
+  "en": "Violent Earth Spirit"
+ },
+ "String_STR_M_FE_IoE_FireEle_01_001_body": {
+  "pt": "Espírito do Fogo da Eternidade",
+  "en": "Eternal Fire Spirit"
+ },
+ "String_STR_M_FE_IoE_FireEle_02_001_body": {
+  "pt": "Espírito do Fogo Feroz",
+  "en": "Violent Fire Spirit"
+ },
+ "String_STR_M_FE_IoE_Jellofi_01_001_body": {
+  "pt": "Zelophi da Eternidade",
+  "en": "Eternal Zelophi"
+ },
+ "String_STR_M_FE_IoE_Kuru_01_body": {
+  "pt": "Trabalhador Kuru da Eternidade",
+  "en": "Eternal Kuru Worker"
+ },
+ "String_STR_M_FE_IoE_Kuru_02_body": {
+  "pt": "Peão Kuru da Eternidade",
+  "en": "Eternal Kuru Tinkerer"
+ },
+ "String_STR_M_FE_IoE_Kuru_03_body": {
+  "pt": "Supervisor Kuru da Eternidade",
+  "en": "Eternal Kuru Overseer"
+ },
+ "String_STR_M_FE_IoE_Lepisma_01_V01_001_body": {
+  "pt": "Slink da Eternidade",
+  "en": "Eternal Slink"
+ },
+ "String_STR_M_FE_IoE_Lufilini_01_001_body": {
+  "pt": "Lupyllini da Eternidade",
+  "en": "Eternal Lupyllini"
+ },
+ "String_STR_M_FE_IoE_Phaini_01_001_body": {
+  "pt": "Crasaur da Eternidade",
+  "en": "Eternal Crasaur"
+ },
+ "String_STR_M_FE_IoE_Starturtle_01_001_body": {
+  "pt": "Tartarustrela da Eternidade",
+  "en": "Eternal Starturtle"
+ },
+ "String_STR_M_FE_IoE_WaterEle_01_001_body": {
+  "pt": "Espírito da Água da Eternidade",
+  "en": "Eternal Water Spirit"
+ },
+ "String_STR_M_FE_IoE_WaterEle_02_001_body": {
+  "pt": "Espírito da Água Feroz",
+  "en": "Violent Water Spirit"
+ },
+ "String_STR_M_FE_IoE_WindEle_01_body": {
+  "pt": "Espírito do Vento da Eternidade",
+  "en": "Eternal Wind Spirit"
+ },
+ "String_STR_M_FE_IoE_WindEle_02_001_body": {
+  "pt": "Espírito do Vento Feroz",
+  "en": "Violent Wind Spirit"
+ },
+ "String_STR_M_FE_Ioc_Crab_01_001_body": {
+  "pt": "Caranguejo de Musgo Escarlate",
+  "en": "Eternal Moss Crab"
+ },
+ "String_STR_M_Jellofi_01_body": {
+  "en": "Zelophi"
+ },
+ "String_STR_M_KrallRegressed_01_body": {
+  "pt": "Trabalhador Escravo Krall Aberrante",
+  "en": "Mutated Krall Laborer"
+ },
+ "String_STR_M_KrallReinforcedWarrior_01_body": {
+  "pt": "Guerreiro Krall Modificado",
+  "en": "Modified Krall Warrior"
+ },
+ "String_STR_M_L1_AC_A_ForestWisp_01_body": {
+  "pt": "Espírito de Cipó do Desfiladeiro",
+  "en": "Canyon Vine Spirit"
+ },
+ "String_STR_M_L1_AC_A_Specter_01_body": {
+  "pt": "Espírito Corrompido",
+  "en": "Corrupted Spirit"
+ },
+ "String_STR_M_L1_AC_Agrint_02_body": {
+  "pt": "Agrint Seco do Desfiladeiro",
+  "en": "Withered Canyon Agrint"
+ },
+ "String_STR_M_L1_AC_Airon_01_body": {
+  "pt": "Airon de Bico Duro",
+  "en": "Hardbeak Airon"
+ },
+ "String_STR_M_L1_AC_Crab_01_body": {
+  "pt": "Kensirid Achatado",
+  "en": "Flat Potcrab"
+ },
+ "String_STR_M_L1_AC_ForestEle_01_body": {
+  "pt": "Espírito da Floresta do Desfiladeiro Profundo",
+  "en": "Deep Canyon Forest Spirit"
+ },
+ "String_STR_M_L1_AC_Phaini_01_body": {
+  "pt": "Crasaur Manso",
+  "en": "Docile Crasaur"
+ },
+ "String_STR_M_L1_AC_Skyray_01_body": {
+  "pt": "Skyray do Desfiladeiro",
+  "en": "Canyon Skyray"
+ },
+ "String_STR_M_L1_AC_Skyray_02_body": {
+  "pt": "Skyray do Lago do Desfiladeiro",
+  "en": "Canyon Lake Skyray"
+ },
+ "String_STR_M_L1_AC_WindEle_01_body": {
+  "pt": "Espírito do Ar",
+  "en": "Air Spirit"
+ },
+ "String_STR_M_L1_AH_A_GraveBat_01_001_body": {
+  "pt": "Vivele do Planalto",
+  "en": "Highland Vivel"
+ },
+ "String_STR_M_L1_AH_A_Zaif_01_body": {
+  "pt": "Zaif da Colina das Rochas",
+  "en": "Rock Hill Zaif"
+ },
+ "String_STR_M_L1_AH_BF_Airon_01_001_body": {
+  "pt": "Airon de Bico Longo do Planalto",
+  "en": "Longbeak Highland Airon"
+ },
+ "String_STR_M_L1_AH_BF_Brax_01_001_body": {
+  "pt": "Brax Manso do Planalto",
+  "en": "Docile Highland Brax"
+ },
+ "String_STR_M_L1_AH_BF_Kalnif_01_001_body": {
+  "pt": "Karnif de Crina Resistente do Planalto",
+  "en": "Toughmane Highland Karnif"
+ },
+ "String_STR_M_L1_AH_BF_Kalnif_01_002_body": {
+  "pt": "Karnif do Planalto",
+  "en": "Highland Karnif"
+ },
+ "String_STR_M_L1_AH_BF_Lufilini_01_V01_001_body": {
+  "pt": "Lupyllini do Planalto Contaminado",
+  "en": "Contaminated Highland Lupyllini"
+ },
+ "String_STR_M_L1_AH_BF_Lufilini_02_001_body": {
+  "pt": "Lupyllini de Cauda",
+  "en": "Tail Feather Lupyllini"
+ },
+ "String_STR_M_L1_AH_BF_Muta_01_001_body": {
+  "pt": "Sylphen do Planalto",
+  "en": "Highland Sylphen"
+ },
+ "String_STR_M_L1_AH_BF_OdSpider_04_V01_001_body": {
+  "pt": "Aranha de Od do Planalto",
+  "en": "Highland Odyle Spider"
+ },
+ "String_STR_M_L1_AH_BF_Rafflesia_01_001_body": {
+  "pt": "Nepenthes do Planalto Rubro",
+  "en": "Scarlet Highland Nepenthes"
+ },
+ "String_STR_M_L1_AH_BF_Zaif_01_001_body": {
+  "pt": "Zaif da Floresta do Planalto",
+  "en": "Highland Forest Zaif"
+ },
+ "String_STR_M_L1_AH_B_Kalgolem_01_body": {
+  "pt": "Kalgolem Cinzento",
+  "en": "Ashen Kalgolem"
+ },
+ "String_STR_M_L1_AH_C_Agrint_01_body": {
+  "pt": "Agrint Contaminado",
+  "en": "Contaminated Agrint"
+ },
+ "String_STR_M_L1_AH_C_Fish_01_V01_body": {
+  "pt": "Skama de Cauda Amarela",
+  "en": "Yellow-Tailed Skama"
+ },
+ "String_STR_M_L1_AH_C_ForestEle_01_V01_body": {
+  "pt": "Mutação de Aglomeração de Cipó",
+  "en": "Mutated Vine Bundle"
+ },
+ "String_STR_M_L1_AH_C_ForestEle_01_body": {
+  "pt": "Aglomeração de Cipó Contaminada",
+  "en": "Contaminated Vine Bundle"
+ },
+ "String_STR_M_L1_AH_C_Guardit_01_body": {
+  "pt": "Guardite Descontrolado",
+  "en": "Uncontrollable Guardite"
+ },
+ "String_STR_M_L1_AH_C_Guardit_02_body": {
+  "pt": "Guardite Contaminado",
+  "en": "Contaminated Guardite"
+ },
+ "String_STR_M_L1_AH_C_Scorpion_01_body": {
+  "pt": "Escorpião Contaminado",
+  "en": "Contaminated Scorpion"
+ },
+ "String_STR_M_L1_AH_C_Slime_01_body": {
+  "pt": "Slime de Veneno Contaminado",
+  "en": "Contaminated Poison Slime"
+ },
+ "String_STR_M_L1_BF_AH_Crestlich_01_001_body": {
+  "pt": "Crestlich do Planalto (Fêmea)",
+  "en": "Highland Crestlich Female"
+ },
+ "String_STR_M_L1_BF_AH_Crestlich_02_001_body": {
+  "pt": "Crestlich do Planalto (Macho)",
+  "en": "Highland Crestlich Male"
+ },
+ "String_STR_M_L1_BF_AH_Mole_01_V01_001_body": {
+  "pt": "Armadon Selvagem do Planalto",
+  "en": "Highland Wild Armadon"
+ },
+ "String_STR_M_L1_BF_AH_SparkyOd_01_001_body": {
+  "pt": "Sparkie de Od do Planalto",
+  "en": "Highland Odyle Sparkie"
+ },
+ "String_STR_M_L1_BF_AH_SparkyOd_02_001_body": {
+  "pt": "Sparkie de Od Gigante do Planalto",
+  "en": "Highland Giant Odyle Sparkie"
+ },
+ "String_STR_M_L1_BF_AH_Tog_01_CV01_001_body": {
+  "pt": "Tog Listrado Selvagem",
+  "en": "Wild Stripe Tog"
+ },
+ "String_STR_M_L1_BF_AH__Zaif_01_001_body": {
+  "pt": "Zaif do Planalto",
+  "en": "Highland Zaif"
+ },
+ "String_STR_M_L1_BF_EllunRiverAgrint_01_body": {
+  "pt": "Agrint Corrompido",
+  "en": "Decaying Agrint"
+ },
+ "String_STR_M_L1_BF_EllunRiverAiron_01_body": {
+  "pt": "Airon de Bico Pequeno",
+  "en": "Smallbeak Airon"
+ },
+ "String_STR_M_L1_BF_EllunRiverAiron_02_body": {
+  "pt": "Airon de Bico Pontudo",
+  "en": "Pointbeak Airon"
+ },
+ "String_STR_M_L1_BF_EllunRiverBees_01_body": {
+  "pt": "Abelha de Listras Negras",
+  "en": "Black Pattern Bee"
+ },
+ "String_STR_M_L1_BF_EllunRiverBraxA_02_body": {
+  "pt": "Brax do Campo",
+  "en": "Field Brax"
+ },
+ "String_STR_M_L1_BF_EllunRiverBraxA_03_body": {
+  "pt": "Brax Faminto",
+  "en": "Hungry Brax"
+ },
+ "String_STR_M_L1_BF_EllunRiverCrestlich_01_body": {
+  "pt": "Crestlich do Rio Ellun (Fêmea)",
+  "en": "Ellun River Crestlich Female"
+ },
+ "String_STR_M_L1_BF_EllunRiverCrestlich_02_body": {
+  "pt": "Crestlich do Rio Ellun (Macho)",
+  "en": "Ellun River Crestlich Male"
+ },
+ "String_STR_M_L1_BF_EllunRiverForestSpirit_01_body": {
+  "pt": "Espírito de Cipó Contaminado",
+  "en": "Contaminated Vine Spirit"
+ },
+ "String_STR_M_L1_BF_EllunRiverGravi_03_001_body": {
+  "pt": "Gravi da Colina do Rio Ellun",
+  "en": "Ellun River Hill Gravi"
+ },
+ "String_STR_M_L1_BF_EllunRiverKailin_01_body": {
+  "pt": "Kailin do Rio Ellun",
+  "en": "Ellun River Kailin"
+ },
+ "String_STR_M_L1_BF_EllunRiverKailin_02_body": {
+  "pt": "Kailin Jovem do Rio Ellun",
+  "en": "Ellun River Young Kailin"
+ },
+ "String_STR_M_L1_BF_EllunRiverLepisma_01_body": {
+  "pt": "Slink do Pântano",
+  "en": "Wetland Slink"
+ },
+ "String_STR_M_L1_BF_EllunRiverLepisma_03_body": {
+  "pt": "Slink Jovem do Pântano",
+  "en": "Young Wetland Slink"
+ },
+ "String_STR_M_L1_BF_EllunRiverMuta_01_body": {
+  "pt": "Sylphen do Rio Ellun",
+  "en": "Ellun River Sylphen"
+ },
+ "String_STR_M_L1_BF_EllunRiverOdSpider_02_body": {
+  "pt": "Octaside Concha Branca",
+  "en": "White Shell Octaside"
+ },
+ "String_STR_M_L1_BF_EllunRiverPapis_01_body": {
+  "pt": "Papis do Rio Ellun",
+  "en": "Ellun River Papis"
+ },
+ "String_STR_M_L1_BF_EllunRiverPhaini_02_body": {
+  "pt": "Crasaur de Escamas de Água",
+  "en": "Aquascale Crasaur"
+ },
+ "String_STR_M_L1_BF_EllunRiverSparky_02_body": {
+  "pt": "Sparkie das Pastagens",
+  "en": "Meadow Sparkie"
+ },
+ "String_STR_M_L1_BF_EllunRiverTog_01_body": {
+  "pt": "Tog Faminto",
+  "en": "Hungry Tog"
+ },
+ "String_STR_M_L1_BF_EllunRiverTog_04_body": {
+  "pt": "Tog do Campo",
+  "en": "Field Tog"
+ },
+ "String_STR_M_L1_BF_KFP_DarkEle_01_body": {
+  "pt": "Espírito Distorcido",
+  "en": "Distorted Spirit"
+ },
+ "String_STR_M_L1_BF_KFP_Skyray_01_body": {
+  "pt": "Skyray da Lagoa",
+  "en": "Pond Skyray"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Bee_01_01_body": {
+  "pt": "Abelha Listrada Gigante",
+  "en": "Giant Stripe Bee"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Bee_02_01_body": {
+  "pt": "Abelha Listrada",
+  "en": "Stripe Bee"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_ForestEle_01_body": {
+  "pt": "Espírito da Floresta da Serra",
+  "en": "Ridge Forest Spirit"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_ManDuriWar_01_V01_001_body": {
+  "pt": "Briguento Manduri Errante",
+  "en": "Wandering Manduri Fighter"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Muta_01_body": {
+  "pt": "Sylphen da Serra",
+  "en": "Ridge Sylphen"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Odspider_V02_body": {
+  "pt": "Aranha da Serra",
+  "en": "Ridge Spider"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Skyray_01_body": {
+  "pt": "Skyray da Serra",
+  "en": "Ridge Skyray"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Ursuss_01_body": {
+  "pt": "Ursus da Serra",
+  "en": "Ridge Ursus"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Ursuss_02_body": {
+  "pt": "Ursus Feroz da Serra",
+  "en": "Ridge Violent Ursus"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Zaif_01_001_body": {
+  "pt": "Zaif de Crina Amarela",
+  "en": "Yellow-Maned Zaif"
+ },
+ "String_STR_M_L1_BF_PilgrimsRidge_Zaif_01_002_body": {
+  "pt": "Zaif dos Saqueadores",
+  "en": "Marauders Zaif"
+ },
+ "String_STR_M_L1_BigMan_01_body": {
+  "pt": "Targon do Pântano",
+  "en": "Marsh Targon"
+ },
+ "String_STR_M_L1_CV_BF_Papis_01_001_body": {
+  "pt": "Papis Manso",
+  "en": "Gentle Papis"
+ },
+ "String_STR_M_L1_CV_BlueDranaMole_01_body": {
+  "pt": "Armadon Brilhante",
+  "en": "Splendent Armadon"
+ },
+ "String_STR_M_L1_CV_EarthElementalOd_01_body": {
+  "pt": "Kalgolem Brilhante",
+  "en": "Splendent Kalgolem"
+ },
+ "String_STR_M_L1_CV_Fungus_01_body": {
+  "pt": "Fungen de Chapéu Vermelho",
+  "en": "Red Cap Fungen"
+ },
+ "String_STR_M_L1_CV_Muta_01_body": {
+  "pt": "Sylphen das Terras Altas",
+  "en": "Highland Sylphen"
+ },
+ "String_STR_M_L1_CV_WaterSkyray_01_body": {
+  "pt": "Skyray do Vale do Kantas",
+  "en": "Cantas Valley Skyray"
+ },
+ "String_STR_M_L1_Crestlich_01_body": {
+  "pt": "Crestlich do Esporão de Pedra",
+  "en": "Stonebeak Crestlich"
+ },
+ "String_STR_M_L1_DP_BeritraC_06_001_body": {
+  "pt": "Dispositivo Gestor de Processamento de Drana",
+  "en": "Drana Processing Maintenance Machine"
+ },
+ "String_STR_M_L1_DP_Dracuni_01_002_body": {
+  "pt": "Trabalhador Escravo de Processamento Dracuni",
+  "en": "Dracuni Processing Laborer"
+ },
+ "String_STR_M_L1_DP_KrallPrst_01_001_body": {
+  "pt": "Curandeiro Krall Modificado",
+  "en": "Modified Krall Healer"
+ },
+ "String_STR_M_L1_DP_Oculazen_02_001_body": {
+  "pt": "Oculazen Gestor Laboral",
+  "en": "Labor Manager Oculazen"
+ },
+ "String_STR_M_L1_DP_R_DrakanElite_02_001_body": {
+  "pt": "Batedor Drakan da Área de Processamento",
+  "en": "Processing Facility Drakan Scout"
+ },
+ "String_STR_M_L1_ER_Crab_01_001_body": {
+  "pt": "Kensirid de Musgo do Pântano",
+  "en": "Marsh Moss Potcrab"
+ },
+ "String_STR_M_L1_ER_DarkEle_01_001_body": {
+  "pt": "Espírito Contaminado",
+  "en": "Contaminated Spirit"
+ },
+ "String_STR_M_L1_ER_OdSpider_04_V01_001_body": {
+  "pt": "Aranha de Od do Pântano",
+  "en": "Marsh Odyle Spider"
+ },
+ "String_STR_M_L1_ER_OdSpider_body": {
+  "pt": "Aranha de Od da Costa",
+  "en": "Coastal Odyle Spider"
+ },
+ "String_STR_M_L1_ER_WaterEle_01_001_body": {
+  "pt": "Zelophi da Costa",
+  "en": "Coastal Zelophi"
+ },
+ "String_STR_M_L1_ER_WaterEle_01_002_body": {
+  "pt": "Espírito da Água",
+  "en": "Water Spirit"
+ },
+ "String_STR_M_L1_ER_WaterSkyray_01_body": {
+  "pt": "Skyray do Lago do Rio Ellun",
+  "en": "Ellun River Lake Skyray"
+ },
+ "String_STR_M_L1_EllunRiverFish_01_body": {
+  "pt": "Skama do Lago",
+  "en": "Lake Skama"
+ },
+ "String_STR_M_L1_I2_KraoElite_03_body": {
+  "pt": "Harcon Aprimorado",
+  "en": "Enhanced Harcon"
+ },
+ "String_STR_M_L1_IoC_AbyssSwarm_01_CV01_001_body": {
+  "pt": "Enxame de Drana Escarlate",
+  "en": "Crimson Drana Swarm"
+ },
+ "String_STR_M_L1_IoC_Agrint_01_V01_001_body": {
+  "pt": "Agrint Escarlate",
+  "en": "Crimson Agrint"
+ },
+ "String_STR_M_L1_IoC_DranaManduriRanger_01_body": {
+  "pt": "Fundeiro Manduri Escarlate",
+  "en": "Crimson Manduri Slinger"
+ },
+ "String_STR_M_L1_IoC_DranaManduriWarrior_01_body": {
+  "pt": "Briguento Manduri Escarlate",
+  "en": "Crimson Manduri Fighter"
+ },
+ "String_STR_M_L1_IoC_DranaVar_02_001_body": {
+  "pt": "Aberração de Drana Escarlate",
+  "en": "Crimson Drana Mutant"
+ },
+ "String_STR_M_L1_IoC_DranaVar_03_body": {
+  "pt": "Predador de Drana Escarlate",
+  "en": "Crimson Drana Predator"
+ },
+ "String_STR_M_L1_IoC_ForestEle_01_CV01_001_body": {
+  "pt": "Mutação de Espora Escarlate",
+  "en": "Crimson Mutated Spore"
+ },
+ "String_STR_M_L1_IoC_Rafflesia_01_CV01_001_body": {
+  "pt": "Raflésia Escarlate",
+  "en": "Crimson Rafflesia"
+ },
+ "String_STR_M_L1_IoC_Spider_01_V01_001_body": {
+  "pt": "Aranha Escarlate",
+  "en": "Crimson Spider"
+ },
+ "String_STR_M_L1_KFP_BF_Coradon_01_body": {
+  "pt": "Coradon da Colina",
+  "en": "Hill Coradon"
+ },
+ "String_STR_M_L1_KFP_BF_EarthEleOd_01_001_body": {
+  "pt": "Espírito da Pedra da Colina",
+  "en": "Hill Stone Spirit"
+ },
+ "String_STR_M_L1_KFP_BF_Fossa_01_001_body": {
+  "pt": "Zaif da Colina",
+  "en": "Hill Zaif"
+ },
+ "String_STR_M_L1_KFP_BF_Kalnif_01_001_body": {
+  "pt": "Karnif Domesticado",
+  "en": "Tamed Karnif"
+ },
+ "String_STR_M_L1_KFP_BF_Lufilini_02_001_body": {
+  "pt": "Cobaia de Lupyllini",
+  "en": "Lupyllini Test Subject"
+ },
+ "String_STR_M_L1_KFP_BF_Manduri_01_body": {
+  "pt": "Manduri da Colina",
+  "en": "Hill Manduri"
+ },
+ "String_STR_M_L1_KFP_BF_Starturtle_01_001_body": {
+  "pt": "Tartarustrela da Lagoa",
+  "en": "Pond Starturtle"
+ },
+ "String_STR_M_L1_KFP_BF_Tog_01_body": {
+  "pt": "Tog da Colina",
+  "en": "Hill Tog"
+ },
+ "String_STR_M_L1_KFP_BF_UrsussBaby_01_body": {
+  "pt": "Ursus Jovem da Colina",
+  "en": "Hill Young Ursus"
+ },
+ "String_STR_M_L1_KFP_BF_Ursuss_01_body": {
+  "pt": "Ursus da Colina",
+  "en": "Hill Ursus"
+ },
+ "String_STR_M_L1_Nahid_A_BeritraC_03_001_body": {
+  "pt": "Cão de Guarda dos Drakan",
+  "en": "Drakan Guard Dog"
+ },
+ "String_STR_M_L1_Nahid_A_BeritraC_03_002_body": {
+  "pt": "Cão de Guarda dos Drakan de Nahid",
+  "en": "Nahid Drakan Guard Dog"
+ },
+ "String_STR_M_L1_Nahid_C_BeritraB_01_001_body": {
+  "pt": "Cobaia de Krall",
+  "en": "Krall Test Subject"
+ },
+ "String_STR_M_L1_Nahid_C_BeritraC_06_001_body": {
+  "pt": "Intruso Explorador",
+  "en": "Intruder Seeker"
+ },
+ "String_STR_M_L1_OV_BF_SparkyOd_01_body": {
+  "pt": "Sparkie da Floresta de Aullaeu",
+  "en": "Aullaeu Forest Sparkie"
+ },
+ "String_STR_M_L1_OV_BF_SparkyOd_02_body": {
+  "pt": "Sparkie Gigante da Floresta de Aullaeu",
+  "en": "Aullaeu Forest Giant Sparkie"
+ },
+ "String_STR_M_L1_OV_BF_SparkyOd_03_body": {
+  "pt": "Sparkie das Terras Altas",
+  "en": "Highland Sparkie"
+ },
+ "String_STR_M_L1_OV_BF_SparkyOd_04_body": {
+  "pt": "Sparkie Gigante das Terras Altas",
+  "en": "Highland Giant Sparkie"
+ },
+ "String_STR_M_L1_OV_BF_Spier_01_V01_01_body": {
+  "pt": "Aranha de Od da Floresta de Aullaeu",
+  "en": "Aullaeu Forest Odyle Spider"
+ },
+ "String_STR_M_L1_OV_Kuru_01_01_body": {
+  "pt": "Peão Kuru Ameaçador",
+  "en": "Harsh Kuru Tinkerer"
+ },
+ "String_STR_M_L1_OV_OwlMag_01_01_body": {
+  "pt": "Xamã Aprendiz Aullaeu",
+  "en": "Aullaeu Apprentice Shaman"
+ },
+ "String_STR_M_L1_OV_Pino_01_01_body": {
+  "pt": "Trabalhador Pino",
+  "en": "Pino Worker"
+ },
+ "String_STR_M_L1_OV_Pino_01_02_body": {
+  "pt": "Trabalhador Escravo Pino",
+  "en": "Pino Laborer"
+ },
+ "String_STR_M_L1_OV_Pino_02_01_body": {
+  "pt": "Trabalhador Pino Ameaçador",
+  "en": "Harsh Pino Worker"
+ },
+ "String_STR_M_L1_RF_CaveBat_01_body": {
+  "pt": "Mutação de Morcego de Drana",
+  "en": "Drana Mutated Bat"
+ },
+ "String_STR_M_L1_RF_Crab_01_body": {
+  "pt": "Mutação de Kensirid de Drana",
+  "en": "Drana Mutated Potcrab"
+ },
+ "String_STR_M_L1_RF_Dratona_01_001_body": {
+  "pt": "Dratona da Floresta Vermelha",
+  "en": "Scarlet Forest Dratona"
+ },
+ "String_STR_M_L1_RF_Fish_01_body": {
+  "pt": "Mutação de Skama de Drana",
+  "en": "Drana Mutated Skama"
+ },
+ "String_STR_M_L1_RI_A_Agrint_02_001_body": {
+  "pt": "Agrint Descarnado",
+  "en": "Thin Agrint"
+ },
+ "String_STR_M_L1_RI_A_EarthEle_01_body": {
+  "pt": "Espírito da Terra Desgarrado",
+  "en": "Wandering Earth Spirit"
+ },
+ "String_STR_M_L1_RI_A_ForestArc_01_body": {
+  "pt": "Guardião do Jardim",
+  "en": "Garden Guardian"
+ },
+ "String_STR_M_L1_RI_A_Gravi_01_body": {
+  "pt": "Gravi de Caule Vermelho",
+  "en": "Red Stalk Gravi"
+ },
+ "String_STR_M_L1_RI_A_Gravi_02_body": {
+  "pt": "Gravi de Folha Grande",
+  "en": "Large Leaf Gravi"
+ },
+ "String_STR_M_L1_RI_BF_Agrint_01_V02_001_body": {
+  "pt": "Agrint Antigo",
+  "en": "Old Agrint"
+ },
+ "String_STR_M_L1_RI_BF_Coradon_01_01_body": {
+  "pt": "Coradon do Jardim",
+  "en": "Garden Coradon"
+ },
+ "String_STR_M_L1_RI_BF_ForestWisp_01_body": {
+  "pt": "Ânima de Cipó Corrompida",
+  "en": "Tainted Vine Specter"
+ },
+ "String_STR_M_L1_RI_BF_OdSpider_04_V01_001_body": {
+  "pt": "Aranha do Jardim",
+  "en": "Garden Spider"
+ },
+ "String_STR_M_L1_RI_B_Gravi_01_body": {
+  "pt": "Gravi Mágico da Ilusão",
+  "en": "Illusion Magic Gravi"
+ },
+ "String_STR_M_L1_RI_B_Specter_01_body": {
+  "pt": "Espírito da Escuridão Desgarrado",
+  "en": "Wandering Dark Spirit"
+ },
+ "String_STR_M_L1_RI_B_WaterEle_01_body": {
+  "pt": "Espírito da Água Desgarrado",
+  "en": "Wandering Water Spirit"
+ },
+ "String_STR_M_L1_RI_B_WindEle_01_body": {
+  "pt": "Espírito do Vento Desgarrado",
+  "en": "Wandering Wind Spirit"
+ },
+ "String_STR_M_L1_RI_EarthEle_03_001_body": {
+  "pt": "Espírito da Rocha Escarpada",
+  "en": "Peculiar Rock Spirit"
+ },
+ "String_STR_M_L1_RI_FireEle_03_001_body": {
+  "pt": "Espírito da Chama Infernal",
+  "en": "Hellfire Spirit"
+ },
+ "String_STR_M_L1_RI_Papis_01_body": {
+  "pt": "Papis do Jardim",
+  "en": "Garden Papis"
+ },
+ "String_STR_M_L1_RI_Ursuss_01_body": {
+  "pt": "Ursus Caótico",
+  "en": "Confused Ursus"
+ },
+ "String_STR_M_L1_RI_WaterEle_03_001_body": {
+  "pt": "Espírito das Águas Correntes",
+  "en": "Torrent Spirit"
+ },
+ "String_STR_M_L1_RI_WindEle_03_body": {
+  "pt": "Espírito do Vento Cortante",
+  "en": "Brisk Spirit"
+ },
+ "String_STR_M_L1_Skyray_01_body": {
+  "pt": "Skyray da Pequena Floresta",
+  "en": "Small Forest Skyray"
+ },
+ "String_STR_M_L1_Skyray_02_body": {
+  "pt": "Skyray da Cachoeira do Rio Ellun",
+  "en": "Ellun River Falls Skyray"
+ },
+ "String_STR_M_L1_Spakle_01_body": {
+  "pt": "Sparkie Brilhante da Colina",
+  "en": "Splendent Hill Sparkie"
+ },
+ "String_STR_M_L1_StoneElemental_01_body": {
+  "pt": "Kalgolem Rígido",
+  "en": "Hard Kalgolem"
+ },
+ "String_STR_M_L1_SwampFish_01_body": {
+  "pt": "Skama Fedorento",
+  "en": "Foul Skama"
+ },
+ "String_STR_M_L1_SwampSlime_01_body": {
+  "pt": "Slime do Pântano",
+  "en": "Marsh Slime"
+ },
+ "String_STR_M_L1_TF_Agrint_01_body": {
+  "pt": "Agrint da Floresta",
+  "en": "Forest Agrint"
+ },
+ "String_STR_M_L1_TF_BF_Lepisma_01_001_body": {
+  "pt": "Slink de Tolbas",
+  "en": "Tolbas Slink"
+ },
+ "String_STR_M_L1_TF_BF_Lepisma_01_V01_body": {
+  "pt": "Slink Jovem de Tolbas",
+  "en": "Tolbas Young Slink"
+ },
+ "String_STR_M_L1_TF_BF_Rafflesia_01_001_body": {
+  "pt": "Nepenthes de Tolbas",
+  "en": "Tolbas Nepenthes"
+ },
+ "String_STR_M_L1_TF_BigMan_01_V02_body": {
+  "pt": "Targon da Floresta de Tolbas",
+  "en": "Tolbas Forest Targon"
+ },
+ "String_STR_M_L1_TF_Conuti_02_001_body": {
+  "pt": "Trabalhador Konutin de Tolbas",
+  "en": "Tolbas Konutin Worker"
+ },
+ "String_STR_M_L1_TF_Fossa_01_001_body": {
+  "pt": "Fuça em Ronda",
+  "en": "Patrolling Fossa"
+ },
+ "String_STR_M_L1_TF_Gravi_01_001_body": {
+  "pt": "Gravi de Tolbas",
+  "en": "Tolbas Gravi"
+ },
+ "String_STR_M_L1_TF_Gravi_02_001_body": {
+  "pt": "Gravi Mágico de Tolbas",
+  "en": "Tolbas Magic Gravi"
+ },
+ "String_STR_M_L1_TF_Kalnif_01_001_body": {
+  "pt": "Karnif de Tolbas",
+  "en": "Tolbas Karnif"
+ },
+ "String_STR_M_L1_TF_Kalnif_01_002_body": {
+  "pt": "Karnif Atroz de Tolbas",
+  "en": "Ferocious Tolbas Karnif"
+ },
+ "String_STR_M_L1_TF_Kalnif_01_body": {
+  "pt": "Karnif Feroz",
+  "en": "Ferocious Karnif"
+ },
+ "String_STR_M_L1_TF_Kuru_01_001_body": {
+  "pt": "Trabalhador Kuru de Tolbas",
+  "en": "Tolbas Kuru Worker"
+ },
+ "String_STR_M_L1_TF_Kuru_02_001_body": {
+  "pt": "Peão Kuru de Tolbas",
+  "en": "Tolbas Kuru Tinkerer"
+ },
+ "String_STR_M_L1_TF_Muta_02_body": {
+  "pt": "Sylphen Mutante",
+  "en": "Aberrant Sylphen"
+ },
+ "String_STR_M_L1_TF_Ursuss_01_001_body": {
+  "pt": "Ursus de Chifre Rígido",
+  "en": "Hardhorn Ursus"
+ },
+ "String_STR_M_L1_TF_Ursuss_01_V01_001_body": {
+  "pt": "Ursus de Chifre Filhote",
+  "en": "Baby Horn Ursus"
+ },
+ "String_STR_M_L1_TF_WaterSkyray_01_body": {
+  "pt": "Skyray do Lago da Floresta de Tolbas",
+  "en": "Tolbas Forest Lake Skyray"
+ },
+ "String_STR_M_L1_Tog_01_body": {
+  "pt": "Tog do Moledo",
+  "en": "Cairn Tog"
+ },
+ "String_STR_M_L1_TreeBranch_01_body": {
+  "pt": "Espírito de Cipó do Pântano",
+  "en": "Marsh Vine Spirit"
+ },
+ "String_STR_M_L1_Turtle_01_body": {
+  "pt": "Tartarustrela da Costa",
+  "en": "Coastal Starturtle"
+ },
+ "String_STR_M_L1_VF_Karnif_02_body": {
+  "pt": "Karnif Patrulhando",
+  "en": "Scouting Karnif"
+ },
+ "String_STR_M_L1_VF_Karnif_A1_01_body": {
+  "pt": "Karnif Adestrado",
+  "en": "Trained Karnif"
+ },
+ "String_STR_M_L1_VF_Karnif_A1_02_body": {
+  "pt": "Karnif Violento",
+  "en": "Unruly Karnif"
+ },
+ "String_STR_M_L1_VF_Karnif_R_01_body": {
+  "pt": "Karnif Sensível",
+  "en": "Sensitive Karnif"
+ },
+ "String_STR_M_L1_VF_KrallPrst_01_body": {
+  "pt": "Soldado Xamã Krall",
+  "en": "Krall Warshaman"
+ },
+ "String_STR_M_L1_VF_KrallReg_01_body": {
+  "pt": "Soldado Armado Krall",
+  "en": "Krall Armed Soldier"
+ },
+ "String_STR_M_L1_VF_KrallWar_03_1_body": {
+  "pt": "Sentinela Krall Aprimorado",
+  "en": "Enhanced Krall Sentry"
+ },
+ "String_STR_M_L1_VF_KrallWar_05_1_body": {
+  "pt": "Soldado de Assalto Krall",
+  "en": "Krall Assault Trooper"
+ },
+ "String_STR_M_L1_VF_KrallWar_10_body": {
+  "pt": "Combatente Krall Aprimorado",
+  "en": "Enhanced Krall Combatant"
+ },
+ "String_STR_M_L1_VF_KrallWar_13_body": {
+  "pt": "Sentinela Krall",
+  "en": "Krall Sentinel"
+ },
+ "String_STR_M_L1_VF_Neuth_01_body": {
+  "pt": "Klaw Errante",
+  "en": "Wandering Klaw"
+ },
+ "String_STR_M_L1_VF_Sparky_01_body": {
+  "pt": "Sparkie Selvagem",
+  "en": "Wild Sparkie"
+ },
+ "String_STR_M_L1_ValleyFungy_01_body": {
+  "pt": "Fungie de Chapéu Vermelho",
+  "en": "Red Cap Fungie"
+ },
+ "String_STR_M_PD_Draupnir_NagaElite_01_body": {
+  "pt": "Lakshmi Onírica",
+  "en": "Phantasmal Lakshmi"
+ },
+ "String_STR_M_PD_Draupnir_NagaElite_02_body": {
+  "pt": "Predador Saraswati",
+  "en": "Predator Saraswati"
+ },
+ "String_STR_M_PD_Fire_Temple_AshGuard_01_body": {
+  "pt": "Murute da Fumaça Negra",
+  "en": "Black Smoke Murute"
+ },
+ "String_STR_M_PD_Fire_Temple_FireGuard_01_body": {
+  "pt": "Ignus da Chama Vermelha",
+  "en": "Red Spark Ignus"
+ },
+ "String_STR_M_PD_Fire_Temple_Rotan_01_body": {
+  "pt": "Rotan da Lâmina Prateada",
+  "en": "Silver Blade Rotan"
+ },
+ "String_STR_Map_ConqueredTerritory_L_R1_body": {
+  "pt": "Acampamento dos Desertores",
+  "en": "Deserter Encampment"
+ },
+ "String_STR_Map_Draupnir_body": {
+  "en": "Draupnir"
+ },
+ "String_STR_Map_Fire_Temple_body": {
+  "pt": "Templo Divino do Fogo",
+  "en": "Fire Temple"
+ },
+ "String_STR_Map_Krao_Cave_body": {
+  "pt": "Caverna de Krao",
+  "en": "Krao Cave"
+ },
+ "String_STR_Map_World_L_A_SpiritsRetreat_01_body": {
+  "pt": "Recanto dos Espíritos",
+  "en": "Spirit's Rest"
+ },
+ "String_STR_Subzone_AltamiaHighland_Eastern_body": {
+  "pt": "Leste do Planalto de Altamia",
+  "en": "Eastern Altamia Highland"
+ },
+ "String_STR_Subzone_AltamiaHighland_Southern_body": {
+  "pt": "Sul do Planalto de Altamia",
+  "en": "Southern Altamia Highland"
+ },
+ "String_STR_Subzone_AltamiaHighland_Western_body": {
+  "pt": "Oeste do Planalto de Altamia",
+  "en": "Western Altamia Highland"
+ },
+ "String_STR_Subzone_Altamiacanyon_body": {
+  "pt": "Desfiladeiro de Altamia",
+  "en": "Altamia Canyon"
+ },
+ "String_STR_Subzone_BasfeltRuins_body": {
+  "pt": "Ruínas de Basfelt",
+  "en": "Basfelt Ruins"
+ },
+ "String_STR_Subzone_BlackClawVillage_body": {
+  "pt": "Aldeia Garra Negra",
+  "en": "Black Claw Village"
+ },
+ "String_STR_Subzone_BlackShardZone_A_body": {
+  "pt": "Zona de Fragmentos Negros - Zona de Conflito de Kration",
+  "en": "Black Fragments Area - Kration Conflict Zone"
+ },
+ "String_STR_Subzone_BlackShardZone_B_body": {
+  "pt": "Zona de Fragmentos Negros - Ilha Solitária",
+  "en": "Black Fragments Area - Lonely Island"
+ },
+ "String_STR_Subzone_BlackShardZone_C_body": {
+  "pt": "Zona de Fragmentos Negros - Fragmento de Kibelium",
+  "en": "Black Fragments Area - Kibelium Fragment"
+ },
+ "String_STR_Subzone_BlackShardZone_D_body": {
+  "pt": "Zona de Fragmentos Negros - Ilha Abandonada",
+  "en": "Black Fragments Area - Abandoned Island"
+ },
+ "String_STR_Subzone_CalderonCanyon_body": {
+  "pt": "Desfiladeiro de Calderon",
+  "en": "Calderon Canyon"
+ },
+ "String_STR_Subzone_CantasValley_Eastern_body": {
+  "pt": "Vale do Kantas Oriental",
+  "en": "Eastern Cantas Valley"
+ },
+ "String_STR_Subzone_CantasValley_Western_body": {
+  "pt": "Vale do Kantas Ocidental",
+  "en": "Western Cantas Valley"
+ },
+ "String_STR_Subzone_CheckpointofGarolik_body": {
+  "pt": "Posto de Controle de Galorik",
+  "en": "Galorik's Inspection Area"
+ },
+ "String_STR_Subzone_CollapsedObservatory_body": {
+  "pt": "Torre de Barreira de Verteron Desmoronada",
+  "en": "Collapsed Verteron Barrier Tower"
+ },
+ "String_STR_Subzone_ContaminatedSanctuary_body": {
+  "pt": "Sacrário Contaminado",
+  "en": "Contaminated Sanctum"
+ },
+ "String_STR_Subzone_Daeva_Garrision_D1_1_body": {
+  "pt": "Covil dos Saqueadores de Túmulos",
+  "en": "Graverobber Den"
+ },
+ "String_STR_Subzone_Daeva_Garrision_D1_5_body": {
+  "pt": "Posto da Legião Flauke",
+  "en": "Flauke Legion Outpost"
+ },
+ "String_STR_Subzone_DestroyedDebris_A_body": {
+  "pt": "Remanentes Destruídos - Campo de Batalha do Crepúsculo",
+  "en": "Devastated Remnants - Dusk Battlefield"
+ },
+ "String_STR_Subzone_DestroyedDebris_B_body": {
+  "pt": "Remanentes Destruídos - Ilha da Sombra",
+  "en": "Devastated Remnants - Shade Island"
+ },
+ "String_STR_Subzone_DestroyedDebris_C_body": {
+  "pt": "Remanentes Destruídos - Rocha Plana Desgastada",
+  "en": "Devastated Remnants - Weathered Outcrop"
+ },
+ "String_STR_Subzone_DestroyedDebris_D_body": {
+  "pt": "Remanentes Destruídos - Ilha do Exílio",
+  "en": "Devastated Remnants - Exile Island"
+ },
+ "String_STR_Subzone_DestroyedTempleSite_body": {
+  "pt": "Terras do Templo Divino Destruído",
+  "en": "Destroyed Temple Site"
+ },
+ "String_STR_Subzone_Dragon_Garrision_D1_1_body": {
+  "pt": "Unidade de Vigilância Externa do Sacrário",
+  "en": "Sanctum Outskirts Watch"
+ },
+ "String_STR_Subzone_DranaCultivationArea_body": {
+  "pt": "Área de Cultivo de Drana",
+  "en": "Drana Cultivation Area"
+ },
+ "String_STR_Subzone_DranaProcessingArea_body": {
+  "pt": "Área de Processamento de Drana",
+  "en": "Drana Processing Area"
+ },
+ "String_STR_Subzone_Dranactus_body": {
+  "en": "Dranactus"
+ },
+ "String_STR_Subzone_Draupnir_Subzone_1_body": {
+  "pt": "Abismo do Mistério",
+  "en": "Unknown Abyss"
+ },
+ "String_STR_Subzone_Draupnir_Subzone_3_body": {
+  "pt": "Céu Onírico",
+  "en": "Phantasmal Sky"
+ },
+ "String_STR_Subzone_DredgionCrashSite_body": {
+  "pt": "Local da Queda de Dredgion",
+  "en": "Dredgion Crash Site"
+ },
+ "String_STR_Subzone_DundunmongsShelter_body": {
+  "pt": "Recanto de Dundu",
+  "en": "Dundu's Rest"
+ },
+ "String_STR_Subzone_EasternGribadeCanyon_body": {
+  "pt": "Leste das Colinas de Gribade",
+  "en": "Eastern Gribade Highland"
+ },
+ "String_STR_Subzone_EasternTolbasForest_body": {
+  "pt": "Leste da Floresta de Tolbas",
+  "en": "Eastern Tolbas Forest"
+ },
+ "String_STR_Subzone_EllunRiverMarsh_Eastern_body": {
+  "pt": "Pântano Contaminado",
+  "en": "Contaminated Marsh"
+ },
+ "String_STR_Subzone_EllunRiverMarsh_body": {
+  "pt": "Pântano do Rio Ellun",
+  "en": "Ellun River Marsh"
+ },
+ "String_STR_Subzone_EllunRiver_Grassland_body": {
+  "pt": "Pastagens do Rio Ellun",
+  "en": "Ellun River Meadow"
+ },
+ "String_STR_Subzone_EllunRiver_Middle_AnguishHill_body": {
+  "pt": "Colina do Lamento",
+  "en": "Anguish Hill"
+ },
+ "String_STR_Subzone_EllunRiver_Middle_PlundererCamp_body": {
+  "pt": "Posto de Miros",
+  "en": "Miros Post"
+ },
+ "String_STR_Subzone_EllunRiver_Middle_body": {
+  "pt": "Curso Médio do Rio Ellun",
+  "en": "Ellun River Midstream"
+ },
+ "String_STR_Subzone_FafniteDeposit_body": {
+  "pt": "Jazida de Fafnite",
+  "en": "Fafnite Deposit"
+ },
+ "String_STR_Subzone_FierceFightHill_body": {
+  "pt": "Colina da Batalha Feroz",
+  "en": "Battlescar Mound"
+ },
+ "String_STR_Subzone_Fire_Temple_Cave2_body": {
+  "pt": "Templo Divino Ardente",
+  "en": "Burning Temple"
+ },
+ "String_STR_Subzone_FugitiveVillage_body": {
+  "pt": "Vila dos Foragidos",
+  "en": "Safe Haven"
+ },
+ "String_STR_Subzone_GardenofMiraju_body": {
+  "pt": "Jardim do Deus da Ilusão",
+  "en": "Garden of the Illusion God"
+ },
+ "String_STR_Subzone_GarrisonTerritory_L1_R2_body": {
+  "pt": "Esconderijo de Romlon",
+  "en": "Romlon's Hideout"
+ },
+ "String_STR_Subzone_IdunsLake_body": {
+  "pt": "Lago de Idun",
+  "en": "Idun's Lake"
+ },
+ "String_STR_Subzone_ImpetusiumSquare_body": {
+  "pt": "Pátio Impetusium",
+  "en": "Impetusium Square"
+ },
+ "String_STR_Subzone_IslandofImmortality_body": {
+  "pt": "Ilha Imortal",
+  "en": "Immortal Isle"
+ },
+ "String_STR_Subzone_KrakaFootPath_body": {
+  "pt": "Caminho da Colina Kraka",
+  "en": "Kraka Footpath"
+ },
+ "String_STR_Subzone_KrallCommandPost_body": {
+  "pt": "Posto de Comando Krall",
+  "en": "Krall Command Post"
+ },
+ "String_STR_Subzone_KraoCave_Named_1_body": {
+  "pt": "Caverna Vermelha",
+  "en": "Red Cavity"
+ },
+ "String_STR_Subzone_MahindelRiverCliff_body": {
+  "pt": "Penhasco de Mahindel",
+  "en": "Mahindel Cliff"
+ },
+ "String_STR_Subzone_MahindelRiver_body": {
+  "pt": "Rio Mahindel",
+  "en": "Mahindel River"
+ },
+ "String_STR_Subzone_MoslanForest_body": {
+  "pt": "Floresta de Moslan",
+  "en": "Moslan Forest"
+ },
+ "String_STR_Subzone_MuninBridge_body": {
+  "pt": "Ponte de Munin",
+  "en": "Munin's Bridge"
+ },
+ "String_STR_Subzone_NahidArmyGarrison_body": {
+  "pt": "Fortaleza da Brigada de Nahid",
+  "en": "Nahid Brigade Fortress"
+ },
+ "String_STR_Subzone_OldShelterOfPilgrim_body": {
+  "pt": "Recanto do Peregrino",
+  "en": "Pilgrim's Rest"
+ },
+ "String_STR_Subzone_OwllauDeportation_body": {
+  "pt": "Floresta dos Exilados",
+  "en": "Forest of Exiles"
+ },
+ "String_STR_Subzone_OwllauVillage_body": {
+  "pt": "Aldeia Aullaeu",
+  "en": "Aullaeu Village"
+ },
+ "String_STR_Subzone_PamosFarm_body": {
+  "pt": "Fazenda Pamos",
+  "en": "Pamos Farm"
+ },
+ "String_STR_Subzone_PilgrimsRidgePath_body": {
+  "pt": "Serra do Peregrino",
+  "en": "Pilgrim's Ridge"
+ },
+ "String_STR_Subzone_PurificatoryForest_body": {
+  "pt": "Floresta da Purificação",
+  "en": "Purifying Forest"
+ },
+ "String_STR_Subzone_QuairerkCamp_body": {
+  "pt": "Acampamento Quai",
+  "en": "Quai Campsite"
+ },
+ "String_STR_Subzone_RedForest_body": {
+  "pt": "Floresta Vermelha",
+  "en": "Scarlet Forest"
+ },
+ "String_STR_Subzone_RockTombHill_body": {
+  "pt": "Colina do Túmulo de Rocha",
+  "en": "Rock Tomb Hill"
+ },
+ "String_STR_Subzone_RootsofReshanta_body": {
+  "pt": "Raiz de Reshanta",
+  "en": "Reshanta's Root"
+ },
+ "String_STR_Subzone_SanctumWatchpost_body": {
+  "pt": "Posto de Vigilância do Sacrário",
+  "en": "Sanctum Outpost"
+ },
+ "String_STR_Subzone_Seggurheim_body": {
+  "pt": "Urtumheim",
+  "en": "Uruthumheim"
+ },
+ "String_STR_Subzone_SilenceHill_body": {
+  "pt": "Colina Silenciosa",
+  "en": "Silent Hill"
+ },
+ "String_STR_Subzone_SouthernGribadeHillLand_body": {
+  "pt": "Sul das Colinas de Gribade",
+  "en": "Southern Gribade Highland"
+ },
+ "String_STR_Subzone_SulfurTreeIsland_A_body": {
+  "pt": "Ilha da Árvore Sulfúrica - Ilha da Marca",
+  "en": "Sulfur Tree Island - Branding Island"
+ },
+ "String_STR_Subzone_SulfurTreeIsland_B_body": {
+  "pt": "Ilha da Árvore Sulfúrica - Rio de Seiva Putrefata",
+  "en": "Sulfur Tree Island - River of Rotten Sap"
+ },
+ "String_STR_Subzone_SulfurTreeIsland_C_body": {
+  "pt": "Ilha da Árvore Sulfúrica - Pântano Sulfúrico",
+  "en": "Sulfur Tree Island - Sulfur Swamp"
+ },
+ "String_STR_Subzone_TolbasForest_Northern_body": {
+  "pt": "Norte da Floresta de Tolbas",
+  "en": "Northern Tolbas Forest"
+ },
+ "String_STR_Subzone_TolbasForest_Southern_body": {
+  "pt": "Sul da Floresta de Tolbas",
+  "en": "Southern Tolbas Forest"
+ },
+ "String_STR_Subzone_TraneinHill_body": {
+  "pt": "Colinas de Tranein",
+  "en": "Tranein Highland"
+ },
+ "String_STR_Subzone_TraneinPond_body": {
+  "pt": "Lagoa de Tranein",
+  "en": "Tranein Pond"
+ },
+ "String_STR_Subzone_UnnamedCemetery_body": {
+  "pt": "Cemitério Sem Nome",
+  "en": "Nameless Cemetery"
+ },
+ "String_STR_Subzone_VerteronCitadelRuin_DestroyedAbyssGate_body": {
+  "pt": "Portal do Abismo Destruído",
+  "en": "Destroyed Abyss Gate"
+ },
+ "String_STR_Subzone_VerteronCitadelRuin_body": {
+  "pt": "Ruínas da Fortaleza de Verteron",
+  "en": "Verteron Fortress Ruins"
+ },
+ "String_STR_Subzone_WesternGribadeCanyon_body": {
+  "pt": "Oeste das Colinas de Gribade",
+  "en": "Western Gribade Highland"
+ },
+ "String_STR_Subzone_WingsofSielArchipelago_A_body": {
+  "pt": "Arquipélago de Asas de Siel - Asa Esquerda de Siel",
+  "en": "Archipelago of Siel's Wings - Siel's Left Wing"
+ },
+ "String_STR_Subzone_WingsofSielArchipelago_B_body": {
+  "pt": "Arquipélago de Asas de Siel - Asa Direita de Siel",
+  "en": "Archipelago of Siel's Wings - Siel's Right Wing"
+ },
+ "String_STR_Subzone_WingsofSielArchipelago_D_body": {
+  "pt": "Arquipélago de Asas de Siel - Túmulo de Aço",
+  "en": "Archipelago of Siel's Wings - Grave of Steel"
+ },
+ "String_STR_sub_N_Echo_body": {
+  "pt": "Espírito da Floresta",
+  "en": "Forest Spirit"
+ }
+}

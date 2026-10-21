@@ -1,0 +1,22 @@
+{
+ "cogni": {
+  "pt": "Intelectual",
+  "en": "Cogni"
+ },
+ "fera": {
+  "pt": "Feral",
+  "en": "Fera"
+ },
+ "natura": {
+  "pt": "Natural",
+  "en": "Natura"
+ },
+ "varian": {
+  "pt": "Variante",
+  "en": "Varian"
+ },
+ "special": {
+  "pt": "Especial",
+  "en": "Special"
+ }
+}

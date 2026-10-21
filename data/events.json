@@ -1,0 +1,340 @@
+[
+ {
+  "id": "invasion-elyos",
+  "kind": "event",
+  "name": "Post_10120101_sender_name",
+  "where": [
+   "String_STR_Map_World_L_A_body"
+  ],
+  "side": "elyos",
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   30,
+   90,
+   150,
+   210,
+   270,
+   330,
+   390,
+   450,
+   510,
+   570,
+   630,
+   690,
+   750,
+   810,
+   870,
+   930,
+   990,
+   1050,
+   1110,
+   1170,
+   1230,
+   1290,
+   1350,
+   1410
+  ],
+  "minutes": 13,
+  "enter": 180
+ },
+ {
+  "id": "festival-elyos",
+  "kind": "event",
+  "name": "InputKeyMapping_UI_ShugoFesta_desc",
+  "where": [
+   "String_STR_Map_World_L_A_body"
+  ],
+  "side": "elyos",
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   0,
+   60,
+   120,
+   180,
+   240,
+   300,
+   360,
+   420,
+   480,
+   540,
+   600,
+   660,
+   720,
+   780,
+   840,
+   900,
+   960,
+   1020,
+   1080,
+   1140,
+   1200,
+   1260,
+   1320,
+   1380
+  ],
+  "minutes": 7,
+  "enter": 180
+ },
+ {
+  "id": "invasion-asmodian",
+  "kind": "event",
+  "name": "Post_10120101_sender_name",
+  "where": [
+   "String_STR_Map_World_D_A_body"
+  ],
+  "side": "asmodian",
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   30,
+   90,
+   150,
+   210,
+   270,
+   330,
+   390,
+   450,
+   510,
+   570,
+   630,
+   690,
+   750,
+   810,
+   870,
+   930,
+   990,
+   1050,
+   1110,
+   1170,
+   1230,
+   1290,
+   1350,
+   1410
+  ],
+  "minutes": 13,
+  "enter": 180
+ },
+ {
+  "id": "festival-asmodian",
+  "kind": "event",
+  "name": "InputKeyMapping_UI_ShugoFesta_desc",
+  "where": [
+   "String_STR_Map_World_D_A_body"
+  ],
+  "side": "asmodian",
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   0,
+   60,
+   120,
+   180,
+   240,
+   300,
+   360,
+   420,
+   480,
+   540,
+   600,
+   660,
+   720,
+   780,
+   840,
+   900,
+   960,
+   1020,
+   1080,
+   1140,
+   1200,
+   1260,
+   1320,
+   1380
+  ],
+  "minutes": 7,
+  "enter": 180
+ },
+ {
+  "id": "artifact",
+  "kind": "event",
+  "name": "String_UI_ARTIFACTWAR_HUD_EVENT_TITLE_body",
+  "where": [
+   "String_STR_Map_Abyss_Reshanta_A_body"
+  ],
+  "side": null,
+  "days": [
+   1,
+   4,
+   6
+  ],
+  "starts": [
+   1260
+  ],
+  "minutes": 0
+ },
+ {
+  "id": "boss-kaira",
+  "kind": "boss",
+  "name": "String_STR_M_AR1_BERITRAD_01_001_body",
+  "also": [],
+  "where": [
+   "String_STR_Map_Abyss_Reshanta_A_body"
+  ],
+  "side": null,
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   60,
+   240,
+   420,
+   600,
+   780,
+   960,
+   1140,
+   1320
+  ],
+  "minutes": 0
+ },
+ {
+  "id": "boss-nahma",
+  "kind": "boss",
+  "name": "String_STR_M_AR1_RR_ABBOSS_01_001_body",
+  "also": [],
+  "where": [
+   "String_STR_Map_Abyss_Reshanta_A_body"
+  ],
+  "side": null,
+  "days": [
+   0,
+   5
+  ],
+  "starts": [
+   1260
+  ],
+  "minutes": 0
+ },
+ {
+  "id": "boss-tamasa-argo-kaira",
+  "kind": "boss",
+  "name": "String_STR_M_AR1_RADVIMA_01_CV02_001_body",
+  "also": [
+   "String_STR_M_AR1_WSA_ELEKING_01_V02_002_body",
+   "String_STR_M_AR1_BERITRAD_01_002_body"
+  ],
+  "where": [
+   "String_STR_Map_Abyss_Reshanta_A_body"
+  ],
+  "side": null,
+  "days": [
+   1,
+   4,
+   6
+  ],
+  "starts": [
+   1290
+  ],
+  "minutes": 0
+ },
+ {
+  "id": "rift",
+  "kind": "event",
+  "name": "=rift",
+  "where": [
+   "String_STR_Map_World_L_A_body",
+   "String_STR_Map_World_D_A_body"
+  ],
+  "side": null,
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   120,
+   300,
+   480,
+   660,
+   840,
+   1020,
+   1200,
+   1380
+  ],
+  "minutes": 10
+ },
+ {
+  "id": "daily",
+  "kind": "reset",
+  "name": "=daily",
+  "where": [],
+  "side": null,
+  "days": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "starts": [
+   420
+  ],
+  "minutes": 0,
+  "utc": true
+ },
+ {
+  "id": "weekly",
+  "kind": "reset",
+  "name": "=weekly",
+  "where": [],
+  "side": null,
+  "days": [
+   3
+  ],
+  "starts": [
+   420
+  ],
+  "minutes": 0,
+  "utc": true
+ }
+]
