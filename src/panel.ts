@@ -165,8 +165,11 @@ function renderPets() {
   const rows = filteredPets();
   const all = PETS.filter((p) => p.genus !== "special" && !p.unreleased);
   const missingTotal = all.reduce((sum, p) => { const g = progress(p.id); return sum + soulsToMax(g.level, g.points); }, 0);
-  const maxed = all.filter((p) => progress(p.id).level >= 3).length;
-  $("#pet-summary").textContent = `${maxed} de ${all.length} pets no nível 3 · ${missingTotal} almas faltando no total · ${rows.length} pets na lista`;
+  // As the game counts them: every pet you have, Special ones included (they
+  // come at their highest level and take no souls).
+  const owned = PETS.filter((p) => !p.unreleased && progress(p.id).level >= 1);
+  const maxed = owned.filter((p) => p.genus === "special" || progress(p.id).level >= 3).length;
+  $("#pet-summary").textContent = `Coleção ${owned.length} · ${maxed} no nível máximo · ${missingTotal} almas faltando no total · ${rows.length} pets na lista`;
 
   $("#pets").replaceChildren(
     ...rows.map((r) => {
