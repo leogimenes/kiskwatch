@@ -19,11 +19,59 @@ pub struct Settings {
     /// Alarm lead times (minutes) by timer id.
     pub alarms: BTreeMap<String, Vec<u32>>,
     pub click_through: bool,
+    /// Show the timers overlay, and the pets overlay.
+    pub timer_overlay: bool,
+    pub pet_overlay: bool,
+    /// The pets kept on the pets overlay, in the order pinned.
+    pub pinned_pets: Vec<u32>,
+    pub a11y: Accessibility,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { server_id: DEFAULT_SERVER, alarms: BTreeMap::new(), click_through: false }
+        Self {
+            server_id: DEFAULT_SERVER,
+            alarms: BTreeMap::new(),
+            click_through: false,
+            timer_overlay: true,
+            pet_overlay: false,
+            pinned_pets: Vec::new(),
+            a11y: Accessibility::default(),
+        }
+    }
+}
+
+/// How the panel and the overlays look and sound.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Accessibility {
+    /// Text size, percent.
+    pub font_scale: u32,
+    pub high_contrast: bool,
+    pub reduce_motion: bool,
+    /// Tell pet types apart by letter and pattern too, not only by color.
+    pub colorblind: bool,
+    /// The overlays' background, percent opaque.
+    pub overlay_opacity: u32,
+    pub sound: bool,
+    /// Alarm volume, percent.
+    pub volume: u32,
+    /// How long an alarm stays on the overlay, seconds.
+    pub alert_seconds: u32,
+}
+
+impl Default for Accessibility {
+    fn default() -> Self {
+        Self {
+            font_scale: 100,
+            high_contrast: false,
+            reduce_motion: false,
+            colorblind: false,
+            overlay_opacity: 72,
+            sound: true,
+            volume: 60,
+            alert_seconds: 60,
+        }
     }
 }
 

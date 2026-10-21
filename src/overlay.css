@@ -1,10 +1,19 @@
-:root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; }
+@import "./theme.css";
+:root {
+  --overlay-alpha: 0.72;
+  --o-text: #e6ebf2;
+  --o-muted: #8d99ab;
+  --o-gold: #ffe08c;
+  --o-edge: rgba(120, 200, 255, 0.35);
+  color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px;
+}
+:root.contrast { --overlay-alpha: 0.95; --o-text: #fff; --o-muted: #dfe5ee; --o-edge: #fff; }
 html, body { margin: 0; background: transparent; overflow: hidden; }
-#frame { margin: 4px; border-radius: 8px; background: rgba(12, 17, 26, 0.72); color: #e6ebf2; border: 1px solid rgba(120, 200, 255, 0.35); }
+#frame { margin: 4px; border-radius: 8px; background: rgba(12, 17, 26, var(--overlay-alpha)); color: var(--o-text); border: 1px solid var(--o-edge); }
 .bar { padding: 4px 8px; font-size: 11px; color: #78c8ff; cursor: move; user-select: none; }
 #next { list-style: none; margin: 0; padding: 0 8px 8px; }
 #next li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
-#next .when { font-variant-numeric: tabular-nums; color: #ffe08c; }
-#next .empty { color: #8d99ab; }
+#next .when { font-variant-numeric: tabular-nums; color: var(--o-gold); }
+#next .empty { color: var(--o-muted); }
 .alert { margin: 0 8px 6px; padding: 6px 8px; border-radius: 6px; background: #ffe08c; color: #1a1405; font-weight: 600; animation: pop 0.3s ease-out; }
 @keyframes pop { from { transform: scale(0.9); opacity: 0; } }

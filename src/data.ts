@@ -66,3 +66,27 @@ export const name = (texts: Texts): string => texts.pt ?? texts.en ?? "";
 export const SOULS_PER_LEVEL = [5, 25, 75];
 export const soulsToMax = (level: number, points: number): number =>
   Math.max(0, SOULS_PER_LEVEL.slice(Math.min(level, 3)).reduce((a, b) => a + b, 0) - points);
+
+/** A pet type's letter, so it reads without color too. */
+export const GENUS_MARK: Record<string, string> = { cogni: "I", fera: "F", natura: "N", varian: "V", special: "E" };
+
+/** The current level's souls: how many it takes and how many are in. */
+export function levelProgress(level: number, points: number): { need: number; have: number } | null {
+  if (level >= SOULS_PER_LEVEL.length) return null;
+  const need = SOULS_PER_LEVEL[level];
+  return { need, have: Math.min(points, need) };
+}
+
+export const PET_BY_ID = new Map(PETS.map((p) => [p.id, p]));
+
+/** The page that shows a monster's spawns on the game's map art (Aion 2 Timers). */
+export function mapLink(d: Drop): string {
+  const q = new URLSearchParams({ map: String(d.mapId), pet: String(d.npcId), lang: "pt" });
+  const en = TEXT[d.npc]?.en;
+  if (en) q.set("petName", en);
+  if (d.kibelisk) {
+    q.set("x", String(Math.round(d.kibelisk.at[0])));
+    q.set("y", String(Math.round(d.kibelisk.at[1])));
+  }
+  return `https://www.aion2timers.com/map/?${q}`;
+}

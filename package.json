@@ -11,7 +11,8 @@
     "import-data": "node scripts/import-a2tools-data.mjs"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.1.1"
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-opener": "^2.7.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.1.0",
