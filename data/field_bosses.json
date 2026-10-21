@@ -1,0 +1,296 @@
+{
+ "2001": {
+  "level": 65,
+  "name": "String_STR_M_AR1_WSA_ELEKING_01_V02_001_body",
+  "side": null,
+  "where": "String_STR_Map_Abyss_Reshanta_A_body"
+ },
+ "101001": {
+  "level": 45,
+  "name": "String_STR_M_L1_CV_Keneir_Named_02_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101002": {
+  "level": 45,
+  "name": "String_STR_M_L1_BigMan02_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101003": {
+  "level": 45,
+  "name": "String_STR_M_L1_CV_Keneir_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101004": {
+  "level": 45,
+  "name": "String_STR_M_L1_VF_KrallElite_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101005": {
+  "level": 45,
+  "name": "String_STR_M_L1_VF_KrallElite_Named_02_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101006": {
+  "level": 45,
+  "name": "String_STR_M_L1_VF_Neuth_01_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101007": {
+  "level": 45,
+  "name": "String_STR_M_L1_BF_Coradon_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101008": {
+  "level": 45,
+  "name": "String_STR_M_L1_TF_Ursuss_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101009": {
+  "level": 45,
+  "name": "String_STR_M_L1_TF_Kalnif_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101010": {
+  "level": 45,
+  "name": "String_STR_M_L1_AH_A_SuraMag_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101011": {
+  "level": 45,
+  "name": "String_STR_M_L1_AC_WaterEle_04_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101012": {
+  "level": 45,
+  "name": "String_STR_M_L1_RI_Kasia_01_Named_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101013": {
+  "level": 45,
+  "name": "String_STR_M_L1_AH_B_SpiritKnt_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101014": {
+  "level": 45,
+  "name": "String_STR_M_L1_AH_C_Guardit_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101015": {
+  "level": 45,
+  "name": "String_STR_M_L1_DP_DrakanElite_03_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101016": {
+  "level": 45,
+  "name": "String_STR_M_L1_DP_BeritraD_04_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101017": {
+  "level": 45,
+  "name": "String_STR_M_L1_OV_A_OwlMagic_01_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101018": {
+  "level": 45,
+  "name": "String_STR_M_L1_OV_A_OwlElite_01_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101019": {
+  "level": 45,
+  "name": "String_STR_M_L1_OV_C_OwlElite_01_CV01_Named_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101020": {
+  "level": 45,
+  "name": "String_STR_M_L1_Nahid_C_BeritraB_01_002_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101021": {
+  "level": 51,
+  "name": "String_STR_M_FE_IoE_OdiumGartua_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101022": {
+  "level": 48,
+  "name": "String_STR_M_D1_FieldBoss_BeritraD_01_001_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101023": {
+  "level": 48,
+  "name": "String_STR_M_D1_FieldBoss_Kashapa_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "101024": {
+  "level": 48,
+  "name": "String_STR_M_D1_FieldBoss_Lagta_01_body",
+  "side": "elyos",
+  "where": "String_STR_Map_World_L_A_body"
+ },
+ "111001": {
+  "level": 45,
+  "name": "String_STR_M_D1_DC_DranaVar_EL_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111002": {
+  "level": 45,
+  "name": "String_STR_M_D1_UC_SuraWar_05_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111003": {
+  "level": 45,
+  "name": "String_STR_M_D1_SW_DracoWar_01_V02_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111004": {
+  "level": 45,
+  "name": "String_STR_M_D1_SW_Varg_03_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111005": {
+  "level": 45,
+  "name": "String_STR_M_D1_MF_UrsussElite_01_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111006": {
+  "level": 45,
+  "name": "String_STR_M_D1_MF_DranaVar_02_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111007": {
+  "level": 45,
+  "name": "String_STR_M_D1_SH_NornirVar_02_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111008": {
+  "level": 45,
+  "name": "String_STR_M_D1_PF_WaterEle_Elite_01_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111009": {
+  "level": 45,
+  "name": "String_STR_M_D1_DR_SkurvWar_04_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111010": {
+  "level": 45,
+  "name": "String_STR_M_D1_DR_DrakanElite_03_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111011": {
+  "level": 45,
+  "name": "String_STR_M_D1_BR_FighterM_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111012": {
+  "level": 45,
+  "name": "String_STR_M_D1_BR_AltKnife_08_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111013": {
+  "level": 45,
+  "name": "String_STR_M_D1_BR_DstrArchonE_01_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111014": {
+  "level": 45,
+  "name": "String_STR_M_D1_FD_Shulack_05_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111015": {
+  "level": 45,
+  "name": "String_STR_M_D1_WGC_AltKnife_04_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111016": {
+  "level": 45,
+  "name": "String_STR_M_D1_EGC_BeritraD_04_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111017": {
+  "level": 45,
+  "name": "String_STR_M_D1_BCV_KrallElite_01_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111018": {
+  "level": 45,
+  "name": "String_STR_M_D1_BCV_KrallElite_02_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111019": {
+  "level": 45,
+  "name": "String_STR_M_D1_LF_Sarca_Elite_01_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111020": {
+  "level": 45,
+  "name": "String_STR_M_D1_IS_DracoElite_01_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111021": {
+  "level": 51,
+  "name": "String_STR_M_FE_IoE_OdiumGartua_02_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111022": {
+  "level": 48,
+  "name": "String_STR_M_D1_FieldBoss_Lagta_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111023": {
+  "level": 48,
+  "name": "String_STR_M_D1_FieldBoss_Kashapa_01_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ },
+ "111024": {
+  "level": 48,
+  "name": "String_STR_M_D1_FieldBoss_BeritraD_01_001_body",
+  "side": "asmodian",
+  "where": "String_STR_Map_World_D_A_body"
+ }
+}
