@@ -5,6 +5,7 @@ import {
 } from "./api";
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming } from "./farm";
+import { Stop, leg, plan, totals } from "./route";
 import { applyLook, chime } from "./look";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -289,6 +290,7 @@ function renderPets() {
     }),
   );
   renderMap(rows);
+  renderRoute();
 }
 
 // ---- Map ----
@@ -421,7 +423,19 @@ function drawMap() {
   const kibs = add(svg, "g", {});
   // Names under the dots, so a name never hides one.
   const labels = add(svg, "g", { class: "labels", "font-size": 12 * k, "stroke-width": 3 * k });
+  const path = add(svg, "g", { class: "route-path", "stroke-width": 3 * k });
   const dots = add(svg, "g", {});
+  const steps = add(svg, "g", { class: "steps", "font-size": 13 * k, "stroke-width": 3 * k });
+  const onMap = routeStops().filter((s) => s.drop.mapId === Number(mapSel.value));
+  onMap.forEach((s, i) => {
+    const [x, y] = fit(s.drop.kibelisk!.at);
+    if (i > 0) {
+      const l = leg(onMap[i - 1].drop, s.drop);
+      const [fx, fy] = fit(l.teleport ? s.drop.kibelisk!.to : onMap[i - 1].drop.kibelisk!.at);
+      add(path, "line", { x1: fx, y1: fy, x2: x, y2: y, class: l.teleport ? "jump" : "" });
+    }
+    add(steps, "text", { x: x - 10 * k, y: y - 9 * k, "text-anchor": "end" }, String(i + 1));
+  });
   // Names only once zoomed in enough to read them, unless there are few.
   const names = view.w <= SIZE * 0.45 || spots.length <= 30;
   const seen = new Set<number>();
@@ -492,6 +506,60 @@ function renderMapInfo() {
     ...(d ? [el("div", {}, dropText(d)), el("a", { href: mapLink(d) }, "Ver os spawns no mapa do jogo (Aion 2 Timers) ↗")]
       : [el("div", { className: "hint" }, "Sem spawn com posição conhecida.")]),
   );
+}
+
+// ---- Route ----
+/** The saved route, with each stop's pet and monster looked up. */
+function routeStops(): Stop[] {
+  return (saved?.settings.route ?? []).flatMap((r) => {
+    const pet = PETS.find((p) => p.id === r.pet);
+    const drop = pet?.drops.find((d) => d.npcId === r.npc && d.kibelisk);
+    const g = progress(r.pet);
+    // Done pets leave the route.
+    return pet && drop && soulsToMax(g.level, g.points) > 0 ? [{ pet, drop }] : [];
+  });
+}
+
+$("#route-go").addEventListener("click", () => {
+  const options = [...new Map(spots.map(({ r }) => [r.pet.id, r.pet])).values()].map((pet) => ({
+    pet, drops: spots.filter((s) => s.r.pet.id === pet.id).map((s) => s.d),
+  }));
+  // Start where the pet being farmed is, when it is on this map.
+  const cur = farming(souls, Date.now());
+  const here = cur && options.find((o) => o.pet.id === cur.pet);
+  const start = here ? { pet: here.pet, drop: [...here.drops].sort((a, b) => b.spawns - a.spawns)[0] } : undefined;
+  const route = plan(options, start);
+  update((s) => { s.route = route.map((r) => ({ pet: r.pet.id, npc: r.drop.npcId })); });
+  renderRoute();
+  drawMap();
+});
+$("#route-clear").addEventListener("click", () => { update((s) => { s.route = []; }); renderRoute(); drawMap(); });
+
+function renderRoute() {
+  const stops = routeStops();
+  const sum = $("#route-sum");
+  const list = $("#route");
+  if (!stops.length) {
+    list.replaceChildren();
+    sum.textContent = "Calcula a ordem com menos caminhada para farmar os pets da lista neste mapa (e zona), usando os Kibelisks quando compensa. O overlay de pets mostra o próximo da rota.";
+    return;
+  }
+  const { walk, jumps } = totals(stops);
+  sum.textContent = `${stops.length} pets · ${walk >= 1000 ? `${(walk / 1000).toFixed(1)} km` : `${walk} m`} a pé · ${jumps} teleporte(s). Pets que chegam ao nível 3 saem da rota.`;
+  list.replaceChildren(...stops.map((s, i) => {
+    const g = progress(s.pet.id);
+    const k = s.drop.kibelisk!;
+    let how = `Kibelisk #${k.teleport}, ${k.m} m`;
+    if (i > 0) {
+      const l = leg(stops[i - 1].drop, s.drop);
+      how = l.teleport ? `teleporte ao Kibelisk #${k.teleport} + ${k.m} m` : `andar ${Math.round(l.m)} m`;
+    }
+    const item = el("li", { className: s.pet.id === selectedPet ? "selected" : "" },
+      el("div", { className: "info-head" }, genusBadge(s.pet.genus), el("strong", {}, name(s.pet.name)), ` · faltam ${soulsToMax(g.level, g.points)}`),
+      el("div", { className: "hint" }, `${t(s.drop.npc)} · ${s.drop.zones.map(t)[0] ?? t(s.drop.map)} · ${how}`));
+    item.addEventListener("click", () => selectPet(s.pet.id, true));
+    return item;
+  }));
 }
 
 // ---- Capture ----

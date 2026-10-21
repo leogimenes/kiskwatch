@@ -1,6 +1,6 @@
 // What is being farmed, from the souls the game reported, and the nearest
 // pet to farm after it.
-import { SoulSeen } from "./api";
+import { RouteStop, SoulSeen } from "./api";
 import { Drop, PETS, Pet, soulsToMax } from "./data";
 
 /** A soul within this long means the pet is still being farmed. */
@@ -48,4 +48,19 @@ export function nextPet(current: number, progress: Progress): { pet: Pet; drop: 
     }
   }
   return best && { pet: best.pet, drop: best.drop };
+}
+
+/** The route's stop after the pet being farmed (or its first, when that pet
+ *  isn't on it), skipping pets with nothing missing. */
+export function nextOnRoute(route: RouteStop[], current: number | null, progress: Progress): { pet: Pet; drop: Drop } | null {
+  const live = route.flatMap((r) => {
+    const pet = PETS.find((p) => p.id === r.pet);
+    const drop = pet?.drops.find((d) => d.npcId === r.npc);
+    const g = progress(r.pet);
+    return pet && drop && soulsToMax(g.level, g.points) > 0 ? [{ pet, drop }] : [];
+  });
+  if (!live.length) return null;
+  const at = live.findIndex((s) => s.pet.id === current);
+  if (at < 0) return live[0];
+  return live[at + 1] ?? null;
 }

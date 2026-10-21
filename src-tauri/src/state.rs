@@ -24,7 +24,16 @@ pub struct Settings {
     pub pet_overlay: bool,
     /// The pets kept on the pets overlay, in the order pinned.
     pub pinned_pets: Vec<u32>,
+    /// The farm route, in order: each pet and the monster to farm it on.
+    pub route: Vec<RouteStop>,
     pub a11y: Accessibility,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RouteStop {
+    pub pet: u32,
+    /// The monster's npc id.
+    pub npc: u32,
 }
 
 impl Default for Settings {
@@ -36,6 +45,7 @@ impl Default for Settings {
             timer_overlay: true,
             pet_overlay: false,
             pinned_pets: Vec::new(),
+            route: Vec::new(),
             a11y: Accessibility::default(),
         }
     }

@@ -98,3 +98,13 @@ h2 { font-size: 15px; margin: 20px 0 10px; }
 .alarm-menu { position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; display: grid; gap: 4px; min-width: 150px; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45); }
 .alarm-menu label { display: flex; gap: 6px; align-items: center; white-space: nowrap; cursor: pointer; }
 .alarm-menu button { margin-top: 4px; }
+.route-box { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+.route-box h3 { margin: 0; font-size: 14px; }
+.route-box .hint { font-size: 12px; }
+#route { margin: 0; padding-left: 22px; max-height: 320px; overflow: auto; }
+#route li { padding: 4px 2px; cursor: pointer; border-radius: 4px; }
+#route li:hover, #route li.selected { background: rgba(120, 200, 255, 0.1); }
+#route .info-head { display: flex; align-items: center; }
+#map .route-path line { stroke: var(--accent); stroke-opacity: 0.85; stroke-linecap: round; }
+#map .route-path line.jump { stroke-opacity: 0.5; }
+#map .steps text { fill: var(--accent); font-weight: 700; paint-order: stroke; stroke: var(--bg); stroke-linejoin: round; pointer-events: none; }

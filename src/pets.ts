@@ -2,7 +2,7 @@
 // the pets pinned in the panel, each with its level and the souls to the next.
 import { Saved, SoulSeen, getSaved, getSouls, onStateChanged } from "./api";
 import { GENUS, GENUS_MARK, PET_BY_ID, Pet, SOULS_PER_LEVEL, levelProgress, name, soulsToMax, t } from "./data";
-import { FARMING_MS, nextPet, recent } from "./farm";
+import { FARMING_MS, nextOnRoute, nextPet, recent } from "./farm";
 import { applyLook } from "./look";
 
 let saved: Saved | null = null;
@@ -74,12 +74,17 @@ function render() {
       const farming = i === 0 && now - r.at_ms <= FARMING_MS;
       if (p) top.push(petCard(p, farming ? "farming" : "", `+${r.amount} alma(s) · ${farming ? "farmando agora" : `última ${ago(now - r.at_ms)}`}`));
     });
-    const next = nextPet(recents[0].pet, progress);
-    if (next) {
-      const k = next.drop.kibelisk;
-      const where = `${t(next.drop.npc)} · ${next.drop.zones.map(t)[0] ?? t(next.drop.map)}${k ? ` · Kibelisk #${k.teleport}` : ""}`;
-      top.push(el("h3", "", "Próximo (mais perto)"), petCard(next.pet, "next", where));
-    }
+  }
+  // The route's next stop; without a route, the nearest pet still missing souls.
+  const route = saved?.settings.route ?? [];
+  const onRoute = route.length ? nextOnRoute(route, recents[0]?.pet ?? null, progress) : null;
+  const next = onRoute ?? (recents.length && !route.length ? nextPet(recents[0].pet, progress) : null);
+  if (next) {
+    const k = next.drop.kibelisk;
+    const where = `${t(next.drop.npc)} · ${next.drop.zones.map(t)[0] ?? t(next.drop.map)}${k ? ` · Kibelisk #${k.teleport}` : ""}`;
+    top.push(el("h3", "", onRoute ? "Próximo na rota" : "Próximo (mais perto)"), petCard(next.pet, "next", where));
+  } else if (route.length && recents.length) {
+    top.push(el("h3", "", "Rota concluída"));
   }
   document.querySelector("#now")!.replaceChildren(...top);
   const ids = (saved?.settings.pinned_pets ?? []).filter((id) => !maxed(id) && !recents.some((r) => r.pet === id));
