@@ -3,7 +3,7 @@ import {
   ALARM_LEADS, Accessibility, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getSaved, getSouls, getTimers,
   onStateChanged, openUrl, setAlarm, setClickThrough, setPet, setSettings,
 } from "./api";
-import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, mapLink, name, soulsToMax, t } from "./data";
+import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming } from "./farm";
 import { applyLook, chime } from "./look";
 
@@ -111,6 +111,45 @@ function renderResets(now: number) {
   );
 }
 
+const leadText = (lead: number) => (lead === 60 ? "1h" : `${lead} min`);
+
+/** The timer whose alarm menu is open, kept open across re-renders. */
+let alarmOpen: string | null = null;
+
+// One bell per timer; the lead times are in a menu under it.
+function alarmButton(row: TimerRow) {
+  const on = row.leads.length > 0;
+  const leads = [...row.leads].sort((a, b) => b - a);
+  const bell = el("button", {
+    className: on ? "bell on" : "bell",
+    ariaHasPopup: "true",
+    ariaExpanded: String(alarmOpen === row.id),
+    ariaLabel: on ? `Avisos: ${leads.map(leadText).join(", ")} antes` : "Sem aviso. Abrir opções de aviso",
+  }, el("span", { ariaHidden: "true", textContent: on ? "🔔" : "🔕" }), on ? ` ${leads.map(leadText).join(", ")}` : "");
+  const wrap = el("div", { className: "alarm" }, bell);
+  bell.addEventListener("click", (e) => {
+    e.stopPropagation();
+    alarmOpen = alarmOpen === row.id ? null : row.id;
+    renderTimers();
+  });
+  if (alarmOpen === row.id) {
+    const menu = el("div", { className: "alarm-menu", role: "menu" });
+    menu.addEventListener("click", (e) => e.stopPropagation());
+    for (const lead of ALARM_LEADS) {
+      const box = el("input", { type: "checkbox", checked: row.leads.includes(lead) });
+      box.addEventListener("change", () => setAlarm(row.id, box.checked ? [...row.leads, lead] : row.leads.filter((l) => l !== lead)));
+      menu.append(el("label", { role: "menuitemcheckbox" }, box, ` ${leadText(lead)} antes`));
+    }
+    const off = el("button", { textContent: "Desligar", disabled: !on });
+    off.addEventListener("click", () => { alarmOpen = null; setAlarm(row.id, []); });
+    menu.append(off);
+    wrap.append(menu);
+  }
+  return wrap;
+}
+document.addEventListener("click", () => { if (alarmOpen) { alarmOpen = null; renderTimers(); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && alarmOpen) { alarmOpen = null; renderTimers(); } });
+
 function renderTimers() {
   const now = Date.now();
   renderResets(now);
@@ -119,22 +158,11 @@ function renderTimers() {
   $("#timer-count").textContent = rows.length === total ? "" : `${rows.length} de ${total}`;
   $("#timers").replaceChildren(
     ...rows.map((row) => {
-      const leads = el("div", { className: "leads" });
-      for (const lead of ALARM_LEADS) {
-        const on = row.leads.includes(lead);
-        const label = lead === 60 ? "1h" : `${lead}m`;
-        const chip = el("button", { className: on ? "chip on" : "chip", textContent: label, ariaPressed: String(on), ariaLabel: `Aviso ${label} antes` });
-        chip.addEventListener("click", () => {
-          const next = on ? row.leads.filter((l) => l !== lead) : [...row.leads, lead];
-          setAlarm(row.id, next);
-        });
-        leads.append(chip);
-      }
       return el("tr", { className: row.kind },
         el("td", {}, timerName(row)),
         el("td", {}, whereText(row)),
         el("td", { className: "countdown", dataset: { id: row.id } }, startText(row, now)),
-        el("td", {}, leads),
+        el("td", {}, alarmButton(row)),
       );
     }),
   );
@@ -274,6 +302,7 @@ const mapKibs = $<HTMLInputElement>("#map-kibs");
 const svg = $("#map") as unknown as SVGSVGElement;
 const NS = "http://www.w3.org/2000/svg";
 const SIZE = 1000;
+const MAX_SOULS = SOULS_PER_LEVEL.reduce((a, b) => a + b, 0);
 
 interface Spot { r: PetRow; d: Drop; }
 let spots: Spot[] = [];
@@ -386,11 +415,13 @@ function drawMap() {
   }
   // Sizes are in screen pixels, whatever the zoom and the panel's width.
   const k = view.w / (svgBox().side || 500);
-  const most = Math.max(...spots.map(({ r }) => r.missing));
-  const links = add(svg, "g", { class: "links" });
+  // Stroke widths and dashes are in map units too, so they scale with k:
+  // in CSS pixels they would grow with the zoom and cover the dots.
+  const links = add(svg, "g", { class: "links", "stroke-width": 1.5 * k, "stroke-dasharray": `${4 * k} ${3 * k}` });
   const kibs = add(svg, "g", {});
+  // Names under the dots, so a name never hides one.
+  const labels = add(svg, "g", { class: "labels", "font-size": 12 * k, "stroke-width": 3 * k });
   const dots = add(svg, "g", {});
-  const labels = add(svg, "g", { class: "labels", "font-size": 12 * k });
   // Names only once zoomed in enough to read them, unless there are few.
   const names = view.w <= SIZE * 0.45 || spots.length <= 30;
   const seen = new Set<number>();
@@ -409,10 +440,11 @@ function drawMap() {
     const chosen = r.pet.id === selectedPet;
     if (mapKibs.checked) {
       const [kx, ky] = fit(d.kibelisk!.to);
-      add(links, "line", { x1: kx, y1: ky, x2: x, y2: y, class: chosen ? "chosen" : "", "stroke-width": 1.5 * k });
+      add(links, "line", { x1: kx, y1: ky, x2: x, y2: y, class: chosen ? "chosen" : "" });
     }
     const g = add(dots, "g", { class: `spot ${r.pet.genus ?? ""}${chosen ? " chosen" : ""}`, tabindex: 0, role: "button", "aria-label": `${name(r.pet.name)}: faltam ${r.missing}` });
-    const rad = (6 + 5 * (r.missing / most)) * k;
+    // Area grows with the souls missing: from 4 px (almost done) to 16 px (all 105).
+    const rad = (4 + 12 * Math.sqrt(r.missing / MAX_SOULS)) * k;
     add(g, "circle", { cx: x, cy: y, r: rad, "stroke-width": (chosen ? 3 : 1.5) * k });
     add(g, "text", { x, y: y + 3.5 * k, class: "mark", "font-size": 10 * k, "text-anchor": "middle" }, GENUS_MARK[r.pet.genus ?? ""] ?? "");
     add(g, "title", {}, `${name(r.pet.name)}: faltam ${r.missing}\n${dropText(d)}`);
@@ -492,6 +524,11 @@ async function renderCapture() {
   const kids: (Node | string)[] = [el("strong", {}, title), el("p", {}, detail)];
   if (st.error) kids.push(el("p", { className: "hint" }, "Confira se o ", el("a", { href: "https://npcap.com/#download" }, "Npcap"),
     " está instalado (com \"WinPcap API-compatible Mode\") e abra o Kiskwatch como administrador."));
+  const last = souls[souls.length - 1];
+  if (last) {
+    const p = PETS.find((x) => x.id === last.pet);
+    kids.push(el("p", { className: "hint" }, `Última alma lida: ${p ? name(p.name) : `pet ${last.pet}`} às ${new Date(last.at_ms).toLocaleTimeString()}`));
+  }
   if (st.devices.length) kids.push(el("p", { className: "hint" }, `Placas de rede: ${st.devices.join(", ")}`));
   capPop.replaceChildren(...kids);
   // A new error opens the popup by itself, once.
@@ -518,9 +555,13 @@ const A11Y: [string, keyof Accessibility, "check" | "number"][] = [
 ];
 for (const [id, key, kind] of A11Y) {
   const input = $<HTMLInputElement>(id);
-  input.addEventListener(kind === "check" ? "change" : "input", () =>
+  // The text size applies on release: applied while dragging, it would move
+  // the slider out from under the mouse.
+  const live = kind === "number" && key !== "font_scale";
+  input.addEventListener(live ? "input" : "change", () =>
     update((s) => { (s.a11y as unknown as Record<string, unknown>)[key] = kind === "check" ? input.checked : Number(input.value); }));
 }
+$("#a-font").addEventListener("input", (e) => { $("output[for='a-font']").textContent = `${(e.target as HTMLInputElement).value}%`; });
 $("#a-test").addEventListener("click", () => saved && chime(saved.settings.a11y));
 
 function renderConfig(s: Settings) {

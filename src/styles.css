@@ -47,9 +47,6 @@ main { padding: 16px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .list tr.field-boss td:first-child::before { content: "☠ "; color: var(--fera); }
 .countdown { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.leads { display: flex; flex-wrap: wrap; gap: 4px; }
-.chip { padding: 2px 8px; font-size: 12px; border-radius: 999px; color: var(--muted); }
-.chip.on { background: var(--gold); color: #1a1405; border-color: var(--gold); }
 .summary { font-size: 15px; margin-bottom: 10px; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
 .filters input[type="number"] { width: 64px; }
@@ -71,10 +68,10 @@ main { padding: 16px; }
 #map .spot:focus { outline: none; }
 #map .spot:focus circle { stroke: #fff; }
 #map .spot .mark { fill: #0b1220; font-weight: 700; pointer-events: none; }
-#map .links line { stroke: var(--gold); stroke-opacity: 0.35; stroke-dasharray: 4 3; }
+#map .links line { stroke: var(--gold); stroke-opacity: 0.35; }
 #map .links line.chosen { stroke-opacity: 1; }
 #map .kib { fill: var(--gold); }
-#map .labels text { fill: var(--text); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; pointer-events: none; }
+#map .labels text { fill: var(--text); paint-order: stroke; stroke: var(--bg); stroke-linejoin: round; pointer-events: none; }
 #map .labels .kib-label { fill: var(--gold); }
 #map .labels .chosen { font-weight: 700; }
 #map .empty { fill: var(--muted); }
@@ -95,3 +92,9 @@ h2 { font-size: 15px; margin: 20px 0 10px; }
 @media (max-width: 900px) { .pets-layout { grid-template-columns: 1fr; } }
 #timer-search, #pet-search { min-width: 280px; }
 .settings > input, .settings > select { justify-self: start; }
+.alarm { position: relative; }
+.bell { padding: 3px 9px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.bell.on { color: var(--gold); border-color: var(--gold); }
+.alarm-menu { position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; display: grid; gap: 4px; min-width: 150px; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45); }
+.alarm-menu label { display: flex; gap: 6px; align-items: center; white-space: nowrap; cursor: pointer; }
+.alarm-menu button { margin-top: 4px; }

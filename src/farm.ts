@@ -13,6 +13,20 @@ export function farming(souls: SoulSeen[], now: number): SoulSeen | null {
   return last && now - last.at_ms <= FARMING_MS ? last : null;
 }
 
+/** The last `n` pets with a soul picked up, newest first, one entry each,
+ *  with the souls picked up for each in that stretch. */
+export function recent(souls: SoulSeen[], n: number, skip: (pet: number) => boolean): { pet: number; at_ms: number; amount: number }[] {
+  const out: { pet: number; at_ms: number; amount: number }[] = [];
+  for (let i = souls.length - 1; i >= 0; i--) {
+    const s = souls[i];
+    if (skip(s.pet)) continue;
+    const seen = out.find((o) => o.pet === s.pet);
+    if (seen) seen.amount += s.amount;
+    else if (out.length < n) out.push({ pet: s.pet, at_ms: s.at_ms, amount: s.amount });
+  }
+  return out;
+}
+
 const dist = (a: [number, number], b: [number, number]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 /** The pet with souls missing whose monster spawns nearest the one being

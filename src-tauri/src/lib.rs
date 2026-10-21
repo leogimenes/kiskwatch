@@ -15,15 +15,13 @@ use kiskwatch_core::stream::GameEvent;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
-use state::{FieldBoss, Saved, Settings};
+use state::{FieldBoss, Saved, Settings, SoulSeen};
 
 const EVENTS_JSON: &str = include_str!("../../data/events.json");
 const FIELD_BOSSES_JSON: &str = include_str!("../../data/field_bosses.json");
 
 pub struct App {
     saved: Mutex<Saved>,
-    /// The souls gained this run, newest last: what is being farmed.
-    souls: Mutex<Vec<SoulSeen>>,
     capture: std::sync::Arc<Mutex<pcap::CaptureState>>,
     dispatch: Mutex<(DispatchStatus, i64)>,
     events: Vec<Event>,
@@ -33,16 +31,6 @@ pub struct App {
 fn now_ms() -> i64 {
     chrono::Utc::now().timestamp_millis()
 }
-
-/// A soul the game said the player got.
-#[derive(Debug, Clone, Serialize)]
-pub struct SoulSeen {
-    pub pet: u32,
-    pub amount: u32,
-    pub at_ms: i64,
-}
-
-const SOULS_KEPT: usize = 100;
 
 /// A row of the timers list: a scheduled event or a field boss.
 #[derive(Debug, Clone, Serialize)]
@@ -69,7 +57,6 @@ impl App {
     fn new(saved: Saved) -> Self {
         Self {
             saved: Mutex::new(saved),
-            souls: Mutex::new(Vec::new()),
             capture: Default::default(),
             dispatch: Mutex::new((DispatchStatus { locked: false, server_port: None }, 0)),
             events: serde_json::from_str(EVENTS_JSON).expect("data/events.json"),
@@ -134,10 +121,10 @@ impl App {
         match event {
             GameEvent::Pets(record) => {
                 if let PetRecord::SoulsGained(gains) = &record {
-                    let mut souls = self.souls.lock().unwrap();
                     let at_ms = now_ms();
+                    let souls = saved.souls.entry(server).or_default();
                     souls.extend(gains.iter().map(|g| SoulSeen { pet: g.pet, amount: g.amount, at_ms }));
-                    let extra = souls.len().saturating_sub(SOULS_KEPT);
+                    let extra = souls.len().saturating_sub(state::SOULS_KEPT);
                     souls.drain(..extra);
                 }
                 saved.pets.entry(server).or_default().apply(&record)
@@ -273,10 +260,11 @@ fn set_click_through(app: AppHandle, state: State<App>, on: bool) -> Result<(), 
     Ok(())
 }
 
-/// The souls gained this run, newest last.
+/// The souls gained on the current server, newest last.
 #[tauri::command]
 fn get_souls(state: State<App>) -> Vec<SoulSeen> {
-    state.souls.lock().unwrap().clone()
+    let saved = state.saved.lock().unwrap();
+    saved.souls.get(&saved.settings.server_id).cloned().unwrap_or_default()
 }
 
 #[derive(Debug, Clone, Serialize)]

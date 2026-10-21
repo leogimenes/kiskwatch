@@ -102,7 +102,19 @@ pub struct Saved {
     pub pets: BTreeMap<u32, PetCollection>,
     /// The last boss map seen, by server and map id.
     pub boss_maps: BTreeMap<u32, BTreeMap<u32, BossMap>>,
+    /// The last souls picked up, by server, newest last.
+    pub souls: BTreeMap<u32, Vec<SoulSeen>>,
 }
+
+/// A soul the game said the player picked up.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SoulSeen {
+    pub pet: u32,
+    pub amount: u32,
+    pub at_ms: i64,
+}
+
+pub const SOULS_KEPT: usize = 100;
 
 impl Saved {
     pub fn boss(&self, server: u32, boss: u32) -> Option<&BossOnMap> {
