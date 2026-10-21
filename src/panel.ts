@@ -593,10 +593,13 @@ async function renderCapture() {
   const kids: (Node | string)[] = [el("strong", {}, title), el("p", {}, detail)];
   if (st.error) kids.push(el("p", { className: "hint" }, "Confira se o ", el("a", { href: "https://npcap.com/#download" }, "Npcap"),
     " está instalado (com \"WinPcap API-compatible Mode\") e abra o Kiskwatch como administrador."));
-  const last = souls[souls.length - 1];
-  if (last) {
-    const p = PETS.find((x) => x.id === last.pet);
-    kids.push(el("p", { className: "hint" }, `Última alma lida: ${p ? name(p.name) : `pet ${last.pet}`} às ${new Date(last.at_ms).toLocaleTimeString()}`));
+  // The last souls read, to check a kill against.
+  const last = souls.slice(-5).reverse();
+  if (last.length) {
+    kids.push(el("p", { className: "hint" }, "Últimas almas lidas:"), el("ul", { className: "hint soul-log" }, ...last.map((x) => {
+      const p = PETS.find((y) => y.id === x.pet);
+      return el("li", {}, `${new Date(x.at_ms).toLocaleTimeString()} · ${p ? name(p.name) : `pet ${x.pet}`} +${x.amount}`);
+    })));
   }
   if (st.devices.length) kids.push(el("p", { className: "hint" }, `Placas de rede: ${st.devices.join(", ")}`));
   capPop.replaceChildren(...kids);
@@ -611,6 +614,7 @@ const clickThrough = check("#click-through");
 clickThrough.addEventListener("change", () => setClickThrough(clickThrough.checked));
 check("#timer-overlay").addEventListener("change", (e) => update((s) => { s.timer_overlay = (e.target as HTMLInputElement).checked; }));
 check("#pet-overlay").addEventListener("change", (e) => update((s) => { s.pet_overlay = (e.target as HTMLInputElement).checked; }));
+check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
 
 const A11Y: [string, keyof Accessibility, "check" | "number"][] = [
   ["#a-font", "font_scale", "number"],
@@ -637,6 +641,7 @@ function renderConfig(s: Settings) {
   clickThrough.checked = s.click_through;
   check("#timer-overlay").checked = s.timer_overlay;
   check("#pet-overlay").checked = s.pet_overlay;
+  check("#overlays-with-game").checked = s.overlays_with_game;
   for (const [id, key, kind] of A11Y) {
     const input = $<HTMLInputElement>(id);
     const v = s.a11y[key];

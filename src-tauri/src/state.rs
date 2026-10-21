@@ -22,6 +22,8 @@ pub struct Settings {
     /// Show the timers overlay, and the pets overlay.
     pub timer_overlay: bool,
     pub pet_overlay: bool,
+    /// Show the overlays only while the game is running.
+    pub overlays_with_game: bool,
     /// The pets kept on the pets overlay, in the order pinned.
     pub pinned_pets: Vec<u32>,
     /// The farm route, in order: each pet and the monster to farm it on.
@@ -44,6 +46,7 @@ impl Default for Settings {
             click_through: false,
             timer_overlay: true,
             pet_overlay: false,
+            overlays_with_game: true,
             pinned_pets: Vec::new(),
             route: Vec::new(),
             a11y: Accessibility::default(),
@@ -114,6 +117,8 @@ pub struct Saved {
     pub boss_maps: BTreeMap<u32, BTreeMap<u32, BossMap>>,
     /// The last souls picked up, by server, newest last.
     pub souls: BTreeMap<u32, Vec<SoulSeen>>,
+    /// The pets overlay's queue, by server.
+    pub pet_queue: BTreeMap<u32, kiskwatch_core::pets::PetQueue>,
     /// The character followed on the Build tab, from the official profile.
     pub profile: Option<crate::profile::Profile>,
 }

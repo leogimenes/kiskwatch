@@ -24,6 +24,7 @@ export interface Settings {
   click_through: boolean;
   timer_overlay: boolean;
   pet_overlay: boolean;
+  overlays_with_game: boolean;
   pinned_pets: number[];
   route: RouteStop[];
   a11y: Accessibility;
@@ -79,6 +80,8 @@ export interface Saved {
   settings: Settings;
   pets: Record<string, { pets: Record<string, PetProgress> }>;
   profile: Profile | null;
+  /** The pets overlay's queue by server: newest first. */
+  pet_queue: Record<string, { pets: number[]; last: number | null }>;
 }
 
 export interface TimerRow {
@@ -128,7 +131,7 @@ export const getSouls = () => invoke<SoulSeen[]>("get_souls");
 export const searchCharacters = (name: string) => invoke<Hit[]>("search_characters", { name });
 export const loadProfile = (serverId?: number, characterId?: string) => invoke("load_profile", { serverId, characterId });
 export const clearProfile = () => invoke("clear_profile");
-export const gameData = <T>(name: "skill-points" | "daevanion") => invoke<T>("game_data", { name });
+export const gameData = <T>(name: "skill-points" | "daevanion" | "skills") => invoke<T>("game_data", { name });
 export { openUrl } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);

@@ -2,13 +2,11 @@
 // the pets pinned in the panel, each with its level and the souls to the next.
 import { Saved, SoulSeen, getSaved, getSouls, onStateChanged } from "./api";
 import { GENUS, GENUS_MARK, PET_BY_ID, Pet, SOULS_PER_LEVEL, levelProgress, name, soulsToMax, t } from "./data";
-import { FARMING_MS, nextOnRoute, nextPet, recent } from "./farm";
+import { FARMING_MS, nextOnRoute, nextPet } from "./farm";
 import { applyLook } from "./look";
 
 let saved: Saved | null = null;
 let souls: SoulSeen[] = [];
-/** How many pets with recent souls to show. */
-const RECENT = 5;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -65,20 +63,28 @@ const maxed = (pet: number) => progress(pet).level >= SOULS_PER_LEVEL.length;
 
 function render() {
   const now = Date.now();
-  const recents = recent(souls, RECENT, maxed);
+  // The queue the app keeps: new pets on top, known ones keep their place.
+  const queue = saved?.pet_queue[String(saved.settings.server_id)] ?? { pets: [], last: null };
+  const recents = queue.pets.map((pet) => {
+    const mine = souls.filter((x) => x.pet === pet);
+    const at_ms = mine.length ? mine[mine.length - 1].at_ms : 0;
+    const amount = mine.filter((x) => now - x.at_ms <= FARMING_MS).reduce((n, x) => n + x.amount, 0);
+    return { pet, at_ms, amount };
+  });
   const top: HTMLElement[] = [];
   if (recents.length) {
     top.push(el("h3", "", "Almas recentes"));
-    recents.forEach((r, i) => {
+    for (const r of recents) {
       const p = PET_BY_ID.get(r.pet);
-      const farming = i === 0 && now - r.at_ms <= FARMING_MS;
-      if (p) top.push(petCard(p, farming ? "farming" : "", `+${r.amount} alma(s) · ${farming ? "farmando agora" : `última ${ago(now - r.at_ms)}`}`));
-    });
+      const farming = r.pet === queue.last && now - r.at_ms <= FARMING_MS;
+      const when = farming ? "farmando agora" : r.at_ms ? `última ${ago(now - r.at_ms)}` : "";
+      if (p) top.push(petCard(p, farming ? "farming" : "", [r.amount ? `+${r.amount} alma(s) em 30 min` : "", when].filter(Boolean).join(" · ")));
+    }
   }
   // The route's next stop; without a route, the nearest pet still missing souls.
   const route = saved?.settings.route ?? [];
-  const onRoute = route.length ? nextOnRoute(route, recents[0]?.pet ?? null, progress) : null;
-  const next = onRoute ?? (recents.length && !route.length ? nextPet(recents[0].pet, progress) : null);
+  const onRoute = route.length ? nextOnRoute(route, queue.last ?? recents[0]?.pet ?? null, progress) : null;
+  const next = onRoute ?? (recents.length && !route.length ? nextPet(queue.last ?? recents[0].pet, progress) : null);
   if (next) {
     const k = next.drop.kibelisk;
     const where = `${t(next.drop.npc)} · ${next.drop.zones.map(t)[0] ?? t(next.drop.map)}${k ? ` · Kibelisk #${k.teleport}` : ""}`;

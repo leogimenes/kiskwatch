@@ -179,6 +179,41 @@ impl PetCollection {
     }
 }
 
+/// How many pets the queue holds.
+pub const QUEUE_LEN: usize = 5;
+
+/// The pets being farmed, for the overlay: newest first. A pet already on it
+/// keeps its place when it gets another soul; a new one goes on top and the
+/// oldest drops off. A login (the pet list) starts it over, and a pet leaves
+/// at the highest level.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PetQueue {
+    pub pets: Vec<u32>,
+    /// The pet that got the last soul.
+    pub last: Option<u32>,
+}
+
+impl PetQueue {
+    /// Take a record already applied to `collection`.
+    pub fn apply(&mut self, record: &PetRecord, collection: &PetCollection) {
+        match record {
+            PetRecord::List { .. } => *self = Self::default(),
+            PetRecord::SoulsGained(souls) => {
+                for s in souls {
+                    if !self.pets.contains(&s.pet) {
+                        self.pets.insert(0, s.pet);
+                    }
+                    self.last = Some(s.pet);
+                }
+            }
+            PetRecord::LevelUp { .. } => {}
+        }
+        self.pets.retain(|&p| collection.get(p).level < MAX_LEVEL);
+        self.pets.truncate(QUEUE_LEN);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -276,5 +311,40 @@ mod tests {
         // A fresh list replaces everything.
         c.apply(&PetRecord::List { levels: vec![], points: vec![] });
         assert!(c.pets.is_empty());
+    }
+
+    fn soul(pet: u32) -> PetRecord {
+        PetRecord::SoulsGained(vec![SoulGain { pet, amount: 1 }])
+    }
+
+    fn feed(q: &mut PetQueue, c: &mut PetCollection, r: PetRecord) {
+        c.apply(&r);
+        q.apply(&r, c);
+    }
+
+    #[test]
+    fn queue_puts_new_pets_on_top_and_keeps_known_ones_in_place() {
+        let (mut q, mut c) = (PetQueue::default(), PetCollection::default());
+        feed(&mut q, &mut c, soul(1));
+        feed(&mut q, &mut c, soul(2));
+        assert_eq!(q.pets, vec![2, 1]);
+        feed(&mut q, &mut c, soul(1));
+        assert_eq!(q.pets, vec![2, 1]);
+        assert_eq!(q.last, Some(1));
+        for p in 3..=6 {
+            feed(&mut q, &mut c, soul(p));
+        }
+        assert_eq!(q.pets, vec![6, 5, 4, 3, 2]);
+    }
+
+    #[test]
+    fn queue_starts_over_at_login_and_drops_maxed_pets() {
+        let (mut q, mut c) = (PetQueue::default(), PetCollection::default());
+        feed(&mut q, &mut c, soul(1));
+        feed(&mut q, &mut c, soul(2));
+        feed(&mut q, &mut c, PetRecord::LevelUp { pet: 2, level: MAX_LEVEL });
+        assert_eq!(q.pets, vec![1]);
+        feed(&mut q, &mut c, PetRecord::List { levels: vec![(1, 0)], points: vec![] });
+        assert!(q.pets.is_empty());
     }
 }

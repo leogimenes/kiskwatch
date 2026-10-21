@@ -2,12 +2,14 @@
 //! alarm clock, and live capture of what the game says (`pcap`, read by
 //! `kiskwatch_core::dispatch`).
 
+mod game;
 mod gamedata;
 mod pcap;
 mod profile;
 mod state;
 
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
@@ -23,6 +25,8 @@ const EVENTS_JSON: &str = include_str!("../../data/events.json");
 const FIELD_BOSSES_JSON: &str = include_str!("../../data/field_bosses.json");
 
 pub struct App {
+    /// AION2.exe is running.
+    game_running: AtomicBool,
     saved: Mutex<Saved>,
     capture: std::sync::Arc<Mutex<pcap::CaptureState>>,
     dispatch: Mutex<(DispatchStatus, i64)>,
@@ -58,6 +62,7 @@ pub struct TimerRow {
 impl App {
     fn new(saved: Saved) -> Self {
         Self {
+            game_running: AtomicBool::new(game::running()),
             saved: Mutex::new(saved),
             capture: Default::default(),
             dispatch: Mutex::new((DispatchStatus { locked: false, server_port: None }, 0)),
@@ -129,7 +134,9 @@ impl App {
                     let extra = souls.len().saturating_sub(state::SOULS_KEPT);
                     souls.drain(..extra);
                 }
-                saved.pets.entry(server).or_default().apply(&record)
+                saved.pets.entry(server).or_default().apply(&record);
+                let collection = saved.pets[&server].clone();
+                saved.pet_queue.entry(server).or_default().apply(&record, &collection);
             }
             GameEvent::BossMap(map) => {
                 // Only the player's own server's maps (the header is 0 there).
@@ -202,8 +209,15 @@ fn get_saved(state: State<App>) -> Saved {
 
 #[tauri::command]
 fn set_settings(app: AppHandle, state: State<App>, settings: Settings) {
-    show_overlays(&app, &settings);
-    state.saved.lock().unwrap().settings = settings;
+    show_overlays(&app, &settings, state.game_running.load(Ordering::Relaxed));
+    {
+        let mut saved = state.saved.lock().unwrap();
+        // Turning the pets overlay off ends the farming session it follows.
+        if saved.settings.pet_overlay && !settings.pet_overlay {
+            saved.pet_queue.remove(&settings.server_id);
+        }
+        saved.settings = settings;
+    }
     save(&app, &state);
     let _ = app.emit("state-changed", ());
 }
@@ -239,13 +253,36 @@ fn set_pet(app: AppHandle, state: State<App>, pet: u32, level: u32, points: u32)
 
 const OVERLAYS: [&str; 2] = ["overlay", "pets"];
 
-/// Show or hide each overlay as the settings say.
-fn show_overlays(app: &AppHandle, s: &Settings) {
+/// Show or hide each overlay as the settings say, and with the game.
+fn show_overlays(app: &AppHandle, s: &Settings, game_running: bool) {
+    let game_ok = game_running || !s.overlays_with_game;
     for (label, on) in [("overlay", s.timer_overlay), ("pets", s.pet_overlay)] {
+        let on = on && game_ok;
         if let Some(w) = app.get_webview_window(label) {
             let _ = if on { w.show() } else { w.hide() };
         }
     }
+}
+
+/// Follow the game starting and quitting, and the overlays with it.
+fn watch_game(app: AppHandle) {
+    let mut watcher = game::Watcher::new();
+    loop {
+        std::thread::sleep(Duration::from_secs(3));
+        let running = watcher.running();
+        let state = app.state::<App>();
+        if state.game_running.swap(running, Ordering::Relaxed) != running {
+            let settings = state.saved.lock().unwrap().settings.clone();
+            show_overlays(&app, &settings, running);
+            let _ = app.emit("state-changed", ());
+        }
+    }
+}
+
+/// Whether the game is running, for the panel.
+#[tauri::command]
+fn game_running(state: State<App>) -> bool {
+    state.game_running.load(Ordering::Relaxed)
 }
 
 /// Let clicks pass through the overlays to the game, or take them to move them.
@@ -361,8 +398,10 @@ pub fn run() {
         .setup(|app| {
             let saved = state::load(app.handle());
             let click_through = saved.settings.click_through;
-            show_overlays(app.handle(), &saved.settings);
+            show_overlays(app.handle(), &saved.settings, game::running());
             app.manage(App::new(saved));
+            let handle = app.handle().clone();
+            std::thread::spawn(move || watch_game(handle));
             for label in OVERLAYS {
                 if let Some(w) = app.get_webview_window(label) {
                     let _ = w.set_ignore_cursor_events(click_through);
@@ -375,7 +414,7 @@ pub fn run() {
             std::thread::spawn(move || read_capture(handle, rx));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status, search_characters, load_profile, clear_profile, game_data])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }
