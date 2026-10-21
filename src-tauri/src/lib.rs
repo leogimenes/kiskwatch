@@ -10,7 +10,8 @@ use std::time::Duration;
 
 use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
 use kiskwatch_core::schedule::{self, Event};
-use kiskwatch_core::stream::{GameEvent, GameStream};
+use kiskwatch_core::pets::PetRecord;
+use kiskwatch_core::stream::GameEvent;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -21,7 +22,8 @@ const FIELD_BOSSES_JSON: &str = include_str!("../../data/field_bosses.json");
 
 pub struct App {
     saved: Mutex<Saved>,
-    stream: Mutex<GameStream>,
+    /// The souls gained this run, newest last: what is being farmed.
+    souls: Mutex<Vec<SoulSeen>>,
     capture: std::sync::Arc<Mutex<pcap::CaptureState>>,
     dispatch: Mutex<(DispatchStatus, i64)>,
     events: Vec<Event>,
@@ -31,6 +33,16 @@ pub struct App {
 fn now_ms() -> i64 {
     chrono::Utc::now().timestamp_millis()
 }
+
+/// A soul the game said the player got.
+#[derive(Debug, Clone, Serialize)]
+pub struct SoulSeen {
+    pub pet: u32,
+    pub amount: u32,
+    pub at_ms: i64,
+}
+
+const SOULS_KEPT: usize = 100;
 
 /// A row of the timers list: a scheduled event or a field boss.
 #[derive(Debug, Clone, Serialize)]
@@ -57,7 +69,7 @@ impl App {
     fn new(saved: Saved) -> Self {
         Self {
             saved: Mutex::new(saved),
-            stream: Mutex::new(GameStream::new()),
+            souls: Mutex::new(Vec::new()),
             capture: Default::default(),
             dispatch: Mutex::new((DispatchStatus { locked: false, server_port: None }, 0)),
             events: serde_json::from_str(EVENTS_JSON).expect("data/events.json"),
@@ -120,7 +132,16 @@ impl App {
         let mut saved = self.saved.lock().unwrap();
         let server = saved.settings.server_id;
         match event {
-            GameEvent::Pets(record) => saved.pets.entry(server).or_default().apply(&record),
+            GameEvent::Pets(record) => {
+                if let PetRecord::SoulsGained(gains) = &record {
+                    let mut souls = self.souls.lock().unwrap();
+                    let at_ms = now_ms();
+                    souls.extend(gains.iter().map(|g| SoulSeen { pet: g.pet, amount: g.amount, at_ms }));
+                    let extra = souls.len().saturating_sub(SOULS_KEPT);
+                    souls.drain(..extra);
+                }
+                saved.pets.entry(server).or_default().apply(&record)
+            }
             GameEvent::BossMap(map) => {
                 // Only the player's own server's maps (the header is 0 there).
                 if map.header != 0 {
@@ -192,6 +213,7 @@ fn get_saved(state: State<App>) -> Saved {
 
 #[tauri::command]
 fn set_settings(app: AppHandle, state: State<App>, settings: Settings) {
+    show_overlays(&app, &settings);
     state.saved.lock().unwrap().settings = settings;
     save(&app, &state);
     let _ = app.emit("state-changed", ());
@@ -226,11 +248,24 @@ fn set_pet(app: AppHandle, state: State<App>, pet: u32, level: u32, points: u32)
     let _ = app.emit("state-changed", ());
 }
 
-/// Let clicks pass through the overlay to the game, or take them to move it.
+const OVERLAYS: [&str; 2] = ["overlay", "pets"];
+
+/// Show or hide each overlay as the settings say.
+fn show_overlays(app: &AppHandle, s: &Settings) {
+    for (label, on) in [("overlay", s.timer_overlay), ("pets", s.pet_overlay)] {
+        if let Some(w) = app.get_webview_window(label) {
+            let _ = if on { w.show() } else { w.hide() };
+        }
+    }
+}
+
+/// Let clicks pass through the overlays to the game, or take them to move them.
 #[tauri::command]
 fn set_click_through(app: AppHandle, state: State<App>, on: bool) -> Result<(), String> {
-    if let Some(w) = app.get_webview_window("overlay") {
-        w.set_ignore_cursor_events(on).map_err(|e| e.to_string())?;
+    for label in OVERLAYS {
+        if let Some(w) = app.get_webview_window(label) {
+            w.set_ignore_cursor_events(on).map_err(|e| e.to_string())?;
+        }
     }
     state.saved.lock().unwrap().settings.click_through = on;
     save(&app, &state);
@@ -238,23 +273,10 @@ fn set_click_through(app: AppHandle, state: State<App>, on: bool) -> Result<(), 
     Ok(())
 }
 
-/// Feed server-to-client bytes (hex) as if captured: for recorded streams
-/// and testing, until live capture lands.
+/// The souls gained this run, newest last.
 #[tauri::command]
-fn ingest_hex(app: AppHandle, state: State<App>, hex: String) -> Result<usize, String> {
-    let clean: String = hex.chars().filter(|c| c.is_ascii_hexdigit()).collect();
-    if clean.len() % 2 != 0 {
-        return Err("odd number of hex digits".into());
-    }
-    let bytes: Vec<u8> = (0..clean.len()).step_by(2).map(|i| u8::from_str_radix(&clean[i..i + 2], 16).unwrap()).collect();
-    let events = state.stream.lock().unwrap().push(&bytes, now_ms());
-    let n = events.len();
-    let changed = events.into_iter().fold(false, |acc, e| state.apply(e) | acc);
-    if changed {
-        save(&app, &state);
-        let _ = app.emit("state-changed", ());
-    }
-    Ok(n)
+fn get_souls(state: State<App>) -> Vec<SoulSeen> {
+    state.souls.lock().unwrap().clone()
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -303,12 +325,16 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let saved = state::load(app.handle());
             let click_through = saved.settings.click_through;
+            show_overlays(app.handle(), &saved.settings);
             app.manage(App::new(saved));
-            if let Some(w) = app.get_webview_window("overlay") {
-                let _ = w.set_ignore_cursor_events(click_through);
+            for label in OVERLAYS {
+                if let Some(w) = app.get_webview_window(label) {
+                    let _ = w.set_ignore_cursor_events(click_through);
+                }
             }
             tauri::async_runtime::spawn(alarm_clock(app.handle().clone()));
             let (tx, rx) = std::sync::mpsc::sync_channel(8192);
@@ -317,7 +343,7 @@ pub fn run() {
             std::thread::spawn(move || read_capture(handle, rx));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, ingest_hex, capture_status])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

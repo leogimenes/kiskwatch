@@ -1,0 +1,27 @@
+/* Shared by the panel and the overlays: pet type colors and the accessibility looks. */
+:root {
+  --cogni: #8fb3ff;
+  --fera: #ff9a7a;
+  --natura: #8fdc8f;
+  --varian: #d39bff;
+  --special: #ffe08c;
+}
+/* Okabe-Ito: told apart with any kind of color blindness. */
+:root.colorblind {
+  --cogni: #56b4e9;
+  --fera: #e69f00;
+  --natura: #009e73;
+  --varian: #cc79a7;
+  --special: #f0e442;
+}
+.cogni { --g: var(--cogni); }
+.fera { --g: var(--fera); }
+.natura { --g: var(--natura); }
+.varian { --g: var(--varian); }
+.special { --g: var(--special); }
+.genus {
+  display: inline-grid; place-items: center; flex: none;
+  width: 1.5em; height: 1.5em; margin-right: 6px; border-radius: 4px;
+  font-size: 0.8em; font-weight: 700; color: #0b1220; background: var(--g, #8d99ab);
+}
+:root.calm *, :root.calm *::before, :root.calm *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

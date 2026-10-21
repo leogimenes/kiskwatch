@@ -1,13 +1,14 @@
 // The overlay: the next timers with an alarm on, and the alarms as they ring.
-import { Alarm, TimerRow, countdown, getTimers, onAlarm, onStateChanged } from "./api";
+import { Accessibility, Alarm, TimerRow, countdown, getSaved, getTimers, onAlarm, onStateChanged } from "./api";
 import { t } from "./data";
+import { applyLook, chime } from "./look";
 
 const next = document.querySelector("#next") as HTMLUListElement;
 const alerts = document.querySelector("#alerts") as HTMLDivElement;
-const ALERT_MS = 60_000;
 const SHOWN = 6;
 
 let rows: TimerRow[] = [];
+let look: Accessibility | null = null;
 
 function render() {
   const now = Date.now();
@@ -25,33 +26,20 @@ function render() {
   if (!watched.length) next.innerHTML = `<li class="empty">Ative avisos no painel</li>`;
 }
 
-/** A short two-tone chime, so no sound file has to ship. */
-function chime() {
-  const ctx = new AudioContext();
-  [880, 1320].forEach((f, i) => {
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.frequency.value = f;
-    g.gain.setValueAtTime(0.0001, ctx.currentTime + i * 0.18);
-    g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + i * 0.18 + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.18 + 0.5);
-    o.connect(g).connect(ctx.destination);
-    o.start(ctx.currentTime + i * 0.18);
-    o.stop(ctx.currentTime + i * 0.18 + 0.55);
-  });
-}
-
 function ring(a: Alarm) {
   const div = document.createElement("div");
   div.className = "alert";
   div.textContent = `${t(a.name)} em ${a.lead === 60 ? "1 hora" : `${a.lead} min`}`;
   alerts.prepend(div);
-  setTimeout(() => div.remove(), ALERT_MS);
-  chime();
+  setTimeout(() => div.remove(), (look?.alert_seconds ?? 60) * 1000);
+  if (look) chime(look);
 }
 
 async function refresh() {
-  rows = await getTimers();
+  const [timers, saved] = await Promise.all([getTimers(), getSaved()]);
+  rows = timers;
+  look = saved.settings.a11y;
+  applyLook(look);
   render();
 }
 

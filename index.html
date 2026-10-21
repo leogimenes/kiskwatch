@@ -15,7 +15,10 @@
         <button data-tab="build">Build</button>
         <button data-tab="config">Configurações</button>
       </nav>
-      <span id="capture" class="capture" title=""></span>
+      <div class="capture-wrap">
+        <button id="capture" class="capture-dot" aria-haspopup="dialog" aria-expanded="false" aria-controls="capture-pop" aria-label="Estado da captura"></button>
+        <div id="capture-pop" class="popover" role="dialog" aria-label="Estado da captura" hidden></div>
+      </div>
       <label class="server">Servidor
         <select id="region"></select>
         <select id="server"></select>
@@ -24,6 +27,18 @@
 
     <main>
       <section id="tab-timers" class="tab active">
+        <div id="resets" class="resets" aria-live="off"></div>
+        <div class="filters">
+          <input id="timer-search" type="search" placeholder="Buscar boss ou evento pelo nome" aria-label="Buscar boss ou evento" />
+          <select id="timer-kind" aria-label="Tipo">
+            <option value="">Tudo</option>
+            <option value="field-boss">Field bosses</option>
+            <option value="boss">Bosses agendados</option>
+            <option value="event">Eventos</option>
+            <option value="alarm">Só com aviso</option>
+          </select>
+          <span id="timer-count" class="hint"></span>
+        </div>
         <p class="hint">Abra o mapa no jogo para atualizar os field bosses. Marque os avisos que quer receber no overlay.</p>
         <table class="list">
           <thead><tr><th>Evento</th><th>Onde</th><th>Começa em</th><th>Avisos</th></tr></thead>
@@ -53,14 +68,28 @@
         </div>
         <div class="pets-layout">
           <table class="list">
-            <thead><tr><th>Pet</th><th>Nível</th><th>Almas</th><th>Faltam</th><th>Onde dropa</th></tr></thead>
+            <thead><tr><th><span class="sr">Fixar no overlay</span></th><th>Pet</th><th>Nível</th><th>Almas</th><th>Faltam</th><th>Onde dropa</th></tr></thead>
             <tbody id="pets"></tbody>
           </table>
           <aside class="map-panel">
-            <h2>Mapa</h2>
-            <select id="map-select"></select>
+            <div class="map-head">
+              <h2>Mapa</h2>
+              <button id="map-wide" aria-pressed="false" title="Ampliar o mapa">Ampliar</button>
+            </div>
+            <div class="map-tools">
+              <select id="map-select" aria-label="Mapa"></select>
+              <select id="map-zone" aria-label="Zona"></select>
+            </div>
+            <div class="map-tools">
+              <label><input id="map-names" type="checkbox" checked /> Nomes</label>
+              <label><input id="map-kibs" type="checkbox" checked /> Kibelisks</label>
+              <button id="map-out" aria-label="Afastar">−</button>
+              <button id="map-in" aria-label="Aproximar">+</button>
+              <button id="map-fit">Ver tudo</button>
+            </div>
             <svg id="map" viewBox="0 0 1000 1000" role="img" aria-label="Spawns dos pets faltantes"></svg>
-            <p class="hint">Cada ponto é o centro dos spawns de um monstro que dropa almas de um pet filtrado. O fundo do mapa ainda não está incluído.</p>
+            <div id="map-info" class="map-info" aria-live="polite"></div>
+            <p class="hint">Cada ponto é onde nasce um monstro que dropa almas de um pet da lista; o tamanho é quanto falta. O quadrado é o Kibelisk mais perto. Role para dar zoom (os nomes aparecem ao aproximar), arraste para mover, clique num ponto ou no nome de um pet da lista para ver os detalhes.</p>
           </aside>
         </div>
       </section>
@@ -70,12 +99,33 @@
       </section>
 
       <section id="tab-config" class="tab">
-        <label class="row"><input id="click-through" type="checkbox" /> Overlay deixa os cliques passarem para o jogo</label>
-        <p class="hint">Desmarque para arrastar e redimensionar o overlay.</p>
-        <h2>Dados de teste</h2>
-        <p class="hint">Enquanto a captura ao vivo não está pronta, cole aqui bytes do servidor em hexadecimal (por exemplo, uma gravação de pacotes).</p>
-        <textarea id="ingest" rows="6" spellcheck="false"></textarea>
-        <button id="ingest-go">Processar</button> <span id="ingest-result"></span>
+        <h2>Overlays</h2>
+        <label class="row"><input id="timer-overlay" type="checkbox" /> Mostrar o overlay de timers</label>
+        <label class="row"><input id="pet-overlay" type="checkbox" /> Mostrar o overlay de pets</label>
+        <label class="row"><input id="click-through" type="checkbox" /> Os overlays deixam os cliques passarem para o jogo</label>
+        <p class="hint">Desmarque para arrastar e redimensionar os overlays. Os pets do overlay são os que você fixa (★) na aba Pets, mais o que está farmando agora.</p>
+
+        <h2>Acessibilidade</h2>
+        <div class="settings">
+          <label for="a-font">Tamanho do texto</label>
+          <span class="range"><input id="a-font" type="range" min="80" max="160" step="10" /> <output for="a-font"></output></span>
+          <label for="a-opacity">Fundo dos overlays</label>
+          <span class="range"><input id="a-opacity" type="range" min="20" max="100" step="5" /> <output for="a-opacity"></output></span>
+          <label for="a-contrast">Alto contraste</label>
+          <input id="a-contrast" type="checkbox" />
+          <label for="a-colorblind">Cores para daltonismo</label>
+          <input id="a-colorblind" type="checkbox" />
+          <label for="a-motion">Reduzir animações</label>
+          <input id="a-motion" type="checkbox" />
+          <label for="a-sound">Som dos avisos</label>
+          <span class="range"><input id="a-sound" type="checkbox" /> <input id="a-volume" type="range" min="0" max="100" step="5" aria-label="Volume" /> <output for="a-volume"></output> <button id="a-test">Testar</button></span>
+          <label for="a-alert">Tempo do aviso na tela</label>
+          <select id="a-alert">
+            <option value="15">15 segundos</option><option value="30">30 segundos</option><option value="60">1 minuto</option>
+            <option value="120">2 minutos</option><option value="300">5 minutos</option>
+          </select>
+        </div>
+
         <h2>Créditos</h2>
         <p class="hint">Decodificação de pacotes e dados do jogo vêm do <a href="https://github.com/taengu/A2Tools-DPS-Meter" target="_blank">A2Tools</a> e dos <a href="https://github.com/taengu/A2Tools-Plugins" target="_blank">A2Tools Plugins</a> (GPL-3.0). Kiskwatch também é GPL-3.0.</p>
       </section>
