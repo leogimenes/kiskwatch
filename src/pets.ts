@@ -2,11 +2,13 @@
 // the pets pinned in the panel, each with its level and the souls to the next.
 import { Saved, SoulSeen, getSaved, getSouls, onStateChanged } from "./api";
 import { GENUS, GENUS_MARK, PET_BY_ID, Pet, SOULS_PER_LEVEL, levelProgress, name, soulsToMax, t } from "./data";
-import { FARMING_MS, farming, nextPet } from "./farm";
+import { FARMING_MS, nextOnRoute, nextPet, recent } from "./farm";
 import { applyLook } from "./look";
 
 let saved: Saved | null = null;
 let souls: SoulSeen[] = [];
+/** How many pets with recent souls to show. */
+const RECENT = 5;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -52,26 +54,44 @@ function petCard(p: Pet, cls: string, note?: string) {
   return card;
 }
 
+/** "agora", "há 5 min", "há 2 h". */
+function ago(ms: number) {
+  const min = Math.floor(ms / 60_000);
+  return min < 1 ? "agora" : min < 60 ? `há ${min} min` : `há ${Math.floor(min / 60)} h`;
+}
+
+/** At level 3 a pet takes no more souls: it leaves the overlay. */
+const maxed = (pet: number) => progress(pet).level >= SOULS_PER_LEVEL.length;
+
 function render() {
   const now = Date.now();
-  const cur = farming(souls, now);
+  const recents = recent(souls, RECENT, maxed);
   const top: HTMLElement[] = [];
-  if (cur) {
-    const p = PET_BY_ID.get(cur.pet);
-    const recent = souls.filter((s) => s.pet === cur.pet && now - s.at_ms <= FARMING_MS).reduce((n, s) => n + s.amount, 0);
-    if (p) top.push(el("h3", "", "Farmando agora"), petCard(p, "farming", `+${recent} alma(s) nos últimos 30 min`));
-    const next = nextPet(cur.pet, progress);
-    if (next) {
-      const k = next.drop.kibelisk;
-      const where = `${t(next.drop.npc)} · ${next.drop.zones.map(t)[0] ?? t(next.drop.map)}${k ? ` · Kibelisk #${k.teleport}` : ""}`;
-      top.push(el("h3", "", "Próximo (mais perto)"), petCard(next.pet, "next", where));
-    }
+  if (recents.length) {
+    top.push(el("h3", "", "Almas recentes"));
+    recents.forEach((r, i) => {
+      const p = PET_BY_ID.get(r.pet);
+      const farming = i === 0 && now - r.at_ms <= FARMING_MS;
+      if (p) top.push(petCard(p, farming ? "farming" : "", `+${r.amount} alma(s) · ${farming ? "farmando agora" : `última ${ago(now - r.at_ms)}`}`));
+    });
+  }
+  // The route's next stop; without a route, the nearest pet still missing souls.
+  const route = saved?.settings.route ?? [];
+  const onRoute = route.length ? nextOnRoute(route, recents[0]?.pet ?? null, progress) : null;
+  const next = onRoute ?? (recents.length && !route.length ? nextPet(recents[0].pet, progress) : null);
+  if (next) {
+    const k = next.drop.kibelisk;
+    const where = `${t(next.drop.npc)} · ${next.drop.zones.map(t)[0] ?? t(next.drop.map)}${k ? ` · Kibelisk #${k.teleport}` : ""}`;
+    top.push(el("h3", "", onRoute ? "Próximo na rota" : "Próximo (mais perto)"), petCard(next.pet, "next", where));
+  } else if (route.length && recents.length) {
+    top.push(el("h3", "", "Rota concluída"));
   }
   document.querySelector("#now")!.replaceChildren(...top);
-  const ids = (saved?.settings.pinned_pets ?? []).filter((id) => id !== cur?.pet);
+  const ids = (saved?.settings.pinned_pets ?? []).filter((id) => !maxed(id) && !recents.some((r) => r.pet === id));
   const list = document.querySelector("#pinned")!;
-  list.replaceChildren(...ids.map((id) => PET_BY_ID.get(id)).filter((p): p is Pet => !!p).map((p) => petCard(p, "")));
-  if (!ids.length && !cur) list.append(el("li", "empty", "Fixe pets (★) na aba Pets do painel. O pet que você estiver farmando aparece aqui sozinho."));
+  list.replaceChildren(...(ids.length ? [el("h3", "", "Fixados")] : []),
+    ...ids.map((id) => PET_BY_ID.get(id)).filter((p): p is Pet => !!p).map((p) => petCard(p, "")));
+  if (!ids.length && !recents.length) list.append(el("li", "empty", "Fixe pets (★) na aba Pets do painel. Os pets em que você pegar almas aparecem aqui sozinhos."));
 }
 
 async function refresh() {

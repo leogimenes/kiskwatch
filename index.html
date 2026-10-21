@@ -39,9 +39,9 @@
           </select>
           <span id="timer-count" class="hint"></span>
         </div>
-        <p class="hint">Abra o mapa no jogo para atualizar os field bosses. Marque os avisos que quer receber no overlay.</p>
+        <p class="hint">Abra o mapa no jogo para atualizar os field bosses. Clique no sino para escolher quando ser avisado no overlay.</p>
         <table class="list">
-          <thead><tr><th>Evento</th><th>Onde</th><th>Começa em</th><th>Avisos</th></tr></thead>
+          <thead><tr><th>Evento</th><th>Onde</th><th>Começa em</th><th>Aviso</th></tr></thead>
           <tbody id="timers"></tbody>
         </table>
       </section>
@@ -89,6 +89,14 @@
             </div>
             <svg id="map" viewBox="0 0 1000 1000" role="img" aria-label="Spawns dos pets faltantes"></svg>
             <div id="map-info" class="map-info" aria-live="polite"></div>
+            <div class="route-box">
+              <div class="map-head">
+                <h3>Rota de farm</h3>
+                <span><button id="route-go">Calcular</button> <button id="route-clear">Limpar</button></span>
+              </div>
+              <p id="route-sum" class="hint">Calcula a ordem com menos caminhada para farmar os pets da lista neste mapa (e zona), usando os Kibelisks quando compensa. O overlay de pets mostra o próximo da rota.</p>
+              <ol id="route"></ol>
+            </div>
             <p class="hint">Cada ponto é onde nasce um monstro que dropa almas de um pet da lista; o tamanho é quanto falta. O quadrado é o Kibelisk mais perto. Role para dar zoom (os nomes aparecem ao aproximar), arraste para mover, clique num ponto ou no nome de um pet da lista para ver os detalhes.</p>
           </aside>
         </div>

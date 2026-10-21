@@ -13,6 +13,11 @@ export interface Accessibility {
   alert_seconds: number;
 }
 
+export interface RouteStop {
+  pet: number;
+  npc: number;
+}
+
 export interface Settings {
   server_id: number;
   alarms: Record<string, number[]>;
@@ -20,6 +25,7 @@ export interface Settings {
   timer_overlay: boolean;
   pet_overlay: boolean;
   pinned_pets: number[];
+  route: RouteStop[];
   a11y: Accessibility;
 }
 
