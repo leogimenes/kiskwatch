@@ -28,6 +28,29 @@ export interface Settings {
   pinned_pets: number[];
   route: RouteStop[];
   a11y: Accessibility;
+  dps: DpsSettings;
+}
+
+export type DpsTarget = "all" | "mob" | "boss";
+export type DpsBars = "damage" | "heal" | "both";
+
+export interface DpsSettings {
+  overlay: boolean;
+  /** "hit": recording starts on your first hit; "button": by hand. */
+  start: "hit" | "button";
+  target: DpsTarget;
+  bars: DpsBars;
+}
+
+export type ClassName = "Gladiator" | "Templar" | "Assassin" | "Ranger" | "Sorcerer" | "Elementalist" | "Cleric" | "Chanter";
+
+export interface FightPlayer {
+  id: number; name: string; class: ClassName | null; local: boolean; boss_damage: number; mob_damage: number; heal: number;
+}
+
+/** A DPS recording, live or saved. */
+export interface Fight {
+  id: string; name: string; started_ms: number; ended_ms: number; players: FightPlayer[];
 }
 
 export interface PetProgress {
@@ -82,6 +105,8 @@ export interface Saved {
   profile: Profile | null;
   /** The pets overlay's queue by server: newest first. */
   pet_queue: Record<string, { pets: number[]; last: number | null }>;
+  /** DPS recordings, newest first. */
+  fights: Fight[];
 }
 
 export interface TimerRow {
@@ -132,9 +157,16 @@ export const searchCharacters = (name: string) => invoke<Hit[]>("search_characte
 export const loadProfile = (serverId?: number, characterId?: string) => invoke("load_profile", { serverId, characterId });
 export const clearProfile = () => invoke("clear_profile");
 export const gameData = <T>(name: "skill-points" | "daevanion" | "skills") => invoke<T>("game_data", { name });
+export const dpsLive = () => invoke<Fight | null>("dps_live");
+export const dpsStart = () => invoke("dps_start");
+export const dpsStop = () => invoke("dps_stop");
+/** Rename the recording under way (no id) or a saved one. */
+export const dpsRename = (id: string | null, name: string) => invoke("dps_rename", { id, name });
+export const dpsDelete = (id: string) => invoke("dps_delete", { id });
 export { openUrl } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
+export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 export const onAlarm = (f: (a: Alarm) => void) => listen<Alarm>("alarm", (e) => f(e.payload));
 
 /** "2d 04h", "1h 05m", "4m 09s", "agora". */

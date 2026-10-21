@@ -7,6 +7,7 @@
 use serde::Serialize;
 
 use crate::boss_map::{self, BossMap};
+use crate::combat::{self, CombatEvent};
 use crate::framing::{self, FrameKind, MAX_BUNDLE_DEPTH};
 use crate::pets::{self, PetRecord};
 
@@ -18,6 +19,7 @@ const MAX_BUFFER_BYTES: usize = 2 * 1024 * 1024;
 pub enum GameEvent {
     BossMap(BossMap),
     Pets(PetRecord),
+    Combat(CombatEvent),
 }
 
 /// Decode one whole packet (length varint included).
@@ -29,9 +31,15 @@ pub fn decode(packet: &[u8], now_ms: i64) -> Option<GameEvent> {
 }
 
 /// One server-to-client connection's byte stream.
-#[derive(Default)]
 pub struct GameStream {
     buffer: Vec<u8>,
+    combat: combat::Reader,
+}
+
+impl Default for GameStream {
+    fn default() -> Self {
+        Self { buffer: Vec::new(), combat: combat::Reader::new(combat::SkillLists::bundled()) }
+    }
 }
 
 impl GameStream {
@@ -48,7 +56,7 @@ impl GameStream {
         let walked = framing::walk(&self.buffer);
         let mut events = Vec::new();
         for frame in &walked.frames {
-            read_frame(frame.kind, frame.bytes(&self.buffer), frame.payload(&self.buffer), 1, now_ms, &mut events);
+            read_frame(&mut self.combat, frame.kind, frame.bytes(&self.buffer), frame.payload(&self.buffer), 1, now_ms, &mut events);
         }
         self.buffer.drain(..walked.consumed);
         events
@@ -59,16 +67,19 @@ impl GameStream {
     }
 }
 
-fn read_frame(kind: FrameKind, bytes: &[u8], payload: &[u8], depth: usize, now_ms: i64, out: &mut Vec<GameEvent>) {
+fn read_frame(reader: &mut combat::Reader, kind: FrameKind, bytes: &[u8], payload: &[u8], depth: usize, now_ms: i64, out: &mut Vec<GameEvent>) {
     match kind {
-        FrameKind::Packet => out.extend(decode(bytes, now_ms)),
+        FrameKind::Packet => match decode(bytes, now_ms) {
+            Some(event) => out.push(event),
+            None => out.extend(reader.read(bytes).into_iter().map(GameEvent::Combat)),
+        },
         FrameKind::Bundle => {
             if depth > MAX_BUNDLE_DEPTH {
                 return;
             }
             let Some(inner) = framing::decompress_bundle(payload) else { return };
             for frame in framing::walk_inner(&inner).frames {
-                read_frame(frame.kind, frame.bytes(&inner), frame.payload(&inner), depth + 1, now_ms, out);
+                read_frame(reader, frame.kind, frame.bytes(&inner), frame.payload(&inner), depth + 1, now_ms, out);
             }
         }
     }

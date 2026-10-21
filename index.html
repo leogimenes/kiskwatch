@@ -13,6 +13,7 @@
         <button data-tab="timers" class="active">Timers</button>
         <button data-tab="pets">Pets</button>
         <button data-tab="build">Build</button>
+        <button data-tab="dps">DPS</button>
         <button data-tab="config">Configurações</button>
       </nav>
       <div class="capture-wrap">
@@ -114,10 +115,25 @@
         <div id="build"></div>
       </section>
 
+      <section id="tab-dps" class="tab">
+        <div id="dps-live" class="dps-live"></div>
+        <div class="dps-layout">
+          <ul id="dps-list" class="dps-list" aria-label="Gravações"></ul>
+          <div id="dps-detail"></div>
+        </div>
+      </section>
+
       <section id="tab-config" class="tab">
         <h2>Overlays</h2>
         <label class="row"><input id="timer-overlay" type="checkbox" /> Mostrar o overlay de timers</label>
         <label class="row"><input id="pet-overlay" type="checkbox" /> Mostrar o overlay de pets</label>
+        <label class="row"><input id="dps-overlay" type="checkbox" /> Mostrar o overlay de DPS</label>
+        <label class="row">Começar a gravar o DPS
+          <select id="dps-start">
+            <option value="hit">ao bater (automático)</option>
+            <option value="button">só pelo botão</option>
+          </select>
+        </label>
         <label class="row"><input id="overlays-with-game" type="checkbox" /> Mostrar os overlays só com o Aion 2 aberto</label>
         <label class="row"><input id="click-through" type="checkbox" /> Os overlays deixam os cliques passarem para o jogo</label>
         <p class="hint">Desmarque para arrastar e redimensionar os overlays. O overlay de pets mostra os últimos 5 pets de que você farmou alma (o mais recente no topo), o próximo da rota e os que você fixa (★) na aba Pets.</p>

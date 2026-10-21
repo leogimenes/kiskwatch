@@ -13,6 +13,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
+use kiskwatch_core::dps::{Fight, Meter};
 use kiskwatch_core::schedule::{self, Event};
 use kiskwatch_core::pets::PetRecord;
 use kiskwatch_core::stream::GameEvent;
@@ -32,6 +33,8 @@ pub struct App {
     dispatch: Mutex<(DispatchStatus, i64)>,
     events: Vec<Event>,
     field_bosses: std::collections::BTreeMap<u32, FieldBoss>,
+    /// The DPS tracker.
+    meter: Mutex<Meter>,
 }
 
 fn now_ms() -> i64 {
@@ -72,6 +75,7 @@ impl App {
                 .into_iter()
                 .filter_map(|(k, v)| Some((k.parse().ok()?, v)))
                 .collect(),
+            meter: Mutex::new(Meter::new(kiskwatch_core::combat::boss_codes())),
         }
     }
 
@@ -138,6 +142,8 @@ impl App {
                 let collection = saved.pets[&server].clone();
                 saved.pet_queue.entry(server).or_default().apply(&record, &collection);
             }
+            // The meter's (see `read_capture`).
+            GameEvent::Combat(_) => return false,
             GameEvent::BossMap(map) => {
                 // Only the player's own server's maps (the header is 0 there).
                 if map.header != 0 {
@@ -251,12 +257,12 @@ fn set_pet(app: AppHandle, state: State<App>, pet: u32, level: u32, points: u32)
     let _ = app.emit("state-changed", ());
 }
 
-const OVERLAYS: [&str; 2] = ["overlay", "pets"];
+const OVERLAYS: [&str; 3] = ["overlay", "pets", "dps"];
 
 /// Show or hide each overlay as the settings say, and with the game.
 fn show_overlays(app: &AppHandle, s: &Settings, game_running: bool) {
     let game_ok = game_running || !s.overlays_with_game;
-    for (label, on) in [("overlay", s.timer_overlay), ("pets", s.pet_overlay)] {
+    for (label, on) in [("overlay", s.timer_overlay), ("pets", s.pet_overlay), ("dps", s.dps.overlay)] {
         let on = on && game_ok;
         if let Some(w) = app.get_webview_window(label) {
             let _ = if on { w.show() } else { w.hide() };
@@ -348,6 +354,92 @@ fn clear_profile(app: AppHandle, state: State<App>) {
     let _ = app.emit("state-changed", ());
 }
 
+/// A recording's default name: your character, the date and a random tag.
+fn fight_name(state: &App, me: Option<&str>) -> String {
+    use std::hash::{BuildHasher, Hasher};
+    let who = me.map(str::to_string).or_else(|| state.saved.lock().unwrap().profile.as_ref().map(|p| p.name.clone())).filter(|n| !n.is_empty());
+    let mut h = std::collections::hash_map::RandomState::new().build_hasher();
+    h.write_i64(now_ms());
+    let tag: String = (0..3).map(|i| b"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[((h.finish() >> (i * 5)) & 31) as usize] as char).collect();
+    let when = chrono::Local::now().format("%d/%m %H:%M");
+    format!("{} {when} #{tag}", who.as_deref().unwrap_or("Luta"))
+}
+
+/// Keep a finished recording.
+fn keep_fight(app: &AppHandle, state: &App, fight: Fight) {
+    {
+        let mut saved = state.saved.lock().unwrap();
+        saved.fights.retain(|f| f.id != fight.id);
+        saved.fights.insert(0, fight);
+        saved.fights.truncate(state::FIGHTS_KEPT);
+    }
+    save(app, state);
+    let _ = app.emit("dps-changed", ());
+}
+
+/// End automatic recordings once the fighting stops.
+fn dps_clock(app: AppHandle) {
+    loop {
+        std::thread::sleep(Duration::from_secs(1));
+        let state = app.state::<App>();
+        let ended = state.meter.lock().unwrap().tick(now_ms());
+        if let Some(fight) = ended {
+            keep_fight(&app, &state, fight);
+        }
+    }
+}
+
+/// The recording under way, if any.
+#[tauri::command]
+fn dps_live(state: State<App>) -> Option<Fight> {
+    state.meter.lock().unwrap().current(now_ms())
+}
+
+#[tauri::command]
+fn dps_start(app: AppHandle, state: State<App>) {
+    let me = state.meter.lock().unwrap().my_name().map(str::to_string);
+    let name = fight_name(&state, me.as_deref());
+    state.meter.lock().unwrap().start(name, now_ms());
+    let _ = app.emit("dps-changed", ());
+}
+
+#[tauri::command]
+fn dps_stop(app: AppHandle, state: State<App>) {
+    let fight = state.meter.lock().unwrap().stop(now_ms());
+    match fight {
+        Some(fight) => keep_fight(&app, &state, fight),
+        None => {
+            let _ = app.emit("dps-changed", ());
+        }
+    }
+}
+
+/// Rename a recording: the one under way, or a saved one by id.
+#[tauri::command]
+fn dps_rename(app: AppHandle, state: State<App>, id: Option<String>, name: String) {
+    let name = kiskwatch_core::dps::clip_name(&name);
+    if name.is_empty() {
+        return;
+    }
+    match id {
+        None => state.meter.lock().unwrap().rename(&name),
+        Some(id) => {
+            if let Some(f) = state.saved.lock().unwrap().fights.iter_mut().find(|f| f.id == id) {
+                f.name = name;
+            }
+            save(&app, &state);
+        }
+    }
+    let _ = app.emit("dps-changed", ());
+}
+
+#[tauri::command]
+fn dps_delete(app: AppHandle, state: State<App>, id: String) {
+    state.saved.lock().unwrap().fights.retain(|f| f.id != id);
+    save(&app, &state);
+    let _ = app.emit("dps-changed", ());
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct CaptureStatus {
     #[serde(flatten)]
@@ -381,6 +473,20 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
             }
             changed
         };
+        let (combat, events): (Vec<_>, Vec<_>) = events.into_iter().partition(|e| matches!(e, GameEvent::Combat(_)));
+        if !combat.is_empty() {
+            let auto = state.saved.lock().unwrap().settings.dps.start == "hit";
+            let mut meter = state.meter.lock().unwrap();
+            let mut started = false;
+            for e in combat {
+                if let GameEvent::Combat(e) = e {
+                    started |= meter.apply(e, now, auto, |me| fight_name(&state, me));
+                }
+            }
+            if started {
+                let _ = app.emit("dps-changed", ());
+            }
+        }
         let changed = events.into_iter().fold(false, |acc, e| state.apply(e) | acc);
         if changed {
             save(&app, &state);
@@ -412,9 +518,11 @@ pub fn run() {
             pcap::start(tx, app.state::<App>().capture.clone());
             let handle = app.handle().clone();
             std::thread::spawn(move || read_capture(handle, rx));
+            let handle = app.handle().clone();
+            std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }
