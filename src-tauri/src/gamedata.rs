@@ -11,7 +11,7 @@ use tauri::{AppHandle, Manager};
 
 const SOURCE: &str = "https://dbaion2.ru/data-en";
 /// The files the Build tab reads.
-const FILES: [&str; 2] = ["skill-points", "daevanion"];
+const FILES: [&str; 3] = ["skill-points", "daevanion", "skills"];
 /// A cached copy older than this is downloaded again.
 const MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
 
