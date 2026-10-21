@@ -5,7 +5,8 @@
   "windows": [
     "panel",
     "overlay",
-    "pets"
+    "pets",
+    "dps"
   ],
   "permissions": [
     "core:default",

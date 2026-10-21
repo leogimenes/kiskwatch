@@ -7,6 +7,7 @@ import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, 
 import { farming } from "./farm";
 import { Stop, leg, plan, totals } from "./route";
 import { renderBuild } from "./build";
+import { renderDps } from "./dpsPanel";
 import { applyLook, chime } from "./look";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -614,6 +615,8 @@ const clickThrough = check("#click-through");
 clickThrough.addEventListener("change", () => setClickThrough(clickThrough.checked));
 check("#timer-overlay").addEventListener("change", (e) => update((s) => { s.timer_overlay = (e.target as HTMLInputElement).checked; }));
 check("#pet-overlay").addEventListener("change", (e) => update((s) => { s.pet_overlay = (e.target as HTMLInputElement).checked; }));
+check("#dps-overlay").addEventListener("change", (e) => update((s) => { s.dps.overlay = (e.target as HTMLInputElement).checked; }));
+$<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button"; }));
 check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
 
 const A11Y: [string, keyof Accessibility, "check" | "number"][] = [
@@ -642,6 +645,8 @@ function renderConfig(s: Settings) {
   check("#timer-overlay").checked = s.timer_overlay;
   check("#pet-overlay").checked = s.pet_overlay;
   check("#overlays-with-game").checked = s.overlays_with_game;
+  check("#dps-overlay").checked = s.dps.overlay;
+  $<HTMLSelectElement>("#dps-start").value = s.dps.start;
   for (const [id, key, kind] of A11Y) {
     const input = $<HTMLInputElement>(id);
     const v = s.a11y[key];
@@ -664,6 +669,7 @@ async function refresh() {
   renderTimers();
   renderPets();
   renderBuild(saved);
+  renderDps(saved);
   renderCapture();
 }
 
