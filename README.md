@@ -48,7 +48,7 @@ cargo test -p kiskwatch-core
 npx tauri build        # gera o instalador (.exe) em target/release/bundle/nsis
 ```
 
-A cada pull request, o CI gera o instalador do Windows como artefato para teste.
+O CI roda os testes a cada pull request (menos de um minuto). O instalador do Windows sai como artefato a cada push na `main`, em tags `v*`, pelo botão "Run workflow" na aba Actions, ou num pull request com o label `build-windows`.
 
 ### Atualizar os dados do jogo
 
