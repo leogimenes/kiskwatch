@@ -33,7 +33,8 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "resizable": true,
-        "shadow": false
+        "shadow": false,
+        "visible": false
       },
       {
         "label": "pets",

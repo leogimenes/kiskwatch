@@ -26,6 +26,7 @@ export interface Settings {
   timer_overlay: boolean;
   pet_overlay: boolean;
   overlays_with_game: boolean;
+  overlays_with_focus: boolean;
   pinned_pets: number[];
   route: RouteStop[];
   a11y: Accessibility;
@@ -134,6 +135,19 @@ export interface Profile {
   equipment: ProfileEquipment;
   boards: Record<string, BoardDetail>;
   fetched_ms: number;
+  /** The skill presets read so far; the site shows only the one in use. */
+  presets?: SkillPresets;
+}
+
+/** One preset as the site showed it. */
+export interface SkillPreset {
+  skill: ProfileEquipment["skill"] | null; fetched_ms: number;
+}
+
+export interface SkillPresets {
+  /** The preset (1 to 3) the last read is; 0 in saves from before presets. */
+  current: number;
+  kept: Record<string, SkillPreset>;
 }
 
 export interface ProfileInfo {
@@ -294,6 +308,9 @@ export const getPaces = () => invoke<Pace[]>("get_paces");
 export const searchCharacters = (name: string) => invoke<Hit[]>("search_characters", { name });
 export const loadProfile = (serverId?: number, characterId?: string) => invoke("load_profile", { serverId, characterId });
 export const clearProfile = () => invoke("clear_profile");
+/** The profile's last read is skill preset `n`. */
+export const movePreset = (n: number) => invoke("move_preset", { n });
+export const forgetPreset = (n: number) => invoke("forget_preset", { n });
 export const gameData = <T>(name: "skill-points" | "daevanion" | "skills") => invoke<T>("game_data", { name });
 export const dpsLive = () => invoke<Fight | null>("dps_live");
 export const dpsStart = () => invoke("dps_start");

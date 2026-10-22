@@ -30,6 +30,8 @@ const FIELD_BOSSES_JSON: &str = include_str!("../../data/field_bosses.json");
 pub struct App {
     /// AION2.exe is running.
     game_running: AtomicBool,
+    /// The game, or Kiskwatch, is in front (see `watch_focus`).
+    game_focused: AtomicBool,
     saved: Mutex<Saved>,
     capture: std::sync::Arc<Mutex<pcap::CaptureState>>,
     dispatch: Mutex<(DispatchStatus, i64)>,
@@ -72,6 +74,7 @@ impl App {
     fn new(saved: Saved) -> Self {
         Self {
             game_running: AtomicBool::new(game::running()),
+            game_focused: AtomicBool::new(true),
             saved: Mutex::new(saved),
             capture: Default::default(),
             dispatch: Mutex::new((DispatchStatus { locked: false, server_port: None }, 0)),
@@ -231,7 +234,7 @@ fn get_saved(state: State<App>) -> Saved {
 
 #[tauri::command]
 fn set_settings(app: AppHandle, state: State<App>, mut settings: Settings) {
-    show_overlays(&app, &settings, state.game_running.load(Ordering::Relaxed));
+    show_overlays(&app, &settings);
     {
         let mut saved = state.saved.lock().unwrap();
         // These have their own commands, and a shortcut may have changed
@@ -279,15 +282,28 @@ fn set_pet(app: AppHandle, state: State<App>, pet: u32, level: u32, points: u32)
 
 const OVERLAYS: [&str; 3] = ["overlay", "pets", "dps"];
 
-/// Show or hide each overlay as the settings say, and with the game.
-fn show_overlays(app: &AppHandle, s: &Settings, game_running: bool) {
-    let game_ok = game_running || !s.overlays_with_game;
-    for (label, on) in [("overlay", s.timer_overlay), ("pets", s.pet_overlay), ("dps", s.dps.overlay)] {
-        let on = on && game_ok;
-        if let Some(w) = app.get_webview_window(label) {
-            let _ = if on { w.show() } else { w.hide() };
+/// Show or hide each overlay as the settings say, and with the game running
+/// and in front.
+fn show_overlays(app: &AppHandle, s: &Settings) {
+    let state = app.state::<App>();
+    let game_ok = state.game_running.load(Ordering::Relaxed) || !s.overlays_with_game;
+    let focus_ok = state.game_focused.load(Ordering::Relaxed) || !s.overlays_with_focus;
+    let wanted = [("overlay", s.timer_overlay), ("pets", s.pet_overlay), ("dps", s.dps.overlay)].map(|(label, on)| (label, on && game_ok && focus_ok));
+    // On the main thread, after any change to the windows already asked for,
+    // since Tauri hides them again on those (see `game::show_window`).
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        for (label, on) in wanted {
+            if let Some(w) = handle.get_webview_window(label) {
+                game::show_window(&w, on);
+            }
         }
-    }
+    });
+}
+
+fn show_overlays_now(app: &AppHandle) {
+    let settings = app.state::<App>().saved.lock().unwrap().settings.clone();
+    show_overlays(app, &settings);
 }
 
 /// Follow the game starting and quitting, and the overlays with it.
@@ -298,9 +314,23 @@ fn watch_game(app: AppHandle) {
         let running = watcher.running();
         let state = app.state::<App>();
         if state.game_running.swap(running, Ordering::Relaxed) != running {
-            let settings = state.saved.lock().unwrap().settings.clone();
-            show_overlays(&app, &settings, running);
+            show_overlays_now(&app);
             let _ = app.emit("state-changed", ());
+        }
+    }
+}
+
+/// Follow the window in front: the overlays show over the game and while
+/// using Kiskwatch (to move them, or from the panel), not over other programs.
+fn watch_focus(app: AppHandle) {
+    let mut fg = game::Foreground::new();
+    loop {
+        std::thread::sleep(Duration::from_millis(250));
+        // No window in front, as while switching: keep what we had.
+        let Some(front) = fg.front() else { continue };
+        let focused = front != game::Front::Other;
+        if app.state::<App>().game_focused.swap(focused, Ordering::Relaxed) != focused {
+            show_overlays_now(&app);
         }
     }
 }
@@ -319,6 +349,8 @@ fn click_through(app: &AppHandle, state: &App, on: bool) -> Result<(), String> {
         }
     }
     state.saved.lock().unwrap().settings.click_through = on;
+    // Changing the windows hides them (see `show_overlays`).
+    show_overlays_now(app);
     save(app, state);
     let _ = app.emit("state-changed", ());
     Ok(())
@@ -439,8 +471,11 @@ async fn load_profile(app: AppHandle, state: State<'_, App>, server_id: Option<u
         let character_id = character_id.or(current.map(|p| p.character_id.clone())).ok_or("nenhum personagem escolhido")?;
         ((server_id / 100) % 10, server_id, character_id)
     };
-    let fetched = profile::fetch(region, server_id, &character_id, now_ms()).await?;
-    state.saved.lock().unwrap().profile = Some(fetched);
+    let mut fetched = profile::fetch(region, server_id, &character_id, now_ms()).await?;
+    let mut saved = state.saved.lock().unwrap();
+    fetched.file_preset(saved.profile.as_ref());
+    saved.profile = Some(fetched);
+    drop(saved);
     save(&app, &state);
     let _ = app.emit("state-changed", ());
     Ok(())
@@ -456,6 +491,26 @@ async fn game_data(app: AppHandle, name: String) -> Result<serde_json::Value, St
 #[tauri::command]
 fn clear_profile(app: AppHandle, state: State<App>) {
     state.saved.lock().unwrap().profile = None;
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
+/// The user says the profile's read is skill preset `n`.
+#[tauri::command]
+fn move_preset(app: AppHandle, state: State<App>, n: u8) {
+    if let Some(p) = state.saved.lock().unwrap().profile.as_mut() {
+        p.presets.move_to(n);
+    }
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
+/// Drops a skill preset kept from an earlier read.
+#[tauri::command]
+fn forget_preset(app: AppHandle, state: State<App>, n: u8) {
+    if let Some(p) = state.saved.lock().unwrap().profile.as_mut() {
+        p.presets.forget(n);
+    }
     save(&app, &state);
     let _ = app.emit("state-changed", ());
 }
@@ -798,15 +853,17 @@ pub fn run() {
             saved.settings.hotkeys.migrate();
             let click_through = saved.settings.click_through;
             let keys = saved.settings.hotkeys.clone();
-            show_overlays(app.handle(), &saved.settings, game::running());
             app.manage(App::new(saved));
-            let handle = app.handle().clone();
-            std::thread::spawn(move || watch_game(handle));
             for label in OVERLAYS {
                 if let Some(w) = app.get_webview_window(label) {
                     let _ = w.set_ignore_cursor_events(click_through);
                 }
             }
+            show_overlays_now(app.handle());
+            let handle = app.handle().clone();
+            std::thread::spawn(move || watch_game(handle));
+            let handle = app.handle().clone();
+            std::thread::spawn(move || watch_focus(handle));
             // A shortcut taken by another program leaves the others working;
             // the panel says which (see `hotkeys_status`).
             *app.state::<App>().hotkey_error.lock().unwrap() = hotkeys::register(app.handle(), &keys).err();
@@ -819,7 +876,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

@@ -5,6 +5,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
+use kiskwatch_core::presets::Presets;
 use serde_json::Value;
 
 use kiskwatch_core::gear::Gear;
@@ -52,6 +53,18 @@ pub struct Profile {
     /// `/api/character/daevanion/detail` by board id: each node, open or not.
     pub boards: BTreeMap<u32, Value>,
     pub fetched_ms: i64,
+    /// The skill presets read so far; the site shows only the one in use.
+    pub presets: Presets,
+}
+
+impl Profile {
+    /// Files this read's skills under a preset, keeping those read before
+    /// for the same character.
+    pub fn file_preset(&mut self, before: Option<&Profile>) {
+        let before = before.filter(|b| b.character_id == self.character_id && b.server_id == self.server_id);
+        let skill = self.equipment.get("skill").cloned().unwrap_or(Value::Null);
+        self.presets = Presets::file(before.map(|b| &b.presets), skill, self.fetched_ms);
+    }
 }
 
 fn client() -> Result<reqwest::Client, String> {
@@ -181,7 +194,7 @@ pub async fn fetch(region: u32, server_id: u32, character_id: &str, now_ms: i64)
         }
     }
     let name = info.pointer("/profile/characterName").and_then(Value::as_str).unwrap_or("").to_string();
-    Ok(Profile { server_id, character_id: id, name, info, equipment, boards, fetched_ms: now_ms })
+    Ok(Profile { server_id, character_id: id, name, info, equipment, boards, fetched_ms: now_ms, ..Default::default() })
 }
 
 #[cfg(test)]
