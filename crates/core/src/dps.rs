@@ -12,7 +12,7 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 
 use crate::casts::{Casts, SkillCasts};
-use crate::combat::{Class, CombatEvent};
+use crate::combat::{Class, CombatEvent, base_skill};
 
 /// An automatic recording ends after this long without new damage.
 pub const IDLE_END_MS: i64 = 30_000;
@@ -42,8 +42,54 @@ pub struct FightPlayer {
     pub boss_damage: i64,
     pub mob_damage: i64,
     pub heal: i64,
+    /// Damage by skill, biggest first.
+    pub skills: Vec<SkillStat>,
     /// When each skill was used, to set against its cooldown.
     pub casts: Vec<SkillCasts>,
+}
+
+/// One skill's damage in a recording: on bosses and on everything else.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SkillStat {
+    /// The skill's base code (see `combat::base_skill`).
+    pub skill: i32,
+    /// Its damage-over-time ticks, apart from its hits.
+    pub dot: bool,
+    pub boss: Tally,
+    pub mob: Tally,
+}
+
+/// Hits and their damage.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Tally {
+    pub damage: i64,
+    pub hits: u32,
+    pub crits: u32,
+    pub max_hit: i64,
+}
+
+impl Tally {
+    fn add(&mut self, value: i64, crit: bool) {
+        self.damage += value;
+        self.hits += 1;
+        self.crits += u32::from(crit);
+        self.max_hit = self.max_hit.max(value);
+    }
+
+    fn merge(&mut self, other: &Tally) {
+        self.damage += other.damage;
+        self.hits += other.hits;
+        self.crits += other.crits;
+        self.max_hit = self.max_hit.max(other.max_hit);
+    }
+}
+
+impl SkillStat {
+    pub fn damage(&self) -> i64 {
+        self.boss.damage + self.mob.damage
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -54,6 +100,8 @@ struct Recording {
     last_gain_ms: i64,
     /// By (target, actor as the game names it).
     damage: HashMap<(i32, i32), i64>,
+    /// By (target, actor, base skill, dot).
+    skills: HashMap<(i32, i32, i32, bool), Tally>,
     heal: HashMap<i32, i64>,
     casts: Casts,
 }
@@ -129,7 +177,7 @@ impl Meter {
                 self.npcs.insert(id);
                 self.owners.insert(id, owner);
             }
-            CombatEvent::Hit { actor, target, skill, value, dot } => {
+            CombatEvent::Hit { actor, target, skill, value, dot, crit } => {
                 if let Some(c) = Class::of_skill(skill).filter(|_| !self.npcs.contains(&actor)) {
                     self.classes.insert(actor, c);
                 }
@@ -152,6 +200,7 @@ impl Meter {
                 }
                 if let Some(rec) = &mut self.rec {
                     *rec.damage.entry((target, actor)).or_default() += value;
+                    rec.skills.entry((target, actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
                     rec.casts.hit(actor, skill, dot, now, rec.started_ms);
                     rec.last_gain_ms = now;
                 }
@@ -178,7 +227,7 @@ impl Meter {
     }
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
-        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), heal: HashMap::new(), casts: Casts::default() });
+        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default() });
     }
 
     /// Start recording by hand.
@@ -232,6 +281,23 @@ impl Meter {
                 }
             }
         }
+        let mut skills: HashMap<(i32, i32, bool), SkillStat> = HashMap::new();
+        for (&(target, actor, skill, dot), t) in &rec.skills {
+            let who = self.owner(actor);
+            if !self.is_player(who) {
+                continue;
+            }
+            let s = skills.entry((who, skill, dot)).or_insert_with(|| SkillStat { skill, dot, ..Default::default() });
+            if self.bosses.contains(&target) { &mut s.boss } else { &mut s.mob }.merge(t);
+        }
+        for ((who, ..), s) in skills {
+            if let Some(p) = self.row(&mut players, who) {
+                p.skills.push(s);
+            }
+        }
+        for p in players.values_mut() {
+            p.skills.sort_by_key(|s| (std::cmp::Reverse(s.damage()), s.skill, s.dot));
+        }
         for (&actor, &n) in &rec.heal {
             if let Some(p) = self.row(&mut players, self.owner(actor)) {
                 p.heal += n;
@@ -272,7 +338,7 @@ mod tests {
     }
 
     fn hit(actor: i32, target: i32, skill: i32, value: i64) -> CombatEvent {
-        CombatEvent::Hit { actor, target, skill, value, dot: false }
+        CombatEvent::Hit { actor, target, skill, value, dot: false, crit: false }
     }
 
     fn named(n: Option<&str>) -> String {
@@ -359,7 +425,7 @@ mod tests {
             (hit(ME, BOSS, CLERIC, 10), 1_000),
             // A heal on a mate is a use too.
             (hit(ME, MATE, CLERIC, 10), 9_000),
-            (CombatEvent::Hit { actor: ME, target: MOB, skill: 17_030_000, value: 5, dot: true }, 9_000),
+            (CombatEvent::Hit { actor: ME, target: MOB, skill: 17_030_000, value: 5, dot: true, crit: false }, 9_000),
             (hit(MATE, BOSS, GLADIATOR, 10), 2_000),
         ] {
             m.apply(e, now, false, named);
@@ -368,6 +434,40 @@ mod tests {
         let me = f.players.iter().find(|p| p.id == ME).unwrap();
         assert_eq!(me.casts, vec![SkillCasts { skill: CLERIC, at: vec![0, 8_000] }]);
         assert_eq!(f.players.iter().find(|p| p.id == MATE).unwrap().casts[0].at, vec![1_000]);
+    }
+
+    #[test]
+    fn hits_add_up_by_skill() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        let crit = |actor, target, skill, value| CombatEvent::Hit { actor, target, skill, value, dot: false, crit: true };
+        for e in [
+            hit(ME, MOB, 17_010_230, 100),
+            crit(ME, BOSS, 17_010_000, 300),
+            hit(ME, BOSS, 17_020_000, 50),
+            CombatEvent::Hit { actor: ME, target: BOSS, skill: 17_010_000, value: 20, dot: true, crit: false },
+        ] {
+            m.apply(e, 0, false, named);
+        }
+        let f = m.current(1_000).unwrap();
+        let s = &f.players[0].skills;
+        assert_eq!(s.len(), 3);
+        assert_eq!((s[0].skill, s[0].dot), (17_010_000, false), "both versions of the skill, biggest first");
+        assert_eq!(s[0].mob, Tally { damage: 100, hits: 1, crits: 0, max_hit: 100 });
+        assert_eq!(s[0].boss, Tally { damage: 300, hits: 1, crits: 1, max_hit: 300 });
+        assert_eq!((s[1].skill, s[1].damage()), (17_020_000, 50));
+        assert_eq!((s[2].skill, s[2].dot, s[2].boss.hits), (17_010_000, true, 1));
+    }
+
+    #[test]
+    fn a_summons_skills_are_its_owners() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
+        m.apply(hit(555, MOB, 16_990_001, 90), 0, false, named);
+        m.apply(hit(555, MOB, 16_990_001, 60), 0, false, named);
+        let f = m.current(1_000).unwrap();
+        assert_eq!(f.players[0].skills, vec![SkillStat { skill: 16_990_000, dot: false, mob: Tally { damage: 150, hits: 2, crits: 0, max_hit: 90 }, ..Default::default() }]);
     }
 
     #[test]

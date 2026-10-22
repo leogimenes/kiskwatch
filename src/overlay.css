@@ -17,3 +17,5 @@ html, body { margin: 0; background: transparent; overflow: hidden; }
 #next .empty { color: var(--o-muted); }
 .alert { margin: 0 8px 6px; padding: 6px 8px; border-radius: 6px; background: #ffe08c; color: #1a1405; font-weight: 600; animation: pop 0.3s ease-out; }
 @keyframes pop { from { transform: scale(0.9); opacity: 0; } }
+.toast { position: fixed; left: 8px; right: 8px; bottom: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(12, 17, 26, 0.92); color: var(--o-text); border: 1px solid var(--o-edge); font-weight: 600; text-align: center; animation: pop 0.2s ease-out; pointer-events: none; }
+:root.calm .toast { animation: none; }

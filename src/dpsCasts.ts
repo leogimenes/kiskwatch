@@ -5,7 +5,6 @@
 // Daevanion node shortened it, and the shortest gap seen is the cooldown.
 import { Fight, FightPlayer, Profile, SkillCasts } from "./api";
 import { GameData, iconUrl, loadGameData } from "./buildData";
-import { CLASS } from "./dpsView";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = Object.assign(document.createElement(tag), props);
@@ -64,7 +63,6 @@ const secondsText = (s: number) => `${s.toLocaleString("pt-BR", { maximumFractio
 
 let game: GameData | null = null;
 let loading = false;
-let who: number | null = null;
 
 function table(rows: CastRow[]) {
   const head = el("tr", {}, ...["Skill", "Usos", "Possíveis", "Aproveitamento", "Recarga", "Pronta sem uso"].map((t) => el("th", { scope: "col" }, t)));
@@ -87,28 +85,23 @@ function table(rows: CastRow[]) {
   })));
 }
 
-/** The section for a recording; `redraw` runs once the game data arrives. */
-export function castsSection(f: Fight, profile: Profile | null, redraw: () => void) {
+/** The section for a player's recording; `redraw` runs once the game data arrives. */
+export function castsSection(f: Fight, p: FightPlayer, profile: Profile | null, redraw: () => void) {
   if (!game && !loading) {
     loading = true;
     loadGameData().then((g) => { game = g; redraw(); }, () => {}).finally(() => { loading = false; });
   }
-  const players = f.players.filter((p) => p.casts?.length);
-  const box = el("section", { className: "casts-box" }, el("h3", {}, "Uso das recargas"));
-  if (!players.length) {
-    box.append(el("p", { className: "hint" }, "Nenhum uso de skill nesta gravação (gravações antigas não guardavam os usos)."));
+  const box = el("section", { className: "casts-box" }, el("h3", {}, `Uso das recargas de ${p.name}`));
+  if (!p.casts?.length) {
+    box.append(el("p", { className: "hint" }, "Nenhum uso de skill deste jogador nesta gravação (gravações antigas não guardavam os usos)."));
     return box;
   }
-  const p = players.find((x) => x.id === who) ?? players.find((x) => x.local) ?? players[0];
-  const pick = el("select", { ariaLabel: "Jogador" }, ...players.map((x) =>
-    el("option", { value: String(x.id), selected: x.id === p.id }, x.class ? `${x.name} (${CLASS[x.class].name})` : x.name)));
-  pick.addEventListener("change", () => { who = Number(pick.value); redraw(); });
   const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
   const rows = castRows(p, secs, game, profile);
   const measured = rows.filter((r) => r.possible != null);
   const lost = measured.reduce((n, r) => n + r.possible! - r.uses, 0);
   box.append(
-    el("div", { className: "casts-head" }, pick,
+    el("div", { className: "casts-head" },
       el("span", { className: "hint" }, measured.length ? `${lost} uso(s) a mais cabiam nas recargas de ${measured.length} skill(s)` : game ? "" : "Carregando recargas da dbaion2…")),
     table(rows),
     el("p", { className: "hint" }, "Possíveis: quantas vezes a recarga deixava usar desde o início da gravação. Pronta sem uso: tempo somado com a skill disponível e parada. Golpes a menos de 1 s um do outro contam como um uso; danos contínuos não contam."),

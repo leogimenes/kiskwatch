@@ -136,7 +136,17 @@
         </label>
         <label class="row"><input id="overlays-with-game" type="checkbox" /> Mostrar os overlays só com o Aion 2 aberto</label>
         <label class="row"><input id="click-through" type="checkbox" /> Os overlays deixam os cliques passarem para o jogo</label>
-        <p class="hint">Desmarque para arrastar e redimensionar os overlays. O overlay de pets mostra os últimos 5 pets de que você farmou alma (o mais recente no topo), o próximo da rota e os que você fixa (★) na aba Pets.</p>
+        <p class="hint">Desmarque para arrastar e redimensionar os overlays (ou use o atalho abaixo, com o jogo na frente). O overlay de pets mostra os últimos 5 pets de que você farmou alma (o mais recente no topo), o próximo da rota e os que você fixa (★) na aba Pets.</p>
+
+        <h2>Atalhos de teclado</h2>
+        <p class="hint">Funcionam mesmo com o jogo na frente. Clique num atalho e aperte a nova combinação. Esc cancela e Backspace desliga o atalho. Ctrl, Alt e Shift também chegam ao jogo (o Shift faz o personagem dar dash); se atrapalhar, use uma tecla sozinha, como F9, Insert ou Page Down.</p>
+        <div class="settings">
+          <label for="hk-dps">Gravar e parar o DPS</label>
+          <button id="hk-dps" class="hotkey" data-hotkey="dps" type="button"></button>
+          <label for="hk-click-through">Ligar e desligar os cliques passando para o jogo</label>
+          <button id="hk-click-through" class="hotkey" data-hotkey="click_through" type="button"></button>
+        </div>
+        <p id="hk-error" class="hk-error" role="alert" hidden></p>
 
         <h2>Acessibilidade</h2>
         <div class="settings">
