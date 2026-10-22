@@ -2,6 +2,7 @@
 // players, with a button to start and stop and a name to change.
 import { DpsBars, DpsTarget, Fight, Saved, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onStateChanged, setSettings } from "./api";
 import { BARS, TARGETS, clock, rowLine, rows } from "./dpsView";
+import "./toast";
 import { applyLook } from "./look";
 
 const SHOWN = 6;

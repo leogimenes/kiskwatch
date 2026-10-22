@@ -29,6 +29,13 @@ export interface Settings {
   route: RouteStop[];
   a11y: Accessibility;
   dps: DpsSettings;
+  hotkeys: Hotkeys;
+}
+
+/** Global keyboard shortcuts, as "Ctrl+Shift+D"; empty is off. */
+export interface Hotkeys {
+  dps: string;
+  click_through: string;
 }
 
 export type DpsTarget = "all" | "mob" | "boss";
@@ -151,6 +158,9 @@ export const setSettings = (settings: Settings) => invoke("set_settings", { sett
 export const setAlarm = (id: string, leads: number[]) => invoke("set_alarm", { id, leads });
 export const setPet = (pet: number, level: number, points: number) => invoke("set_pet", { pet, level, points });
 export const setClickThrough = (on: boolean) => invoke("set_click_through", { on });
+export const setHotkeys = (hotkeys: Hotkeys) => invoke("set_hotkeys", { hotkeys });
+export const pauseHotkeys = (paused: boolean) => invoke("pause_hotkeys", { paused });
+export const hotkeysStatus = () => invoke<string | null>("hotkeys_status");
 export const captureStatus = () => invoke<CaptureStatus>("capture_status");
 export const getSouls = () => invoke<SoulSeen[]>("get_souls");
 export const searchCharacters = (name: string) => invoke<Hit[]>("search_characters", { name });
@@ -167,6 +177,7 @@ export { openUrl } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
+export const onToast = (f: (text: string) => void) => listen<string>("toast", (e) => f(e.payload));
 export const onAlarm = (f: (a: Alarm) => void) => listen<Alarm>("alarm", (e) => f(e.payload));
 
 /** "2d 04h", "1h 05m", "4m 09s", "agora". */

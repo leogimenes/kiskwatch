@@ -4,6 +4,7 @@
 
 mod game;
 mod gamedata;
+mod hotkeys;
 mod pcap;
 mod profile;
 mod state;
@@ -20,7 +21,7 @@ use kiskwatch_core::stream::GameEvent;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
-use state::{FieldBoss, Saved, Settings, SoulSeen};
+use state::{FieldBoss, Hotkeys, Saved, Settings, SoulSeen};
 
 const EVENTS_JSON: &str = include_str!("../../data/events.json");
 const FIELD_BOSSES_JSON: &str = include_str!("../../data/field_bosses.json");
@@ -35,6 +36,8 @@ pub struct App {
     field_bosses: std::collections::BTreeMap<u32, FieldBoss>,
     /// The DPS tracker.
     meter: Mutex<Meter>,
+    /// Why a global shortcut isn't working, if one isn't.
+    hotkey_error: Mutex<Option<String>>,
 }
 
 fn now_ms() -> i64 {
@@ -76,6 +79,7 @@ impl App {
                 .filter_map(|(k, v)| Some((k.parse().ok()?, v)))
                 .collect(),
             meter: Mutex::new(Meter::new(kiskwatch_core::combat::boss_codes())),
+            hotkey_error: Mutex::new(None),
         }
     }
 
@@ -214,10 +218,14 @@ fn get_saved(state: State<App>) -> Saved {
 }
 
 #[tauri::command]
-fn set_settings(app: AppHandle, state: State<App>, settings: Settings) {
+fn set_settings(app: AppHandle, state: State<App>, mut settings: Settings) {
     show_overlays(&app, &settings, state.game_running.load(Ordering::Relaxed));
     {
         let mut saved = state.saved.lock().unwrap();
+        // These have their own commands, and a shortcut may have changed
+        // them since the window sending these settings last read them.
+        settings.click_through = saved.settings.click_through;
+        settings.hotkeys = saved.settings.hotkeys.clone();
         // Turning the pets overlay off ends the farming session it follows.
         if saved.settings.pet_overlay && !settings.pet_overlay {
             saved.pet_queue.remove(&settings.server_id);
@@ -292,17 +300,86 @@ fn game_running(state: State<App>) -> bool {
 }
 
 /// Let clicks pass through the overlays to the game, or take them to move them.
-#[tauri::command]
-fn set_click_through(app: AppHandle, state: State<App>, on: bool) -> Result<(), String> {
+fn click_through(app: &AppHandle, state: &App, on: bool) -> Result<(), String> {
     for label in OVERLAYS {
         if let Some(w) = app.get_webview_window(label) {
             w.set_ignore_cursor_events(on).map_err(|e| e.to_string())?;
         }
     }
     state.saved.lock().unwrap().settings.click_through = on;
+    save(app, state);
+    let _ = app.emit("state-changed", ());
+    Ok(())
+}
+
+#[tauri::command]
+fn set_click_through(app: AppHandle, state: State<App>, on: bool) -> Result<(), String> {
+    click_through(&app, &state, on)
+}
+
+/// Change the global shortcuts. Nothing changes if one can't be used.
+#[tauri::command]
+fn set_hotkeys(app: AppHandle, state: State<App>, hotkeys: Hotkeys) -> Result<(), String> {
+    let before = state.saved.lock().unwrap().settings.hotkeys.clone();
+    if let Err(e) = hotkeys::register(&app, &hotkeys) {
+        *state.hotkey_error.lock().unwrap() = hotkeys::register(&app, &before).err();
+        return Err(e);
+    }
+    *state.hotkey_error.lock().unwrap() = None;
+    state.saved.lock().unwrap().settings.hotkeys = hotkeys;
     save(&app, &state);
     let _ = app.emit("state-changed", ());
     Ok(())
+}
+
+/// Let go of the shortcuts while the panel waits for a new key, so pressing
+/// one there doesn't set it off; then take them back.
+#[tauri::command]
+fn pause_hotkeys(app: AppHandle, state: State<App>, paused: bool) -> Result<(), String> {
+    if paused {
+        hotkeys::release(&app);
+        Ok(())
+    } else {
+        let keys = state.saved.lock().unwrap().settings.hotkeys.clone();
+        let result = hotkeys::register(&app, &keys);
+        *state.hotkey_error.lock().unwrap() = result.clone().err();
+        result
+    }
+}
+
+/// Why a global shortcut isn't working, if one isn't.
+#[tauri::command]
+fn hotkeys_status(state: State<App>) -> Option<String> {
+    state.hotkey_error.lock().unwrap().clone()
+}
+
+/// A short note on the overlays, for what a shortcut just did.
+fn toast(app: &AppHandle, text: &str) {
+    let _ = app.emit("toast", text);
+}
+
+/// A global shortcut was pressed.
+fn on_hotkey(app: &AppHandle, action: hotkeys::Action) {
+    let state = app.state::<App>();
+    match action {
+        hotkeys::Action::ClickThrough => {
+            let on = !state.saved.lock().unwrap().settings.click_through;
+            match click_through(app, &state, on) {
+                Ok(()) => toast(app, if on { "Cliques passam para o jogo" } else { "Overlays podem ser movidos" }),
+                Err(e) => toast(app, &format!("Não deu para mudar os cliques: {e}")),
+            }
+        }
+        hotkeys::Action::Dps => {
+            let recording = state.meter.lock().unwrap().current(now_ms()).is_some();
+            if recording {
+                dps_end(app, &state);
+                toast(app, "DPS: gravação parada");
+            } else {
+                dps_begin(app, &state);
+                toast(app, "DPS: gravando");
+            }
+        }
+    }
 }
 
 /// The souls gained on the current server, newest last.
@@ -395,23 +472,31 @@ fn dps_live(state: State<App>) -> Option<Fight> {
     state.meter.lock().unwrap().current(now_ms())
 }
 
-#[tauri::command]
-fn dps_start(app: AppHandle, state: State<App>) {
+fn dps_begin(app: &AppHandle, state: &App) {
     let me = state.meter.lock().unwrap().my_name().map(str::to_string);
-    let name = fight_name(&state, me.as_deref());
+    let name = fight_name(state, me.as_deref());
     state.meter.lock().unwrap().start(name, now_ms());
     let _ = app.emit("dps-changed", ());
 }
 
-#[tauri::command]
-fn dps_stop(app: AppHandle, state: State<App>) {
+fn dps_end(app: &AppHandle, state: &App) {
     let fight = state.meter.lock().unwrap().stop(now_ms());
     match fight {
-        Some(fight) => keep_fight(&app, &state, fight),
+        Some(fight) => keep_fight(app, state, fight),
         None => {
             let _ = app.emit("dps-changed", ());
         }
     }
+}
+
+#[tauri::command]
+fn dps_start(app: AppHandle, state: State<App>) {
+    dps_begin(&app, &state);
+}
+
+#[tauri::command]
+fn dps_stop(app: AppHandle, state: State<App>) {
+    dps_end(&app, &state);
 }
 
 /// Rename a recording: the one under way, or a saved one by id.
@@ -501,9 +586,23 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, shortcut, event| {
+                    if event.state != tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                        return;
+                    }
+                    let keys = app.state::<App>().saved.lock().unwrap().settings.hotkeys.clone();
+                    if let Some(action) = hotkeys::action(&keys, shortcut) {
+                        on_hotkey(app, action);
+                    }
+                })
+                .build(),
+        )
         .setup(|app| {
             let saved = state::load(app.handle());
             let click_through = saved.settings.click_through;
+            let keys = saved.settings.hotkeys.clone();
             show_overlays(app.handle(), &saved.settings, game::running());
             app.manage(App::new(saved));
             let handle = app.handle().clone();
@@ -513,6 +612,9 @@ pub fn run() {
                     let _ = w.set_ignore_cursor_events(click_through);
                 }
             }
+            // A shortcut taken by another program leaves the others working;
+            // the panel says which (see `hotkeys_status`).
+            *app.state::<App>().hotkey_error.lock().unwrap() = hotkeys::register(app.handle(), &keys).err();
             tauri::async_runtime::spawn(alarm_clock(app.handle().clone()));
             let (tx, rx) = std::sync::mpsc::sync_channel(8192);
             pcap::start(tx, app.state::<App>().capture.clone());
@@ -522,7 +624,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

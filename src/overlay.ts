@@ -1,6 +1,7 @@
 // The overlay: the next timers with an alarm on, and the alarms as they ring.
 import { Accessibility, Alarm, TimerRow, countdown, getSaved, getTimers, onAlarm, onStateChanged } from "./api";
 import { t } from "./data";
+import "./toast";
 import { applyLook, chime } from "./look";
 
 const next = document.querySelector("#next") as HTMLUListElement;

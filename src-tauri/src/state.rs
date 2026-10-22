@@ -30,6 +30,23 @@ pub struct Settings {
     pub route: Vec<RouteStop>,
     pub a11y: Accessibility,
     pub dps: DpsSettings,
+    pub hotkeys: Hotkeys,
+}
+
+/// The global keyboard shortcuts (see `hotkeys`); empty is off.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Hotkeys {
+    /// Start or stop a DPS recording.
+    pub dps: String,
+    /// Turn letting clicks pass through the overlays on or off.
+    pub click_through: String,
+}
+
+impl Default for Hotkeys {
+    fn default() -> Self {
+        Self { dps: "Ctrl+Shift+D".into(), click_through: "Ctrl+Shift+X".into() }
+    }
 }
 
 /// The DPS tracker overlay.
@@ -71,6 +88,7 @@ impl Default for Settings {
             route: Vec::new(),
             a11y: Accessibility::default(),
             dps: DpsSettings::default(),
+            hotkeys: Hotkeys::default(),
         }
     }
 }
