@@ -390,6 +390,27 @@ fn show_overlays_now(app: &AppHandle) {
 /// its size. Not whether it shows, which the settings decide (`show_overlays`).
 const WINDOW_FLAGS: StateFlags = StateFlags::POSITION.union(StateFlags::SIZE).union(StateFlags::MAXIMIZED);
 
+/// The DPS overlay's default width (tauri.conf.json), wide enough for a name,
+/// its GS and CP, and the numbers on one line.
+const DPS_WIDTH: f64 = 460.0;
+
+/// Once: widen a DPS overlay kept narrower than `DPS_WIDTH` from before, when
+/// the default was 340 and the bars cut the names short. Its size is saved
+/// between runs, so the new default alone never reached it.
+fn widen_dps(app: &AppHandle, saved: &mut state::Saved) {
+    if saved.dps_widened {
+        return;
+    }
+    saved.dps_widened = true;
+    let Some(w) = app.get_webview_window("dps") else { return };
+    let (Ok(size), Ok(scale)) = (w.inner_size(), w.scale_factor()) else { return };
+    let size = size.to_logical::<f64>(scale);
+    if size.width < DPS_WIDTH {
+        let _ = w.set_size(tauri::LogicalSize::new(DPS_WIDTH, size.height));
+        log::line("overlay de DPS alargado para a nova largura padrão");
+    }
+}
+
 /// Bumped on every move or resize; a save waits for it to settle.
 static WINDOW_MOVES: AtomicU64 = AtomicU64::new(0);
 
@@ -1024,9 +1045,14 @@ pub fn run() {
         .setup(|app| {
             let mut saved = state::load(app.handle());
             saved.settings.hotkeys.migrate();
+            let widen = !saved.dps_widened;
+            widen_dps(app.handle(), &mut saved);
             let click_through = saved.settings.click_through;
             let keys = saved.settings.hotkeys.clone();
             app.manage(App::new(saved));
+            if widen {
+                save(app.handle(), &app.state::<App>());
+            }
             for label in OVERLAYS {
                 if let Some(w) = app.get_webview_window(label) {
                     let _ = w.set_ignore_cursor_events(click_through);

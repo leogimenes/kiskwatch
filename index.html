@@ -213,12 +213,18 @@
 
         <h2 id="update-title">Versão</h2>
         <p id="update-text"></p>
+        <label class="row">Canal
+          <select id="update-channel">
+            <option value="stable">Estável: só as versões oficiais</option>
+            <option value="canary">Canary: cada mudança assim que entra, para testar</option>
+          </select>
+        </label>
         <div class="row">
           <button id="update-install" class="primary" type="button" hidden>Instalar e reiniciar</button>
           <button id="update-check" type="button">Procurar atualização</button>
           <a id="update-notes" href="" target="_blank" hidden>O que mudou</a>
         </div>
-        <p class="hint">O Kiskwatch procura versões novas no GitHub a cada 6 horas. Antes de instalar, ele confere o SHA-256 do instalador baixado com o da release; se não bater, nada é instalado. Instalar fecha o Kiskwatch e abre de novo na versão nova, com as suas configurações e a posição das janelas.</p>
+        <p class="hint">O Kiskwatch procura versões novas no GitHub a cada 6 horas. Antes de instalar, ele confere o SHA-256 do instalador baixado com o da release; se não bater, nada é instalado. Instalar fecha o Kiskwatch e abre de novo na versão nova, com as suas configurações e a posição das janelas. As versões canary saem sozinhas a cada mudança aprovada no CI e podem ter bugs; quem volta para o canal estável fica na canary até sair uma versão oficial mais nova.</p>
         <p id="update-error" class="hk-error" role="alert" hidden></p>
 
         <div id="share-section" hidden>
