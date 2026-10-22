@@ -2,6 +2,7 @@
 // at by target and kind of bar, rename or delete.
 import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsStart, dpsStop, onDpsChanged } from "./api";
 import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
+import { skillTable } from "./dpsSkills";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -15,6 +16,8 @@ let live: Fight | null = null;
 let picked: string | null = null;
 let target: DpsTarget | null = null;
 let bars: DpsBars | null = null;
+/** The player whose skills show: you, or the top one, until another is clicked. */
+let who: number | null = null;
 
 const when = (ms: number) => new Date(ms).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const damageOf = (f: Fight) => f.players.reduce((n, p) => n + p.boss_damage + p.mob_damage, 0);
@@ -46,7 +49,7 @@ function renderList() {
     const b = el("button", { type: "button", className: f.id === picked ? "active" : "" },
       el("strong", {}, f.name),
       el("span", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${short(damageOf(f))} de dano`));
-    b.addEventListener("click", () => { picked = f.id; render(); });
+    b.addEventListener("click", () => { picked = f.id; who = null; render(); });
     return el("li", {}, b);
   }) : [el("li", { className: "hint" }, "Nenhuma gravação ainda. Ligue o overlay de DPS em Configurações.")]));
 }
@@ -65,14 +68,23 @@ function renderDetail() {
   del.addEventListener("click", () => { if (confirm(`Apagar "${f.name}"?`)) dpsDelete(f.id); });
   const list = rows(f, t, b);
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
+  const shown = f.players.find((p) => p.id === who) ?? f.players.find((p) => p.local) ?? f.players[0];
+  const line = (r: (typeof list)[number]) => {
+    const li = rowLine(r, b, top);
+    li.classList.add("pick");
+    li.classList.toggle("picked", r.player === shown);
+    li.addEventListener("click", () => { who = r.player.id; render(); });
+    return li;
+  };
   box.replaceChildren(
     el("div", { className: "dps-title" }, name, del),
     el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`),
     el("div", { className: "dps-filters" },
       chips(TARGETS, t, (v) => { target = v; render(); }),
       chips(BARS, b, (v) => { bars = v; render(); })),
-    list.length ? el("ol", { className: "dps-rows" }, ...list.map((r) => rowLine(r, b, top)))
+    list.length ? el("ol", { className: "dps-rows" }, ...list.map(line))
       : el("p", { className: "hint" }, "Nada para este alvo."),
+    shown && b !== "heal" ? skillTable(f, shown, t, saved, renderDetail) : "",
   );
 }
 

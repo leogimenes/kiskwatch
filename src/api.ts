@@ -46,7 +46,16 @@ export type ClassName = "Gladiator" | "Templar" | "Assassin" | "Ranger" | "Sorce
 
 export interface FightPlayer {
   id: number; name: string; class: ClassName | null; local: boolean; boss_damage: number; mob_damage: number; heal: number;
+  /** Damage by skill, biggest first. */
+  skills: SkillStat[];
 }
+
+/** Hits and their damage. */
+export interface Tally { damage: number; hits: number; crits: number; max_hit: number }
+
+/** One skill's damage in a recording (its base code: no specializations),
+ *  on bosses and on everything else; `dot` is its damage-over-time ticks. */
+export interface SkillStat { skill: number; dot: boolean; boss: Tally; mob: Tally }
 
 /** A DPS recording, live or saved. */
 export interface Fight {
