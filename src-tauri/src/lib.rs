@@ -353,9 +353,13 @@ fn hotkeys_status(state: State<App>) -> Option<String> {
     state.hotkey_error.lock().unwrap().clone()
 }
 
-/// A short note on the overlays, for what a shortcut just did.
-fn toast(app: &AppHandle, text: &str) {
-    let _ = app.emit("toast", text);
+/// A short note for what a shortcut just did, on one overlay: the first of
+/// `windows` that is showing.
+fn toast(app: &AppHandle, windows: &[&str], text: &str) {
+    let shown = windows.iter().find(|l| app.get_webview_window(l).is_some_and(|w| w.is_visible().unwrap_or(false)));
+    if let Some(label) = shown {
+        let _ = app.emit_to(*label, "toast", text);
+    }
 }
 
 /// A global shortcut was pressed.
@@ -365,18 +369,18 @@ fn on_hotkey(app: &AppHandle, action: hotkeys::Action) {
         hotkeys::Action::ClickThrough => {
             let on = !state.saved.lock().unwrap().settings.click_through;
             match click_through(app, &state, on) {
-                Ok(()) => toast(app, if on { "Cliques passam para o jogo" } else { "Overlays podem ser movidos" }),
-                Err(e) => toast(app, &format!("Não deu para mudar os cliques: {e}")),
+                Ok(()) => toast(app, &["overlay", "dps", "pets"], if on { "Cliques passam para o jogo" } else { "Overlays podem ser movidos" }),
+                Err(e) => toast(app, &["overlay", "dps", "pets"], &format!("Não deu para mudar os cliques: {e}")),
             }
         }
         hotkeys::Action::Dps => {
             let recording = state.meter.lock().unwrap().current(now_ms()).is_some();
             if recording {
                 dps_end(app, &state);
-                toast(app, "DPS: gravação parada");
+                toast(app, &["dps", "overlay", "pets"], "DPS: gravação parada");
             } else {
                 dps_begin(app, &state);
-                toast(app, "DPS: gravando");
+                toast(app, &["dps", "overlay", "pets"], "DPS: gravando");
             }
         }
     }
@@ -600,7 +604,8 @@ pub fn run() {
                 .build(),
         )
         .setup(|app| {
-            let saved = state::load(app.handle());
+            let mut saved = state::load(app.handle());
+            saved.settings.hotkeys.migrate();
             let click_through = saved.settings.click_through;
             let keys = saved.settings.hotkeys.clone();
             show_overlays(app.handle(), &saved.settings, game::running());

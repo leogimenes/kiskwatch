@@ -1,6 +1,7 @@
 // The app's commands and events, typed.
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 export interface Accessibility {
   font_scale: number;
@@ -32,7 +33,7 @@ export interface Settings {
   hotkeys: Hotkeys;
 }
 
-/** Global keyboard shortcuts, as "Ctrl+Shift+D"; empty is off. */
+/** Global keyboard shortcuts, as "Ctrl+Alt+D"; empty is off. */
 export interface Hotkeys {
   dps: string;
   click_through: string;
@@ -177,7 +178,8 @@ export { openUrl } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
-export const onToast = (f: (text: string) => void) => listen<string>("toast", (e) => f(e.payload));
+/** Only this window's notes: the app sends each to one overlay. */
+export const onToast = (f: (text: string) => void) => getCurrentWebviewWindow().listen<string>("toast", (e) => f(e.payload));
 export const onAlarm = (f: (a: Alarm) => void) => listen<Alarm>("alarm", (e) => f(e.payload));
 
 /** "2d 04h", "1h 05m", "4m 09s", "agora". */

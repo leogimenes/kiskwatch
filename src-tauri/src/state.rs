@@ -45,7 +45,17 @@ pub struct Hotkeys {
 
 impl Default for Hotkeys {
     fn default() -> Self {
-        Self { dps: "Ctrl+Shift+D".into(), click_through: "Ctrl+Shift+X".into() }
+        Self { dps: "Ctrl+Alt+D".into(), click_through: "Ctrl+Alt+X".into() }
+    }
+}
+
+impl Hotkeys {
+    /// The first defaults held Shift, which makes the character dash: move
+    /// them, unless the user picked their own.
+    pub fn migrate(&mut self) {
+        if self.dps == "Ctrl+Shift+D" && self.click_through == "Ctrl+Shift+X" {
+            *self = Self::default();
+        }
     }
 }
 

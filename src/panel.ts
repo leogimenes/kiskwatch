@@ -645,7 +645,7 @@ const hotkeyButtons = [...document.querySelectorAll<HTMLButtonElement>(".hotkey"
 const hotkeyError = $("#hk-error");
 let listening: HTMLButtonElement | null = null;
 
-/** A key press as a shortcut ("Ctrl+Shift+D"), or null for a modifier alone. */
+/** A key press as a shortcut ("Ctrl+Alt+D"), or null for a modifier alone. */
 function comboOf(e: KeyboardEvent): string | null {
   const code = e.code;
   let key: string | null = null;

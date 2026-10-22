@@ -25,14 +25,21 @@ fn text(keys: &Hotkeys, action: Action) -> &str {
     }
 }
 
-/// A shortcut's text, as the panel writes it ("Ctrl+Shift+D"). A plain key
-/// needs a modifier, so typing in the game's chat doesn't set it off; the
-/// function keys may go alone.
+/// Keys the game leaves alone, which may go without a modifier. Any key
+/// held with the shortcut still reaches the game (Shift makes the character
+/// dash), so a lone key is often the better choice.
+fn lone_key(name: &str) -> bool {
+    let f = name.strip_prefix('F').is_some_and(|n| n.parse::<u8>().is_ok());
+    let numpad = name.strip_prefix("Numpad").is_some_and(|n| n.len() == 1 && n.chars().all(|c| c.is_ascii_digit()));
+    f || numpad || ["Insert", "Home", "End", "PageUp", "PageDown", "Pause", "ScrollLock"].contains(&name)
+}
+
+/// A shortcut's text, as the panel writes it ("Ctrl+Alt+D"). A letter or a
+/// digit needs a modifier, so typing in the game's chat doesn't set it off.
 fn parse(text: &str) -> Result<Shortcut, String> {
     let s = Shortcut::from_str(text).map_err(|_| format!("\"{text}\" não é um atalho válido"))?;
-    let function_key = format!("{:?}", s.key).strip_prefix('F').is_some_and(|n| n.parse::<u8>().is_ok());
-    if s.mods.is_empty() && !function_key {
-        return Err(format!("\"{text}\" precisa de Ctrl, Alt ou Shift junto (só as teclas F1 a F12 podem ir sozinhas)"));
+    if s.mods.is_empty() && !lone_key(&format!("{:?}", s.key)) {
+        return Err(format!("\"{text}\" precisa de Ctrl ou Alt junto (F1 a F12, Insert, Home, End, Page Up, Page Down, Pause e o teclado numérico podem ir sozinhos)"));
     }
     Ok(s)
 }
@@ -95,6 +102,16 @@ mod tests {
     }
 
     #[test]
+    fn old_defaults_move_off_shift() {
+        let mut k = keys("Ctrl+Shift+D", "Ctrl+Shift+X");
+        k.migrate();
+        assert_eq!((k.dps.as_str(), k.click_through.as_str()), ("Ctrl+Alt+D", "Ctrl+Alt+X"));
+        let mut mine = keys("Ctrl+Shift+D", "F10");
+        mine.migrate();
+        assert_eq!(mine.dps, "Ctrl+Shift+D");
+    }
+
+    #[test]
     fn finds_the_action() {
         let k = keys("Ctrl+Shift+D", "Alt+F9");
         assert_eq!(action(&k, &Shortcut::from_str("Ctrl+Shift+D").unwrap()), Some(Action::Dps));
@@ -105,8 +122,9 @@ mod tests {
     #[test]
     fn plain_letters_need_a_modifier() {
         assert!(check(&keys("D", "")).is_err());
-        assert!(check(&keys("F9", "Numpad5")).is_err());
-        assert_eq!(check(&keys("F9", "")).unwrap().len(), 1);
+        assert!(check(&keys("5", "")).is_err());
+        assert_eq!(check(&keys("F9", "Numpad5")).unwrap().len(), 2);
+        assert_eq!(check(&keys("Insert", "PageDown")).unwrap().len(), 2);
     }
 
     #[test]
