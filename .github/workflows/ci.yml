@@ -38,9 +38,11 @@ jobs:
       - run: npm run build
 
   # The full Tauri build takes most of the run, so PRs skip it unless labeled build-windows.
+  # Pushes to main build in the canary job instead.
   windows:
     if: >-
-      github.event_name != 'pull_request' ||
+      (github.event_name == 'push' && github.ref != 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'build-windows')
     runs-on: windows-latest
     steps:
@@ -48,8 +50,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          # Only main keeps the cache, so PR builds don't push it out of the 10 GB quota.
-          save-if: ${{ github.ref == 'refs/heads/main' }}
+          # Only main (the canary job) keeps the cache, so PR builds don't push it out of the 10 GB quota.
+          save-if: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -60,3 +62,59 @@ jobs:
         with:
           name: kiskwatch-windows-installer
           path: target/release/bundle/nsis/*.exe
+
+  # Every push to main that passes the tests becomes a canary pre-release: next patch +
+  # -canary.<run>.<short hash> (0.2.3-canary.42.abc1234), with the installer, SHA256SUMS.txt and
+  # latest.json. The rolling "canary" release keeps only the newest latest.json, for the updater's
+  # canary channel. A release PR's merge is skipped: the Release workflow publishes that one.
+  canary:
+    needs: test
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      !contains(github.event.head_commit.message, '/release/v')
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    # One canary at a time, in order; a newer push waiting replaces the one that was waiting.
+    concurrency:
+      group: canary
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Versão canary
+        id: version
+        run: echo "version=$(node scripts/version.mjs canary '${{ github.run_number }}' "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+      - run: npm ci
+      - run: npx tauri build
+      - run: node scripts/release-assets.mjs release
+      - name: Publicar a canary
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TITLE: ${{ github.event.head_commit.message }}
+        run: |
+          notes=$(printf 'Build automático de teste do commit %s, gerado ao entrar na main.\n\n%s\n\nPode ter bugs: as versões oficiais saem pelo PR de release.' \
+            "${GITHUB_SHA:0:7}" "$(printf '%s' "$TITLE" | head -n 3)")
+          gh release create "v$VERSION" release/* --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Kiskwatch $VERSION (canary)" --notes "$notes"
+          # Move the rolling "canary" release to this build. In between, the updater gets a 404
+          # and offers nothing, which is harmless.
+          gh release delete canary --cleanup-tag --yes || true
+          gh release create canary release/latest.json --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Canary mais recente" \
+            --notes "Aponta para a canary mais recente (v$VERSION). Só guarda o latest.json que o atualizador do canal canary lê."
+      - name: Apagar canaries antigas (ficam as 10 últimas)
+        run: |
+          gh release list --limit 200 --json tagName,createdAt \
+            --jq '[.[] | select(.tagName | test("-canary\\."))] | sort_by(.createdAt) | reverse | .[10:] | .[].tagName' |
+          while read -r tag; do gh release delete "$tag" --cleanup-tag --yes; done

@@ -26,4 +26,8 @@ Cada aba tem um tour curto, que abre na primeira vez que você entra nela. Dá p
 
 ## Versão
 
-O Kiskwatch procura versões novas sozinho e confere o instalador antes de instalar.
+O Kiskwatch procura versões novas sozinho e confere o instalador antes de instalar. No **canal**, escolha **Estável** para receber só as versões oficiais ou **Canary** para receber cada mudança assim que ela passa no CI, para testar antes (pode ter bugs).
+
+## Ajudar a traduzir
+
+Monstros, skills e efeitos que o Kiskwatch ainda não sabe nomear aparecem só com o código. Com a sua permissão, o app envia só esses códigos (sem nomes de personagens, chat ou servidor) para os nomes certos entrarem numa próxima versão. Escolha se ele pergunta antes, envia sozinho ou nunca envia.

@@ -100,15 +100,15 @@ export async function loadGear(list: Row[]): Promise<boolean> {
   return changed;
 }
 
-/** "NI 2.345 · PC 123,5 mil", or nothing while unknown. */
+/** "GS 2.345 · CP 123,5 mil", or nothing while unknown. */
 function gearTag(name: string) {
   const g = gear.get(name.toLowerCase());
   if (!g || (g.item_level == null && g.combat_power == null)) return "";
-  const parts = [g.item_level != null ? `NI ${g.item_level.toLocaleString("pt-BR")}` : "", g.combat_power != null ? `PC ${short(g.combat_power)}` : ""];
+  const parts = [g.item_level != null ? `GS ${g.item_level.toLocaleString("pt-BR")}` : "", g.combat_power != null ? `CP ${short(g.combat_power)}` : ""];
   const tag = el("span", "dps-gear", parts.filter(Boolean).join(" · "));
   tag.title = [
-    g.item_level != null ? `Nível de item ${g.item_level.toLocaleString("pt-BR")}` : "",
-    g.combat_power != null ? `Poder de combate ${g.combat_power.toLocaleString("pt-BR")}` : "",
+    g.item_level != null ? `GS (nível de equipamento) ${g.item_level.toLocaleString("pt-BR")}` : "",
+    g.combat_power != null ? `CP (poder de combate) ${g.combat_power.toLocaleString("pt-BR")}` : "",
   ].filter(Boolean).join(" · ") + " (perfil público, site oficial)";
   return tag;
 }

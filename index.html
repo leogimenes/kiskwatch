@@ -220,13 +220,36 @@
 
         <h2 id="update-title">Versão</h2>
         <p id="update-text"></p>
+        <label class="row">Canal
+          <select id="update-channel">
+            <option value="stable">Estável: só as versões oficiais</option>
+            <option value="canary">Canary: cada mudança assim que entra, para testar</option>
+          </select>
+        </label>
         <div class="row">
           <button id="update-install" class="primary" type="button" hidden>Instalar e reiniciar</button>
           <button id="update-check" type="button">Procurar atualização</button>
           <a id="update-notes" href="" target="_blank" hidden>O que mudou</a>
         </div>
-        <p class="hint">O Kiskwatch procura versões novas no GitHub a cada 6 horas. Antes de instalar, ele confere o SHA-256 do instalador baixado com o da release; se não bater, nada é instalado. Instalar fecha o Kiskwatch e abre de novo na versão nova, com as suas configurações e a posição das janelas.</p>
+        <p class="hint">O Kiskwatch procura versões novas no GitHub a cada 6 horas. Antes de instalar, ele confere o SHA-256 do instalador baixado com o da release; se não bater, nada é instalado. Instalar fecha o Kiskwatch e abre de novo na versão nova, com as suas configurações e a posição das janelas. As versões canary saem sozinhas a cada mudança aprovada no CI e podem ter bugs; quem volta para o canal estável fica na canary até sair uma versão oficial mais nova.</p>
         <p id="update-error" class="hk-error" role="alert" hidden></p>
+
+        <div id="share-section" hidden>
+          <h2>Ajudar a traduzir</h2>
+          <p class="hint">Monstros, skills e efeitos que o Kiskwatch ainda não sabe nomear aparecem como "Monstro 2001234" ou "Skill 12345". Com a sua permissão, o app envia só esses códigos (sem nomes de personagens, chat ou servidor) para que os nomes certos entrem numa próxima versão. Cada envio vira uma issue pública no GitHub do Kiskwatch.</p>
+          <div class="row">
+            <label>Enviar os códigos sem nome
+              <select id="share-mode">
+                <option value="ask">perguntando antes</option>
+                <option value="always">sozinho, depois de cada gravação</option>
+                <option value="never">nunca</option>
+              </select>
+            </label>
+            <button id="share-now" type="button">Ver e enviar agora</button>
+          </div>
+          <p id="share-text" class="hint"></p>
+          <p id="share-error" class="hk-error" role="alert" hidden></p>
+        </div>
 
         <h2>Créditos</h2>
         <p class="hint">Decodificação de pacotes e dados do jogo vêm do <a href="https://github.com/taengu/A2Tools-DPS-Meter" target="_blank">A2Tools</a> e dos <a href="https://github.com/taengu/A2Tools-Plugins" target="_blank">A2Tools Plugins</a> (GPL-3.0). Kiskwatch também é GPL-3.0.</p>

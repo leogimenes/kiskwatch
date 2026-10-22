@@ -8,6 +8,7 @@ mod hotkeys;
 mod log;
 mod pcap;
 mod profile;
+mod share;
 mod state;
 mod updater;
 
@@ -280,7 +281,7 @@ fn place_reminder(app: &AppHandle) {
 /// How far below the top of the game's window the reminder sits, in pixels.
 const REMINDER_MARGIN: i32 = 12;
 
-fn save(app: &AppHandle, state: &App) {
+pub(crate) fn save(app: &AppHandle, state: &App) {
     let saved = state.saved.lock().unwrap();
     if let Err(e) = state::store(app, &saved) {
         log::line(&format!("não deu para salvar o estado: {e}"));
@@ -442,6 +443,27 @@ fn show_overlays_now(app: &AppHandle) {
 /// What is kept of each window between runs and new versions: where it is and
 /// its size. Not whether it shows, which the settings decide (`show_overlays`).
 const WINDOW_FLAGS: StateFlags = StateFlags::POSITION.union(StateFlags::SIZE).union(StateFlags::MAXIMIZED);
+
+/// The DPS overlay's default width (tauri.conf.json), wide enough for a name,
+/// its GS and CP, and the numbers on one line.
+const DPS_WIDTH: f64 = 460.0;
+
+/// Once: widen a DPS overlay kept narrower than `DPS_WIDTH` from before, when
+/// the default was 340 and the bars cut the names short. Its size is saved
+/// between runs, so the new default alone never reached it.
+fn widen_dps(app: &AppHandle, saved: &mut state::Saved) {
+    if saved.dps_widened {
+        return;
+    }
+    saved.dps_widened = true;
+    let Some(w) = app.get_webview_window("dps") else { return };
+    let (Ok(size), Ok(scale)) = (w.inner_size(), w.scale_factor()) else { return };
+    let size = size.to_logical::<f64>(scale);
+    if size.width < DPS_WIDTH {
+        let _ = w.set_size(tauri::LogicalSize::new(DPS_WIDTH, size.height));
+        log::line("overlay de DPS alargado para a nova largura padrão");
+    }
+}
 
 /// Bumped on every move or resize; a save waits for it to settle.
 static WINDOW_MOVES: AtomicU64 = AtomicU64::new(0);
@@ -1077,9 +1099,14 @@ pub fn run() {
         .setup(|app| {
             let mut saved = state::load(app.handle());
             saved.settings.hotkeys.migrate();
+            let widen = !saved.dps_widened;
+            widen_dps(app.handle(), &mut saved);
             let click_through = saved.settings.click_through;
             let keys = saved.settings.hotkeys.clone();
             app.manage(App::new(saved));
+            if widen {
+                save(app.handle(), &app.state::<App>());
+            }
             for label in OVERLAYS {
                 if let Some(w) = app.get_webview_window(label) {
                     let _ = w.set_ignore_cursor_events(click_through);
@@ -1108,7 +1135,7 @@ pub fn run() {
             log::line("pronto");
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, open_help, open_tour])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, open_help, open_tour, share::share_status, share::share_mode, share::share_send])
         .build(tauri::generate_context!());
     let app = match app {
         Ok(app) => app,

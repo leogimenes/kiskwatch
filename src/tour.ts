@@ -73,6 +73,8 @@ const TOURS: Record<string, Step[]> = {
     { at: ".settings:has(#hk-dps)", title: "Atalhos", text: "Atalhos que funcionam com o jogo na frente. Clique num e aperte a nova combinação." },
     { at: ".settings:has(#a-font)", title: "Acessibilidade", text: "Tamanho do texto, fundo dos overlays, contraste, cores para daltonismo, animações e som." },
     { at: "#cfg-tour", title: "Tour guiado", text: "Desligue os tours ou refaça todos por aqui." },
+    { at: "label.row:has(#update-channel)", title: "Canal de atualização", text: "Estável recebe só as versões oficiais; canary recebe cada mudança assim que passa no CI, para testar antes." },
+    { at: "#share-section", title: "Ajudar a traduzir", text: "Com a sua permissão, o Kiskwatch envia os códigos de monstros, skills e efeitos que ainda não sabe nomear, para os nomes entrarem numa próxima versão." },
     HELP_STEP("config"),
   ],
 };
@@ -202,7 +204,9 @@ export function runTour(tab: string) {
   if (!steps) return;
   if (running?.overlay) tourOverlay(null);
   const first = state != null && !state.off && state.seen.length === 0;
-  running = { tab, steps: first ? [WELCOME, ...steps] : steps, at: 0, overlay: false };
+  // Parts the panel isn't showing now (like a section turned off) are left out.
+  const shown = steps.filter((st) => !st.at || target(st));
+  running = { tab, steps: first ? [WELCOME, ...shown] : shown, at: 0, overlay: false };
   show();
 }
 
@@ -210,6 +214,8 @@ export function runTour(tab: string) {
 export function tourTab(tab: string) {
   hideTip();
   if (!state || state.off || state.seen.includes(tab) || running?.tab === tab) return;
+  // Not over a dialog already open (like the one asking to share codes).
+  if (document.querySelector("dialog[open]")) return;
   // Leaving a tab mid-tour leaves its tour for next time.
   if (running?.overlay) tourOverlay(null);
   running = null;
