@@ -14,6 +14,8 @@ use tauri::{AppHandle, Emitter, Manager};
 /// Written by the release workflow; GitHub sends it from the newest release
 /// that isn't a draft or a pre-release.
 const LATEST_URL: &str = "https://github.com/leogimenes/kiskwatch/releases/latest/download/latest.json";
+/// The newest canary's, kept by CI in the rolling "canary" release.
+const CANARY_URL: &str = "https://github.com/leogimenes/kiskwatch/releases/download/canary/latest.json";
 /// The first look waits for the app to settle; then one every few hours.
 const FIRST_CHECK: Duration = Duration::from_secs(20);
 const EVERY: Duration = Duration::from_secs(6 * 3600);
@@ -23,6 +25,8 @@ const EVERY: Duration = Duration::from_secs(6 * 3600);
 pub struct Status {
     /// The version running.
     pub current: String,
+    /// "stable" or "canary", as the settings and the build running decide.
+    pub channel: String,
     /// A newer release, if there is one.
     pub available: Option<Latest>,
     /// Last look, unix ms; 0 before the first.
@@ -41,9 +45,9 @@ fn client(timeout: Duration) -> Result<reqwest::Client, String> {
         .map_err(|e| e.to_string())
 }
 
-/// The latest release, or None while there's none published.
-async fn fetch_latest() -> Result<Option<Latest>, String> {
-    let res = client(Duration::from_secs(20))?.get(LATEST_URL).send().await.map_err(|e| format!("sem conexão com o GitHub: {e}"))?;
+/// The latest release at `url`, or None while there's none published.
+async fn fetch_latest(url: &str) -> Result<Option<Latest>, String> {
+    let res = client(Duration::from_secs(20))?.get(url).send().await.map_err(|e| format!("sem conexão com o GitHub: {e}"))?;
     if res.status() == reqwest::StatusCode::NOT_FOUND {
         return Ok(None);
     }
@@ -69,20 +73,38 @@ pub fn status(app: &AppHandle) -> Status {
     set(app, |_| {})
 }
 
+/// The channel the settings pick; none picked, a canary build stays on
+/// canaries and a release on releases.
+fn channel(app: &AppHandle, current: &str) -> String {
+    let picked = app.try_state::<crate::App>().map(|state| state.saved.lock().unwrap().settings.update_channel.clone()).unwrap_or_default();
+    match picked.as_str() {
+        "stable" | "canary" => picked,
+        _ if update::is_canary(current) => "canary".into(),
+        _ => "stable".into(),
+    }
+}
+
 /// Look for a newer release now. The panel hears `update-changed`.
 pub async fn check(app: &AppHandle) -> Status {
     let current = app.package_info().version.to_string();
-    let found = fetch_latest().await;
+    let channel = channel(app, &current);
+    // On the canary channel an official release newer than the canaries
+    // still counts, so both are fetched and the newest wins.
+    let mut found = vec![fetch_latest(LATEST_URL).await];
+    if channel == "canary" {
+        found.push(fetch_latest(CANARY_URL).await);
+    }
+    let error = found.iter().find_map(|f| f.as_ref().err().cloned());
+    let latest: Vec<Latest> = found.into_iter().filter_map(|f| f.ok().flatten()).collect();
     let status = set(app, |s| {
         s.current = current.clone();
+        s.channel = channel;
         s.checked_ms = crate::now_ms();
-        match found {
-            Ok(latest) => {
-                s.available = latest.and_then(|l| update::newer(&current, l));
-                s.error = None;
-            }
-            Err(e) => s.error = Some(e),
+        // Offline, keep offering what the last look found.
+        if error.is_none() || !latest.is_empty() {
+            s.available = update::newest(&current, latest);
         }
+        s.error = error;
     });
     let _ = app.emit("update-changed", ());
     status
@@ -91,7 +113,12 @@ pub async fn check(app: &AppHandle) -> Status {
 /// Checks in the background for as long as the app runs. Dev builds don't,
 /// so `tauri dev` never offers to install over itself.
 pub async fn watch(app: AppHandle) {
-    set(&app, |s| s.current = app.package_info().version.to_string());
+    let current = app.package_info().version.to_string();
+    let channel = channel(&app, &current);
+    set(&app, |s| {
+        s.current = current;
+        s.channel = channel;
+    });
     if cfg!(debug_assertions) {
         return;
     }

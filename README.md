@@ -56,9 +56,9 @@ cargo test -p kiskwatch-core
 npx tauri build        # gera o instalador (.exe) em target/release/bundle/nsis
 ```
 
-O CI roda os testes a cada pull request (menos de um minuto). O instalador do Windows sai como artefato a cada push na `main`, em tags `v*`, pelo botão "Run workflow" na aba Actions, ou num pull request com o label `build-windows`.
+O CI roda os testes a cada pull request (menos de um minuto). O instalador do Windows sai como artefato pelo botão "Run workflow" na aba Actions ou num pull request com o label `build-windows`, e como canary a cada push na `main`.
 
-As versões seguem semver e saem por um PR de release (aba Actions > "Preparar release"). Ao mesclar esse PR, o GitHub cria a tag `vX.Y.Z` e publica o instalador em [Releases](https://github.com/leogimenes/kiskwatch/releases) com o `SHA256SUMS.txt`. Detalhes no `CLAUDE.md`.
+As versões seguem semver e saem por um PR de release (aba Actions > "Preparar release"). Ao mesclar esse PR, o GitHub cria a tag `vX.Y.Z` e publica o instalador em [Releases](https://github.com/leogimenes/kiskwatch/releases) com o `SHA256SUMS.txt`. A cada mudança que entra na `main` e passa no CI, sai também uma versão canary de teste (`0.2.3-canary.42.abc1234`), que o app instala sozinho para quem escolher o canal canary em Configurações > Versão. Detalhes no `CLAUDE.md`.
 
 ### Atualizar os dados do jogo
 

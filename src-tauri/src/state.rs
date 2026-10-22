@@ -34,6 +34,9 @@ pub struct Settings {
     pub a11y: Accessibility,
     pub dps: DpsSettings,
     pub hotkeys: Hotkeys,
+    /// "stable" or "canary"; empty follows the build running (a canary build
+    /// stays on canaries).
+    pub update_channel: String,
 }
 
 /// The global keyboard shortcuts (see `hotkeys`); empty is off.
@@ -103,6 +106,7 @@ impl Default for Settings {
             a11y: Accessibility::default(),
             dps: DpsSettings::default(),
             hotkeys: Hotkeys::default(),
+            update_channel: String::new(),
         }
     }
 }

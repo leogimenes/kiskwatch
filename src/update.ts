@@ -9,6 +9,7 @@ const install = $<HTMLButtonElement>("#update-install");
 const check = $<HTMLButtonElement>("#update-check");
 const notes = $<HTMLAnchorElement>("#update-notes");
 const error = $("#update-error");
+const channel = $<HTMLSelectElement>("#update-channel");
 
 function mb(bytes: number | null) {
   return bytes ? ` (${(bytes / 1048576).toFixed(1)} MB)` : "";
@@ -18,6 +19,8 @@ function render(st: UpdateStatus) {
   const next = st.available;
   badge.hidden = !next;
   badge.textContent = next ? `Nova versão ${next.version}` : "";
+  // The settings may leave the channel to the build running; show the one in use.
+  channel.value = st.channel;
   const checked = st.checked_ms ? ` Última busca: ${new Date(st.checked_ms).toLocaleString("pt-BR")}.` : "";
   text.textContent = st.installing
     ? `Baixando e conferindo a versão ${next?.version}…`
