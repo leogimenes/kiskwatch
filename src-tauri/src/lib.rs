@@ -13,6 +13,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
+use kiskwatch_core::checklist::{Character, Checklist, Resets, Task};
 use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
 use kiskwatch_core::dps::{Fight, Meter};
 use kiskwatch_core::schedule::{self, Event};
@@ -127,6 +128,14 @@ impl App {
         }
         rows.sort_by_key(|r| (r.start_ms.is_none(), r.start_ms.unwrap_or(i64::MAX)));
         rows
+    }
+
+    /// When the daily and weekly resets last came.
+    fn resets(&self, now: i64) -> Resets {
+        let region = self.saved.lock().unwrap().settings.region();
+        let tz = schedule::region_zone(region).unwrap_or(chrono_tz::UTC);
+        let last = |id: &str| self.events.iter().find(|e| e.id == id).and_then(|e| e.last_start(tz, now)).unwrap_or(0);
+        Resets { daily_ms: last("daily"), weekly_ms: last("weekly") }
     }
 
     /// Fold what the game said into the saved state; true when it changed.
@@ -615,6 +624,58 @@ fn dps_save_image(app: AppHandle, name: String, png: Vec<u8>) -> Result<String, 
     Ok(path.to_string_lossy().into_owned())
 }
 
+/// The checklist with what counts this period.
+#[derive(Debug, Clone, Serialize)]
+struct ChecklistView {
+    #[serde(flatten)]
+    list: Checklist,
+    /// Times done by character id, then task id; only those above 0.
+    counts: std::collections::BTreeMap<String, std::collections::BTreeMap<String, u32>>,
+    resets: Resets,
+    /// Names to offer for a new character: the Build tab's and yours in the
+    /// DPS meter.
+    known: Vec<String>,
+}
+
+#[tauri::command]
+fn get_checklist(state: State<App>) -> ChecklistView {
+    let resets = state.resets(now_ms());
+    let me = state.meter.lock().unwrap().my_name().map(str::to_string);
+    let saved = state.saved.lock().unwrap();
+    let list = saved.checklist.clone();
+    let counts = list
+        .characters
+        .iter()
+        .map(|c| {
+            let done = list.tasks.iter().map(|t| (t.id.clone(), list.count(&c.id, &t.id, resets))).filter(|(_, n)| *n > 0).collect();
+            (c.id.clone(), done)
+        })
+        .collect();
+    let mut known: Vec<String> = saved.profile.as_ref().map(|p| p.name.clone()).into_iter().chain(me).filter(|n| !n.is_empty()).collect();
+    known.dedup();
+    known.retain(|n| !list.characters.iter().any(|c| &c.name == n));
+    ChecklistView { list, counts, resets, known }
+}
+
+/// Set how many times a character did a task this period.
+#[tauri::command]
+fn checklist_mark(app: AppHandle, state: State<App>, character: String, task: String, count: u32) {
+    let now = now_ms();
+    let resets = state.resets(now);
+    state.saved.lock().unwrap().checklist.mark(&character, &task, count, now, resets);
+    save(&app, &state);
+    let _ = app.emit("checklist-changed", ());
+}
+
+/// Change the tasks and characters.
+#[tauri::command]
+fn checklist_edit(app: AppHandle, state: State<App>, tasks: Vec<Task>, characters: Vec<Character>) {
+    let resets = state.resets(now_ms());
+    state.saved.lock().unwrap().checklist.edit(tasks, characters, resets);
+    save(&app, &state);
+    let _ = app.emit("checklist-changed", ());
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct CaptureStatus {
     #[serde(flatten)]
@@ -717,7 +778,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

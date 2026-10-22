@@ -97,6 +97,20 @@ impl Event {
         best
     }
 
+    /// The last start at or before `now_ms`: for a reset, when it last happened.
+    pub fn last_start(&self, region_tz: Tz, now_ms: i64) -> Option<i64> {
+        let tz = if self.utc { chrono_tz::UTC } else { region_tz };
+        let now = Utc.timestamp_millis_opt(now_ms).single()?;
+        let today = now.with_timezone(&tz).date_naive();
+        (-8..=0)
+            .map(|back| today + Duration::days(back))
+            .filter(|d| self.days.contains(&d.weekday().num_days_from_sunday()))
+            .flat_map(|d| self.starts.iter().filter_map(move |&m| at_minutes(tz, d, m)))
+            .map(|s| s.timestamp_millis())
+            .filter(|&s| s <= now_ms)
+            .max()
+    }
+
     /// Whether the event is for a player of `side` ("elyos" or "asmodian").
     pub fn for_side(&self, side: &str) -> bool {
         self.side.as_deref().is_none_or(|s| s == side)
@@ -162,6 +176,16 @@ mod tests {
         // Wednesday 2026-10-21 08:00 UTC is past this week's: next Wednesday.
         let s = weekly.next(region_zone(1).unwrap(), ms("2026-10-21T08:00:00Z")).unwrap();
         assert_eq!(s.start_ms, ms("2026-10-28T07:00:00Z"));
+    }
+
+    #[test]
+    fn the_last_weekly_reset() {
+        let weekly = event(r#"{"id":"weekly","kind":"reset","name":"=weekly","side":null,"days":[3],
+            "starts":[420],"minutes":0,"utc":true}"#);
+        let tz = region_zone(4).unwrap();
+        assert_eq!(weekly.last_start(tz, ms("2026-10-21T08:00:00Z")), Some(ms("2026-10-21T07:00:00Z")));
+        assert_eq!(weekly.last_start(tz, ms("2026-10-21T06:59:00Z")), Some(ms("2026-10-14T07:00:00Z")));
+        assert_eq!(weekly.last_start(tz, ms("2026-10-21T07:00:00Z")), Some(ms("2026-10-21T07:00:00Z")));
     }
 
     #[test]

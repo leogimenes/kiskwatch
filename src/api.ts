@@ -202,6 +202,32 @@ export interface Saved {
   references: Reference[];
 }
 
+export type Period = "daily" | "weekly";
+
+export interface ChecklistTask {
+  id: string; name: string; period: Period;
+  /** How many times a period it can be done. */
+  times: number;
+}
+
+export interface ChecklistCharacter {
+  id: string; name: string;
+  /** Task ids this character doesn't do. */
+  skip: string[];
+}
+
+/** The checklist, with what counts since the last resets. */
+export interface ChecklistView {
+  tasks: ChecklistTask[];
+  characters: ChecklistCharacter[];
+  /** Times done by character id, then task id (missing: 0). */
+  counts: Record<string, Record<string, number>>;
+  /** When each period last reset, unix ms. */
+  resets: { daily_ms: number; weekly_ms: number };
+  /** Names to offer for a new character. */
+  known: string[];
+}
+
 export interface TimerRow {
   id: string;
   kind: "event" | "boss" | "reset" | "field-boss";
@@ -272,11 +298,15 @@ export const saveReference = (profile: Profile, label: string) => invoke<string>
 export const renameReference = (id: string, label: string) => invoke("rename_reference", { id, label });
 export const deleteReference = (id: string) => invoke("delete_reference", { id });
 export { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
+export const getChecklist = () => invoke<ChecklistView>("get_checklist");
+export const checklistMark = (character: string, task: string, count: number) => invoke("checklist_mark", { character, task, count });
+export const checklistEdit = (tasks: ChecklistTask[], characters: ChecklistCharacter[]) => invoke("checklist_edit", { tasks, characters });
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 /** Only this window's notes: the app sends each to one overlay. */
 export const onToast = (f: (text: string) => void) => getCurrentWebviewWindow().listen<string>("toast", (e) => f(e.payload));
+export const onChecklistChanged = (f: () => void) => listen("checklist-changed", f);
 export const onAlarm = (f: (a: Alarm) => void) => listen<Alarm>("alarm", (e) => f(e.payload));
 
 /** "2d 04h", "1h 05m", "4m 09s", "agora". */

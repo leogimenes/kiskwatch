@@ -27,6 +27,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | DPS: uso das recargas por skill (usos feitos x possíveis, tempo pronta sem uso) | 🧪 a validar no jogo |
 | Atalhos globais: gravar/parar o DPS e ligar/desligar os cliques nos overlays | ✅ Ctrl+Alt+D e Ctrl+Alt+X, trocáveis em Configurações |
 | Dano recebido de cada monstro, skill a skill (golpes, maior golpe), nas gravações | 🧪 parser próprio, a validar no jogo |
+| Checklist diária e semanal por personagem, zerada sozinha nos resets | ✅ |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona
