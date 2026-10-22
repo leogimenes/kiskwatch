@@ -26,6 +26,7 @@ export interface Settings {
   timer_overlay: boolean;
   pet_overlay: boolean;
   overlays_with_game: boolean;
+  overlays_with_focus: boolean;
   pinned_pets: number[];
   route: RouteStop[];
   a11y: Accessibility;
@@ -134,6 +135,19 @@ export interface Profile {
   equipment: ProfileEquipment;
   boards: Record<string, BoardDetail>;
   fetched_ms: number;
+  /** The skill presets read so far; the site shows only the one in use. */
+  presets?: SkillPresets;
+}
+
+/** One preset as the site showed it. */
+export interface SkillPreset {
+  skill: ProfileEquipment["skill"] | null; fetched_ms: number;
+}
+
+export interface SkillPresets {
+  /** The preset (1 to 3) the last read is; 0 in saves from before presets. */
+  current: number;
+  kept: Record<string, SkillPreset>;
 }
 
 export interface ProfileInfo {
@@ -167,6 +181,10 @@ export interface ProfileEquipment {
 }
 
 /** A player the game named around you. */
+export interface Gear {
+  name: string; item_level: number | null; combat_power: number | null;
+}
+
 export interface SeenPlayer {
   name: string; class: ClassName | null; seen_ms: number; fighting: boolean;
 }
@@ -292,6 +310,9 @@ export const getPaces = () => invoke<Pace[]>("get_paces");
 export const searchCharacters = (name: string) => invoke<Hit[]>("search_characters", { name });
 export const loadProfile = (serverId?: number, characterId?: string) => invoke("load_profile", { serverId, characterId });
 export const clearProfile = () => invoke("clear_profile");
+/** The profile's last read is skill preset `n`. */
+export const movePreset = (n: number) => invoke("move_preset", { n });
+export const forgetPreset = (n: number) => invoke("forget_preset", { n });
 export const gameData = <T>(name: "skill-points" | "daevanion" | "skills") => invoke<T>("game_data", { name });
 export const dpsLive = () => invoke<Fight | null>("dps_live");
 export const dpsStart = () => invoke("dps_start");
@@ -309,6 +330,9 @@ export const nearbyPlayers = () => invoke<SeenPlayer[]>("nearby_players");
 export const findPlayer = (name: string) => invoke<Hit[]>("find_player", { name });
 /** Someone's profile, not followed. */
 export const inspectProfile = (serverId: number, characterId: string) => invoke<Profile>("inspect_profile", { serverId, characterId });
+/** Item level and combat power of players on the DPS bars, as far as known;
+ *  the rest are looked up and `onGearChanged` fires when they answer. */
+export const playerGear = (names: string[]) => invoke<Gear[]>("player_gear", { names });
 export const saveReference = (profile: Profile, label: string) => invoke<string>("save_reference", { profile, label });
 export const renameReference = (id: string, label: string) => invoke("rename_reference", { id, label });
 export const deleteReference = (id: string) => invoke("delete_reference", { id });
@@ -321,6 +345,7 @@ export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 /** Only this window's notes: the app sends each to one overlay. */
 export const onToast = (f: (text: string) => void) => getCurrentWebviewWindow().listen<string>("toast", (e) => f(e.payload));
+export const onGearChanged = (f: () => void) => listen("gear-changed", f);
 export const onChecklistChanged = (f: () => void) => listen("checklist-changed", f);
 export const onAlarm = (f: (a: Alarm) => void) => listen<Alarm>("alarm", (e) => f(e.payload));
 

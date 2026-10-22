@@ -5,7 +5,10 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
+use kiskwatch_core::presets::Presets;
 use serde_json::Value;
+
+use kiskwatch_core::gear::Gear;
 
 const SITE: &str = "https://aion2.plaync.com";
 const SEARCH: &str = "https://api-search.plaync.com/aion2global/search/v2/character";
@@ -50,6 +53,18 @@ pub struct Profile {
     /// `/api/character/daevanion/detail` by board id: each node, open or not.
     pub boards: BTreeMap<u32, Value>,
     pub fetched_ms: i64,
+    /// The skill presets read so far; the site shows only the one in use.
+    pub presets: Presets,
+}
+
+impl Profile {
+    /// Files this read's skills under a preset, keeping those read before
+    /// for the same character.
+    pub fn file_preset(&mut self, before: Option<&Profile>) {
+        let before = before.filter(|b| b.character_id == self.character_id && b.server_id == self.server_id);
+        let skill = self.equipment.get("skill").cloned().unwrap_or(Value::Null);
+        self.presets = Presets::file(before.map(|b| &b.presets), skill, self.fetched_ms);
+    }
 }
 
 fn client() -> Result<reqwest::Client, String> {
@@ -131,6 +146,27 @@ fn board_ids(info: &Value) -> Vec<u32> {
         .unwrap_or_default()
 }
 
+/// The item level and combat power of a player the game named, for the DPS
+/// bars: the exact name, on your server first. `None` when the site doesn't
+/// have them.
+pub async fn gear(region: u32, my_server: u32, name: &str) -> Result<Option<Gear>, String> {
+    let shard = shard(region).ok_or("região sem perfil oficial")?;
+    let Some(hit) = find(region, my_server, name).await?.into_iter().find(|h| h.name.to_lowercase() == name.to_lowercase()) else {
+        return Ok(None);
+    };
+    let query = [
+        ("lang", LANG.to_string()),
+        ("region", shard.to_string()),
+        ("serverId", hit.server_id.to_string()),
+        ("characterId", hit.character_id),
+    ];
+    let info = get(&client()?, &format!("{SITE}/api/character/info"), &query).await?;
+    if info.get("profile").is_none_or(Value::is_null) {
+        return Ok(None);
+    }
+    Ok(Some(Gear::from_info(name, &info)))
+}
+
 pub async fn fetch(region: u32, server_id: u32, character_id: &str, now_ms: i64) -> Result<Profile, String> {
     let shard = shard(region).ok_or("região sem perfil oficial")?;
     let client = client()?;
@@ -158,7 +194,7 @@ pub async fn fetch(region: u32, server_id: u32, character_id: &str, now_ms: i64)
         }
     }
     let name = info.pointer("/profile/characterName").and_then(Value::as_str).unwrap_or("").to_string();
-    Ok(Profile { server_id, character_id: id, name, info, equipment, boards, fetched_ms: now_ms })
+    Ok(Profile { server_id, character_id: id, name, info, equipment, boards, fetched_ms: now_ms, ..Default::default() })
 }
 
 #[cfg(test)]

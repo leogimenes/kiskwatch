@@ -1,6 +1,6 @@
 // The Build tab: the character's skills, stigmas and Daevanion boards, from
 // its public profile on the official site.
-import { Profile, ProfileSkill, Saved, clearProfile, loadProfile, searchCharacters } from "./api";
+import { Profile, ProfileSkill, Saved, clearProfile, forgetPreset, loadProfile, movePreset, searchCharacters } from "./api";
 import { Cell, GameData, boardCost, boardLevels, cells, findBoard, iconUrl, levelPoints, loadGameData, sources } from "./buildData";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -15,8 +15,13 @@ const REFRESH_MS = 20 * 60_000;
 
 const CATEGORY: Record<string, string> = { Active: "Ativas", Passive: "Passivas", Dp: "Stigmas", Stigma: "Stigmas" };
 const CATEGORY_ORDER = ["Active", "Passive", "Dp", "Stigma"];
+const isStigma = (s: ProfileSkill) => s.category === "Dp" || s.category === "Stigma";
+/** The game's skill presets. */
+const PRESETS = [1, 2, 3];
 
 let profile: Profile | null = null;
+/** The skill preset on screen; null is the one the site shows now. */
+let viewPreset: number | null = null;
 let openBoard: number | null = null;
 /** The node picked on the open board, by "row,col". */
 let openNode: string | null = null;
@@ -97,17 +102,64 @@ function header(p: Profile) {
   );
 }
 
+/** A stigma with the equipped mark but no level sits on another preset. */
+const elsewhere = (s: ProfileSkill) => isStigma(s) && !!s.equip && !!s.acquired && !s.skillLevel;
+
 function skillTile(s: ProfileSkill) {
-  const tile = el("button", { className: `skill${s.acquired ? "" : " missing"}${s.equip ? " equipped" : ""}`, title: `${s.name}${s.acquired ? ` · nível ${s.skillLevel}` : ` · aprende no nível ${s.needLevel}`}${s.equip ? " · equipada" : ""}` },
+  const away = elsewhere(s);
+  const tile = el("button", { className: `skill${s.acquired ? "" : " missing"}${s.equip && !away ? " equipped" : ""}${away ? " elsewhere" : ""}`, title: `${s.name}${s.acquired ? ` · nível ${s.skillLevel}` : ` · aprende no nível ${s.needLevel}`}${away ? " · equipada em outra preset" : s.equip ? " · equipada" : ""}` },
     s.icon ? el("img", { src: s.icon, alt: "", loading: "lazy" }) : el("span", { className: "noicon" }),
     el("span", { className: "skill-name" }, s.name),
-    el("span", { className: "skill-level" }, s.acquired ? `Nv. ${s.skillLevel}` : `nv. ${s.needLevel}`));
+    el("span", { className: "skill-level" }, away ? "outra preset" : s.acquired ? `Nv. ${s.skillLevel}` : `nv. ${s.needLevel}`));
   tile.addEventListener("click", () => showSkill(s.id));
   return el("li", {}, tile);
 }
 
-function skills(p: Profile) {
-  const list = p.equipment.skill?.skillList ?? [];
+/** The presets read so far, by number; old saves have only the read itself. */
+function presetsOf(p: Profile) {
+  const kept = p.presets?.kept ?? {};
+  const current = p.presets?.current || 1;
+  return { current, kept: Object.keys(kept).length ? kept : { [current]: { skill: p.equipment.skill ?? null, fetched_ms: p.fetched_ms } } };
+}
+
+/** The skills of the preset on screen. */
+function viewedSkills(p: Profile): ProfileSkill[] | null {
+  const { current, kept } = presetsOf(p);
+  const shown = kept[viewPreset ?? current];
+  return shown ? shown.skill?.skillList ?? [] : null;
+}
+
+function presetBar(p: Profile) {
+  const { current, kept } = presetsOf(p);
+  const shown = viewPreset ?? current;
+  const tabs = el("div", { className: "chip-group preset-tabs", role: "group", ariaLabel: "Preset de skills" }, ...PRESETS.map((n) => {
+    const b = el("button", { ariaPressed: String(n === shown) },
+      `Preset ${n}`,
+      el("small", {}, n === current ? "em uso no site" : kept[n] ? `lida ${ago(Date.now() - kept[n].fetched_ms)}` : "não lida"));
+    b.addEventListener("click", () => { viewPreset = n === current ? null : n; render(); });
+    return b;
+  }));
+  const note = el("p", { className: "hint" });
+  if (shown === current) {
+    note.append("O site oficial mostra só a preset em uso. Para ler outra, troque de preset no jogo e clique em Atualizar depois que o site mudar. ",
+      "Esta leitura não é a preset ", el("strong", {}, String(current)), "? Marque qual é: ",
+      ...PRESETS.filter((n) => n !== current).flatMap((n) => {
+        const b = el("button", { className: "link", textContent: `Preset ${n}` });
+        b.addEventListener("click", () => { viewPreset = null; movePreset(n); });
+        return [b, " "];
+      }));
+  } else if (kept[shown]) {
+    const forget = el("button", { className: "link", textContent: "Esquecer esta preset" });
+    forget.addEventListener("click", () => { viewPreset = null; forgetPreset(shown); });
+    note.append(`Guardada da leitura de ${new Date(kept[shown].fetched_ms).toLocaleString("pt-BR")}. Para atualizar, troque para ela no jogo e clique em Atualizar. `, forget);
+  } else {
+    note.append("Ainda não lida. Troque para esta preset no jogo e clique em Atualizar depois que o site mudar: o Kiskwatch guarda cada preset que o site mostrar.");
+  }
+  return el("div", { className: "presets" }, tabs, note);
+}
+
+function skills(list: ProfileSkill[] | null) {
+  if (!list) return "";
   if (!list.length) return el("p", { className: "hint" }, "O perfil não trouxe skills.");
   const groups = new Map<string, ProfileSkill[]>();
   for (const s of list) groups.set(s.category, [...(groups.get(s.category) ?? []), s]);
@@ -117,7 +169,7 @@ function skills(p: Profile) {
     const have = all.filter((s) => s.acquired).length;
     const levels = all.reduce((n, s) => n + (s.acquired ? s.skillLevel : 0), 0);
     return el("section", { className: "build-group" },
-      el("h3", {}, `${CATEGORY[cat] ?? cat} `, el("span", { className: "hint" }, `${have} de ${all.length} obtidas · ${levels} níveis no total · ${all.filter((s) => s.equip).length} equipadas`)),
+      el("h3", {}, `${CATEGORY[cat] ?? cat} `, el("span", { className: "hint" }, `${have} de ${all.length} obtidas · ${levels} níveis no total · ${all.filter((s) => s.equip && !elsewhere(s)).length} equipadas${all.some(elsewhere) ? ` · ${all.filter(elsewhere).length} em outra preset` : ""}`)),
       el("ul", { className: "skills" }, ...all.map(skillTile)));
   }));
 }
@@ -131,7 +183,7 @@ const seconds = (n: number) => (n ? `${n.toLocaleString("pt-BR")} s` : "instant�
 
 /** The skill's card: the profile's level and name, the game data's text. */
 function showSkill(id: number) {
-  const mine = profile?.equipment.skill?.skillList?.find((s) => s.id === id);
+  const mine = (profile ? viewedSkills(profile) : null)?.find((s) => s.id === id);
   const known = game?.skills.get(id);
   const level = mine?.acquired ? mine.skillLevel : 0;
   const fromBoards = profile && game ? boardLevels(allCells(profile)).get(id) ?? 0 : 0;
@@ -149,7 +201,7 @@ function showSkill(id: number) {
         el("div", { className: "hint" }, [kind, known && known.name !== mine?.name ? known.name : ""].filter(Boolean).join(" · "))),
       close),
     el("div", { className: "stat-row" },
-      stat("Nível", level ? `${level}${known ? `/${known.maxLevel}` : ""}` : "não aprendida", mine && !mine.acquired ? `aprende no nível ${mine.needLevel}` : mine?.equip ? "equipada" : ""),
+      stat("Nível", level ? `${level}${known ? `/${known.maxLevel}` : ""}` : "não aprendida", mine && !mine.acquired ? `aprende no nível ${mine.needLevel}` : mine && elsewhere(mine) ? "equipada em outra preset" : mine?.equip ? "equipada" : ""),
       ...(known && known.type !== "passive" ? [stat("Recarga", seconds(now?.cooldownSec ?? known.cooldownSec)), stat("Conjuração", seconds(now?.castTimeSec ?? known.castTimeSec))] : []),
       ...(fromBoards ? [stat("Nós Daevanion abertos", `+${fromBoards}`, "níveis extras desta skill")] : [])),
     known ? el("div", {},
@@ -307,7 +359,7 @@ function render() {
   }
   box.replaceChildren(
     header(profile),
-    el("h2", {}, "Skills e Stigmas"), skills(profile),
+    el("h2", {}, "Skills e Stigmas"), presetBar(profile), skills(viewedSkills(profile)),
     el("h2", {}, "Pontos e onde conseguir"), points(profile),
     el("h2", {}, "Daevanion"), daevanion(profile),
     el("p", { className: "hint" }, "Dados do perfil público no site oficial do AION 2. Pontos, tabuleiros e custos da ", el("a", { href: "https://dbaion2.ru" }, "dbaion2.ru"), " (cliente Global, em inglês)."),
@@ -316,8 +368,10 @@ function render() {
 
 export function renderBuild(saved: Saved) {
   // The panel refreshes on every game event: only a new profile redraws.
-  const same = saved.profile?.character_id === profile?.character_id && saved.profile?.fetched_ms === profile?.fetched_ms;
+  const presetKey = (p: Profile | null) => `${p?.presets?.current}:${Object.keys(p?.presets?.kept ?? {})}`;
+  const same = saved.profile?.character_id === profile?.character_id && saved.profile?.fetched_ms === profile?.fetched_ms && presetKey(saved.profile) === presetKey(profile);
   if (same && rendered) return;
+  if (saved.profile?.character_id !== profile?.character_id) viewPreset = null;
   rendered = true;
   profile = saved.profile;
   if (profile && !game && !gameError) {

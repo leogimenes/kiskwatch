@@ -1,7 +1,7 @@
 // The DPS overlay: the recording under way (or the last one), up to six
 // players, with a button to start and stop and a name to change.
-import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onStateChanged, setSettings } from "./api";
-import { BARS, TARGETS, clock, rowLine, rows } from "./dpsView";
+import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onGearChanged, onStateChanged, setSettings } from "./api";
+import { BARS, TARGETS, clock, loadGear, rowLine, rows } from "./dpsView";
 import "./toast";
 import { applyLook } from "./look";
 
@@ -53,6 +53,7 @@ function render() {
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   $("#dps-rows").replaceChildren(...(list.length ? list.map((r) => rowLine(r, s.bars, top))
     : [Object.assign(document.createElement("li"), { className: "empty", textContent: live ? "Ninguém causou dano ainda." : "Nenhuma gravação ainda." })]));
+  loadGear(list).then((changed) => { if (changed) render(); });
 }
 
 async function poll() {
@@ -82,6 +83,7 @@ name.addEventListener("keydown", (e) => { if (e.key === "Enter") name.blur(); })
 
 onStateChanged(refresh);
 onDpsChanged(refresh);
+onGearChanged(render);
 refresh();
 // The clock and the numbers, while recording.
 setInterval(() => { if (live) poll(); }, 1000);

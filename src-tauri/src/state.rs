@@ -24,6 +24,8 @@ pub struct Settings {
     pub pet_overlay: bool,
     /// Show the overlays only while the game is running.
     pub overlays_with_game: bool,
+    /// Show the overlays only while the game, or Kiskwatch, is in front.
+    pub overlays_with_focus: bool,
     /// The pets kept on the pets overlay, in the order pinned.
     pub pinned_pets: Vec<u32>,
     /// The farm route, in order: each pet and the monster to farm it on.
@@ -94,6 +96,7 @@ impl Default for Settings {
             timer_overlay: true,
             pet_overlay: false,
             overlays_with_game: true,
+            overlays_with_focus: true,
             pinned_pets: Vec::new(),
             route: Vec::new(),
             a11y: Accessibility::default(),
