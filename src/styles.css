@@ -54,6 +54,7 @@ main { padding: 16px; }
 .points { width: 64px; }
 .missing { font-weight: 600; color: var(--gold); }
 .where { white-space: pre-line; color: var(--muted); font-size: 12px; }
+.pace { white-space: pre-line; font-size: 12px; font-variant-numeric: tabular-nums; }
 .map-panel { position: sticky; top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
 .map-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .map-panel h2 { margin: 0; font-size: 15px; }

@@ -1,13 +1,14 @@
 // The pets overlay: the pet being farmed, the nearest one to farm next, and
 // the pets pinned in the panel, each with its level and the souls to the next.
-import { Saved, SoulSeen, getSaved, getSouls, onStateChanged } from "./api";
+import { Pace, Saved, SoulSeen, getPaces, getSaved, getSouls, onStateChanged } from "./api";
 import { GENUS, GENUS_MARK, PET_BY_ID, Pet, SOULS_PER_LEVEL, levelProgress, name, soulsToMax, t } from "./data";
-import { FARMING_MS, nextOnRoute, nextPet } from "./farm";
+import { FARMING_MS, nextOnRoute, nextPet, paceText } from "./farm";
 import "./toast";
 import { applyLook } from "./look";
 
 let saved: Saved | null = null;
 let souls: SoulSeen[] = [];
+let paces: Pace[] = [];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -79,7 +80,9 @@ function render() {
       const p = PET_BY_ID.get(r.pet);
       const farming = r.pet === queue.last && now - r.at_ms <= FARMING_MS;
       const when = farming ? "farmando agora" : r.at_ms ? `última ${ago(now - r.at_ms)}` : "";
-      if (p) top.push(petCard(p, farming ? "farming" : "", [r.amount ? `+${r.amount} alma(s) em 30 min` : "", when].filter(Boolean).join(" · ")));
+      const pace = paces.find((x) => x.pet === r.pet);
+      const note = [r.amount ? `+${r.amount} alma(s) em 30 min` : "", when].filter(Boolean).join(" · ");
+      if (p) top.push(petCard(p, farming ? "farming" : "", [note, pace ? paceText(pace) : ""].filter(Boolean).join("\n")));
     }
   }
   // The route's next stop; without a route, the nearest pet still missing souls.
@@ -102,7 +105,7 @@ function render() {
 }
 
 async function refresh() {
-  [saved, souls] = await Promise.all([getSaved(), getSouls()]);
+  [saved, souls, paces] = await Promise.all([getSaved(), getSouls(), getPaces()]);
   applyLook(saved.settings.a11y);
   render();
 }

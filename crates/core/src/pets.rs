@@ -179,6 +179,47 @@ impl PetCollection {
     }
 }
 
+/// Souls this far apart belong to different farming runs.
+pub const RUN_GAP_MS: i64 = 30 * 60_000;
+/// Fewer pickups than this, or a shorter run, is too little to time.
+const PACE_MIN_PICKUPS: usize = 3;
+const PACE_MIN_SPAN_MS: i64 = 5 * 60_000;
+
+/// How fast a pet's souls came in its latest run.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct Pace {
+    pub pet: u32,
+    /// Souls in the run, the first pickup's included.
+    pub souls: u32,
+    /// From the run's first pickup to its last.
+    pub span_ms: i64,
+    pub last_ms: i64,
+    pub per_hour: f64,
+    /// Time to the highest level at this pace; None once there.
+    pub to_max_ms: Option<i64>,
+}
+
+/// The pet's pace from its pickups (`(at_ms, amount)`, oldest first): the
+/// run is the pickups back from the newest with no gap over `RUN_GAP_MS`.
+/// The first pickup only starts the clock, so it is left out of the rate.
+pub fn pace(pet: u32, pickups: &[(i64, u32)], progress: PetProgress) -> Option<Pace> {
+    let &(last_ms, _) = pickups.last()?;
+    let mut start = pickups.len() - 1;
+    while start > 0 && pickups[start].0 - pickups[start - 1].0 <= RUN_GAP_MS {
+        start -= 1;
+    }
+    let run = &pickups[start..];
+    let span_ms = last_ms - run[0].0;
+    if run.len() < PACE_MIN_PICKUPS || span_ms < PACE_MIN_SPAN_MS {
+        return None;
+    }
+    let timed: u32 = run[1..].iter().map(|&(_, n)| n).sum();
+    let per_hour = f64::from(timed) * 3_600_000.0 / span_ms as f64;
+    let left = progress.souls_to_max();
+    let to_max_ms = (left > 0).then(|| (f64::from(left) * 3_600_000.0 / per_hour).round() as i64);
+    Some(Pace { pet, souls: run.iter().map(|&(_, n)| n).sum(), span_ms, last_ms, per_hour, to_max_ms })
+}
+
 /// How many pets the queue holds.
 pub const QUEUE_LEN: usize = 5;
 
@@ -346,5 +387,29 @@ mod tests {
         assert_eq!(q.pets, vec![1]);
         feed(&mut q, &mut c, PetRecord::List { levels: vec![(1, 0)], points: vec![] });
         assert!(q.pets.is_empty());
+    }
+
+    #[test]
+    fn pace_times_the_latest_run_from_its_first_pickup() {
+        const MIN: i64 = 60_000;
+        // An old run, a gap of over 30 min, then 1 + 6 souls in 30 min.
+        let mut pickups = vec![(0, 5), (2 * MIN, 5)];
+        pickups.extend((0..7).map(|i| (100 * MIN + i * 5 * MIN, 1)));
+        let p = pace(7, &pickups, PetProgress { level: 1, points: 10 }).unwrap();
+        assert_eq!((p.souls, p.span_ms, p.last_ms), (7, 30 * MIN, 130 * MIN));
+        assert_eq!(p.per_hour, 12.0);
+        // 90 souls left at 12 an hour.
+        assert_eq!(p.to_max_ms, Some(450 * MIN));
+        assert_eq!(pace(7, &pickups, PetProgress { level: 3, points: 0 }).unwrap().to_max_ms, None);
+    }
+
+    #[test]
+    fn pace_needs_a_few_pickups_over_a_few_minutes() {
+        const MIN: i64 = 60_000;
+        let none = PetProgress::default();
+        assert_eq!(pace(1, &[], none), None);
+        assert_eq!(pace(1, &[(0, 1), (10 * MIN, 1)], none), None);
+        assert_eq!(pace(1, &[(0, 1), (MIN, 1), (2 * MIN, 1)], none), None);
+        assert!(pace(1, &[(0, 1), (3 * MIN, 1), (6 * MIN, 1)], none).is_some());
     }
 }

@@ -195,7 +195,8 @@ pub struct SoulSeen {
     pub at_ms: i64,
 }
 
-pub const SOULS_KEPT: usize = 100;
+/// Enough for a few hours of farming, to time each pet's pace.
+pub const SOULS_KEPT: usize = 1_000;
 /// Recordings kept; the oldest go first.
 pub const FIGHTS_KEPT: usize = 200;
 /// Builds kept to compare against; the oldest go first.
