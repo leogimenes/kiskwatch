@@ -1,15 +1,16 @@
 @import "./theme.css";
 :root {
   --overlay-alpha: 0.72;
-  --o-text: #1a1405;
+  --o-text: #e6ebf2;
+  --o-ink: #1a1405;
   --o-gold: #ffe08c;
   --o-edge: rgba(120, 200, 255, 0.35);
-  color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; font-size: 14px;
+  color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px;
 }
 :root.contrast { --o-edge: #fff; }
 html, body { margin: 0; background: transparent; overflow: hidden; }
-#alerts { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px; }
-.alert { display: flex; gap: 10px; align-items: baseline; max-width: calc(100vw - 16px); padding: 6px 14px; border-radius: 999px; background: var(--o-gold); color: var(--o-text); border: 1px solid var(--o-edge); font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45); animation: pop 0.3s ease-out; }
+#alerts { font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px; }
+.alert { display: flex; gap: 10px; align-items: baseline; max-width: calc(100vw - 16px); padding: 6px 14px; border-radius: 999px; background: var(--o-gold); color: var(--o-ink); border: 1px solid var(--o-edge); font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45); animation: pop 0.3s ease-out; }
 .alert .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .alert .when { flex: none; font-variant-numeric: tabular-nums; font-weight: 700; }
 @keyframes pop { from { transform: translateY(-8px); opacity: 0; } }

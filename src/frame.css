@@ -1,10 +1,7 @@
 /* The framed overlays (pets, DPS): a dark box whose background follows
-   "Fundo dos overlays". The timer reminder doesn't load this. */
-:root {
-  --o-text: #e6ebf2;
-  --o-muted: #8d99ab;
-  font-size: 13px;
-}
+   "Fundo dos overlays". The timer reminder doesn't load this. The build may
+   put overlay.css after this file, so nothing here may count on overriding it. */
+:root { --o-muted: #8d99ab; }
 :root.contrast { --overlay-alpha: 0.95; --o-text: #fff; --o-muted: #dfe5ee; --o-edge: #fff; }
 #frame { margin: 4px; border-radius: 8px; background: rgba(12, 17, 26, var(--overlay-alpha)); color: var(--o-text); border: 1px solid var(--o-edge); }
 .bar { padding: 4px 8px; font-size: 11px; color: #78c8ff; cursor: move; user-select: none; }
