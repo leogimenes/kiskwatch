@@ -434,6 +434,16 @@ impl Meter {
         Some(fight).filter(|f| f.players.iter().any(|p| p.boss_damage + p.mob_damage + p.heal > 0))
     }
 
+    /// Throw away what the recording under way counted, unsaved. One started
+    /// by hand starts over from zero; an automatic one waits for the next hit.
+    pub fn clear(&mut self, now: i64) {
+        let Some(rec) = self.rec.take() else { return };
+        self.effects.stop();
+        if !rec.auto {
+            self.begin(rec.name, false, now);
+        }
+    }
+
     pub fn rename(&mut self, name: &str) {
         if let Some(rec) = &mut self.rec {
             rec.name = clip_name(name);
@@ -882,6 +892,28 @@ mod tests {
         m.apply(hit(ME, MOB, CLERIC, 10), 3_000, true, named);
         let f = m.tick(3_000 + IDLE_END_MS).unwrap();
         assert_eq!((f.players[0].idle_ms, f.players[0].timeline.len()), (0, 3));
+    }
+
+    #[test]
+    fn clearing_starts_a_recording_by_hand_over() {
+        let mut m = meter();
+        m.start("Treino".into(), 0);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, false, named);
+        m.clear(2_000);
+        let f = m.current(2_000).unwrap();
+        assert_eq!((f.name.as_str(), f.started_ms, f.players.len()), ("Treino", 2_000, 0));
+        m.apply(hit(ME, MOB, CLERIC, 7), 3_000, false, named);
+        assert_eq!(m.stop(4_000).unwrap().players[0].mob_damage, 7);
+    }
+
+    #[test]
+    fn clearing_an_automatic_recording_waits_for_the_next_hit() {
+        let mut m = meter();
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, true, named);
+        m.clear(2_000);
+        assert!(!m.recording() && m.tick(2_000 + IDLE_END_MS).is_none());
+        m.apply(hit(ME, MOB, CLERIC, 4), 3_000, true, named);
+        assert_eq!(m.current(3_000).unwrap().players[0].mob_damage, 4);
     }
 
     #[test]

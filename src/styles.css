@@ -187,6 +187,7 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 
 /* DPS tab */
 .dps-live { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.dps-live > :first-child { flex: 1; }
 .dps-live .rec { color: #ff7a7a; }
 .dps-live button.rec { background: #b33a3a; border-color: #ff7a7a; color: #fff; }
 .dps-layout { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 16px; align-items: start; }

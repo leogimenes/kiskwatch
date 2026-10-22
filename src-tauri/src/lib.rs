@@ -586,6 +586,17 @@ fn dps_stop(app: AppHandle, state: State<App>) {
     dps_end(&app, &state);
 }
 
+/// Clear the DPS overlay: the recording under way starts over, unsaved, and
+/// the last saved one stops showing (it stays in the panel).
+#[tauri::command]
+fn dps_clear(app: AppHandle, state: State<App>) {
+    let now = now_ms();
+    state.meter.lock().unwrap().clear(now);
+    state.saved.lock().unwrap().dps_cleared_ms = now;
+    save(&app, &state);
+    let _ = app.emit("dps-changed", ());
+}
+
 /// Rename a recording: the one under way, or a saved one by id.
 #[tauri::command]
 fn dps_rename(app: AppHandle, state: State<App>, id: Option<String>, name: String) {
@@ -791,7 +802,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

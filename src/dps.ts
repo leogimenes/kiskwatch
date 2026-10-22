@@ -1,6 +1,6 @@
 // The DPS overlay: the recording under way (or the last one), up to six
 // players, with a button to start and stop and a name to change.
-import { DpsBars, DpsTarget, Fight, Saved, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onStateChanged, setSettings } from "./api";
+import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onStateChanged, setSettings } from "./api";
 import { BARS, TARGETS, clock, rowLine, rows } from "./dpsView";
 import "./toast";
 import { applyLook } from "./look";
@@ -33,7 +33,9 @@ async function pickSetting(change: { target?: DpsTarget; bars?: DpsBars }) {
 function render() {
   if (!saved) return;
   const s = saved.settings.dps;
-  const fight = live ?? saved.fights[0] ?? null;
+  // The last saved one, unless it was cleared away.
+  const last = saved.fights[0];
+  const fight = live ?? (last && last.ended_ms > (saved.dps_cleared_ms ?? 0) ? last : null);
   const status = $("#dps-status");
   status.classList.toggle("rec", !!live);
   status.textContent = live ? clock(Date.now() - live.started_ms)
@@ -67,6 +69,11 @@ async function refresh() {
 $("#dps-toggle").addEventListener("click", async () => {
   if (live) await dpsStop(); else await dpsStart();
   await poll();
+});
+
+$("#dps-clear").addEventListener("click", async () => {
+  await dpsClear();
+  await refresh();
 });
 
 const name = $<HTMLInputElement>("#dps-name");
