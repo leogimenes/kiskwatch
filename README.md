@@ -56,6 +56,8 @@ npx tauri build        # gera o instalador (.exe) em target/release/bundle/nsis
 
 O CI roda os testes a cada pull request (menos de um minuto). O instalador do Windows sai como artefato a cada push na `main`, em tags `v*`, pelo botão "Run workflow" na aba Actions, ou num pull request com o label `build-windows`.
 
+As versões seguem semver e saem por um PR de release (aba Actions > "Preparar release"). Ao mesclar esse PR, o GitHub cria a tag `vX.Y.Z` e publica o instalador em [Releases](https://github.com/leogimenes/kiskwatch/releases) com o `SHA256SUMS.txt`. Detalhes no `CLAUDE.md`.
+
 ### Atualizar os dados do jogo
 
 ```sh

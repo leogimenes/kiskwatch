@@ -1,0 +1,71 @@
+name: Preparar release
+
+# Aba Actions > "Preparar release" > Run workflow: sobe a versão num branch release/vX.Y.Z
+# e abre o PR de release. Ao mesclar esse PR, o workflow Release cria a tag e publica o instalador.
+on:
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: 'patch (correções), minor (novidades) ou major (quebra compatibilidade)'
+        type: choice
+        options: [patch, minor, major]
+        default: minor
+      versao:
+        description: 'Versão exata (X.Y.Z), se quiser em vez do tipo'
+        type: string
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Subir a versão
+        id: bump
+        env:
+          ALVO: ${{ inputs.versao || inputs.tipo }}
+        run: |
+          from=$(node scripts/version.mjs get)
+          to=$(node scripts/version.mjs bump "${ALVO#v}")
+          if git ls-remote --exit-code --tags origin "refs/tags/v$to" >/dev/null; then
+            echo "::error::a tag v$to já existe"
+            exit 1
+          fi
+          echo "from=$from" >> "$GITHUB_OUTPUT"
+          echo "to=$to" >> "$GITHUB_OUTPUT"
+      - name: Commit e push do branch release/v${{ steps.bump.outputs.to }}
+        run: |
+          branch="release/v${{ steps.bump.outputs.to }}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git commit -am "Release v${{ steps.bump.outputs.to }}"
+          git push -u origin "$branch"
+      - name: Abrir o PR de release
+        run: |
+          to="${{ steps.bump.outputs.to }}"
+          branch="release/v$to"
+          # Prévia das notas: os PRs mesclados desde a última tag, como vão sair na release.
+          notes=$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+            -f tag_name="v$to" -f target_commitish=main --jq .body)
+          body=$(printf '%s\n\n%s\n\n%s\n' \
+            "Sobe a versão de ${{ steps.bump.outputs.from }} para **$to**. Ao mesclar, o workflow Release cria a tag \`v$to\` e publica o instalador, o \`SHA256SUMS.txt\` e o \`latest.json\` no GitHub Releases." \
+            "## Notas (prévia)" \
+            "$notes")
+          gh pr create --base main --head "$branch" --title "Release v$to" --body "$body" \
+            || { echo "::warning::Não consegui abrir o PR (ative Settings > Actions > General > 'Allow GitHub Actions to create and approve pull requests'). Abra à mão: https://github.com/$GITHUB_REPOSITORY/compare/main...$branch"; }
+          # PRs abertos pelo token do Actions não disparam o CI sozinhos; o dispatch roda os
+          # testes e o build do Windows no commit do branch, e o resultado aparece no PR.
+          gh workflow run ci.yml --ref "$branch"
