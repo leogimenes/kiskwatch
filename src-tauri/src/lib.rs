@@ -995,10 +995,17 @@ pub fn run() {
         // Windows go back where they were, from the app's config folder in
         // AppData, which installing a new version leaves alone.
         .plugin(tauri_plugin_window_state::Builder::new().with_state_flags(WINDOW_FLAGS).with_denylist(&[REMINDER]).build())
-        .on_window_event(|window, event| {
-            if matches!(event, WindowEvent::Moved(_) | WindowEvent::Resized(_)) {
-                save_windows_soon(window.app_handle());
+        .on_window_event(|window, event| match event {
+            WindowEvent::Moved(_) | WindowEvent::Resized(_) => save_windows_soon(window.app_handle()),
+            // Closing the panel quits Kiskwatch. Tauri only quits once every
+            // window is closed, and the hidden overlays kept it running with
+            // nothing on the screen; opening it again then only reached that
+            // one (see the single instance plugin) and nothing showed.
+            WindowEvent::CloseRequested { .. } if window.label() == "panel" => {
+                log::line("painel fechado");
+                window.app_handle().exit(0);
             }
+            _ => {}
         })
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
