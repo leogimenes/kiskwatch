@@ -9,6 +9,7 @@ pub mod dispatch;
 pub mod dps;
 pub mod effects;
 pub mod framing;
+pub mod gear;
 pub mod history;
 pub mod pets;
 pub mod presets;

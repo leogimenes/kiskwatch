@@ -218,6 +218,9 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .dps-row .shield { width: 22px; height: 22px; object-fit: contain; }
 .dps-row .shield.none { width: 10px; height: 10px; margin: 6px; border-radius: 50%; background: var(--class); }
 .dps-name { font-weight: 600; color: var(--class); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dps-who { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.dps-who .dps-name { min-width: 0; }
+.dps-gear { flex: none; font-size: 0.85em; font-variant-numeric: tabular-nums; white-space: nowrap; opacity: 0.75; }
 .dps-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dps-track { grid-column: 1 / -1; display: flex; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .dps-fill { display: block; height: 100%; }

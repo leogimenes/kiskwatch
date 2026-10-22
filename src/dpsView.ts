@@ -1,6 +1,6 @@
 // What the DPS overlay and the panel's DPS tab draw from a recording: the
 // rows for the chosen target and bars, with each class's shield and color.
-import { ClassName, DpsBars, DpsTarget, Fight, FightPlayer } from "./api";
+import { ClassName, DpsBars, DpsTarget, Fight, FightPlayer, Gear, playerGear } from "./api";
 
 export const CLASS: Record<ClassName, { name: string; color: string }> = {
   Gladiator: { name: "Gladiador", color: "#e0823d" },
@@ -83,6 +83,36 @@ export function shield(p: FightPlayer) {
   return img;
 }
 
+/** Item level and combat power by name (any case), from the public profiles. */
+const gear = new Map<string, Gear>();
+
+/** Ask for the gear of the players on these rows. True when it changed what
+ *  a bar shows, to draw them again. */
+export async function loadGear(list: Row[]): Promise<boolean> {
+  const names = list.map((r) => r.player.name);
+  if (!names.length) return false;
+  let changed = false;
+  for (const g of await playerGear(names).catch(() => [] as Gear[])) {
+    const key = g.name.toLowerCase(), was = gear.get(key);
+    if (was?.item_level !== g.item_level || was?.combat_power !== g.combat_power) changed = true;
+    gear.set(key, g);
+  }
+  return changed;
+}
+
+/** "NI 2.345 · PC 123,5 mil", or nothing while unknown. */
+function gearTag(name: string) {
+  const g = gear.get(name.toLowerCase());
+  if (!g || (g.item_level == null && g.combat_power == null)) return "";
+  const parts = [g.item_level != null ? `NI ${g.item_level.toLocaleString("pt-BR")}` : "", g.combat_power != null ? `PC ${short(g.combat_power)}` : ""];
+  const tag = el("span", "dps-gear", parts.filter(Boolean).join(" · "));
+  tag.title = [
+    g.item_level != null ? `Nível de item ${g.item_level.toLocaleString("pt-BR")}` : "",
+    g.combat_power != null ? `Poder de combate ${g.combat_power.toLocaleString("pt-BR")}` : "",
+  ].filter(Boolean).join(" · ") + " (perfil público, site oficial)";
+  return tag;
+}
+
 /** A player's line: shield, name, the bar (stacked when both), and numbers. */
 export function rowLine(r: Row, bars: DpsBars, top: number) {
   const track = el("span", "dps-track");
@@ -101,7 +131,7 @@ export function rowLine(r: Row, bars: DpsBars, top: number) {
   const unit = bars === "heal" ? "/s cura" : "/s";
   const line = el("li", `dps-row${r.player.local ? " me" : ""}`,
     shield(r.player),
-    el("span", "dps-name", r.player.name),
+    el("span", "dps-who", el("span", "dps-name", r.player.name), gearTag(r.player.name)),
     el("span", "dps-num", `${short(r.total)} · ${short(r.rate)}${unit} · ${Math.round(r.share * 100)}%`),
     track);
   line.style.setProperty("--class", r.color);
