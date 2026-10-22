@@ -5,6 +5,7 @@ import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
 import { castsSection } from "./dpsCasts";
+import { takenSection } from "./taken";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -20,6 +21,8 @@ let target: DpsTarget | null = null;
 let bars: DpsBars | null = null;
 /** The player whose skills show: you, or the top one, until another is clicked. */
 let who: number | null = null;
+/** Whose damage taken is shown, by player id. */
+let victim: number | null = null;
 
 const when = (ms: number) => new Date(ms).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const damageOf = (f: Fight) => f.players.reduce((n, p) => n + p.boss_damage + p.mob_damage, 0);
@@ -51,7 +54,7 @@ function renderList() {
     const b = el("button", { type: "button", className: f.id === picked ? "active" : "" },
       el("strong", {}, f.name),
       el("span", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${short(damageOf(f))} de dano`));
-    b.addEventListener("click", () => { picked = f.id; who = null; render(); });
+    b.addEventListener("click", () => { picked = f.id; who = null; victim = null; render(); });
     return el("li", {}, b);
   }) : [el("li", { className: "hint" }, "Nenhuma gravação ainda. Ligue o overlay de DPS em Configurações.")]));
 }
@@ -89,6 +92,7 @@ function renderDetail() {
     shown && b !== "heal" ? skillTable(f, shown, t, saved, renderDetail) : "",
     shown ? castsSection(f, shown, saved.profile, renderDetail) : "",
     timeline(f, f.players),
+    takenSection(f, t, victim, (id) => { victim = id; render(); }),
   );
 }
 

@@ -63,6 +63,13 @@ export interface FightPlayer {
   skills: SkillStat[];
   /** When each skill (by base id) was used, in ms from the start; absent in older recordings. */
   casts?: SkillCasts[];
+  /** What monsters did to this player, most damage first. */
+  taken: Taken[];
+}
+
+/** The damage a player took from one monster's skill; `npc` is 0 when its spawn was missed. */
+export interface Taken {
+  npc: number; boss: boolean; skill: number; damage: number; hits: number; max_hit: number;
 }
 
 /** Hits and their damage. */

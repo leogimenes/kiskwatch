@@ -24,6 +24,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Overlay de DPS: dano e cura por jogador, All/Mob/Boss, gravações no painel | 🧪 parser próprio, a validar no jogo |
 | DPS: uso das recargas por skill (usos feitos x possíveis, tempo pronta sem uso) | 🧪 a validar no jogo |
 | Atalhos globais: gravar/parar o DPS e ligar/desligar os cliques nos overlays | ✅ Ctrl+Alt+D e Ctrl+Alt+X, trocáveis em Configurações |
+| Dano recebido de cada monstro, skill a skill (golpes, maior golpe), nas gravações | 🧪 parser próprio, a validar no jogo |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona
@@ -56,7 +57,7 @@ O CI roda os testes a cada pull request (menos de um minuto). O instalador do Wi
 git clone --depth 1 https://github.com/taengu/A2Tools-Plugins ../A2Tools-Plugins
 npm run import-data -- ../A2Tools-Plugins
 
-# skills de DoT, skills de recurso e códigos dos chefes, para o DPS
+# skills de DoT, skills de recurso, códigos dos chefes e nomes dos monstros e das skills deles, para o DPS
 git clone --depth 1 https://github.com/taengu/A2Tools-DPS-Meter ../A2Tools-DPS-Meter
 node scripts/import-a2tools-combat.mjs ../A2Tools-DPS-Meter
 ```
