@@ -14,6 +14,7 @@
         <button data-tab="timers" class="active">Timers</button>
         <button data-tab="pets">Pets</button>
         <button data-tab="build">Build</button>
+        <button data-tab="group">Grupo</button>
         <button data-tab="dps">DPS</button>
         <button data-tab="config">Configurações</button>
       </nav>
@@ -114,6 +115,24 @@
           <ul id="char-hits" class="hits"></ul>
         </div>
         <div id="build"></div>
+      </section>
+
+      <section id="tab-group" class="tab">
+        <div class="group-layout">
+          <aside class="group-side">
+            <h3>Por perto</h3>
+            <div id="group-near"></div>
+            <h3>Buscar jogador</h3>
+            <form id="group-search" class="filters">
+              <input id="group-name" type="search" placeholder="Nome do personagem" aria-label="Nome do jogador" required />
+              <button type="submit">Buscar</button>
+            </form>
+            <p id="group-status" class="hint" aria-live="polite"></p>
+            <h3>Builds salvas</h3>
+            <div id="group-refs"></div>
+          </aside>
+          <div id="group-view"></div>
+        </div>
       </section>
 
       <section id="tab-dps" class="tab">

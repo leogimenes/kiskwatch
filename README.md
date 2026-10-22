@@ -21,6 +21,8 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Build: skills, stigmas e tabuleiros Daevanion do perfil oficial | ✅ |
 | Build: pontos possíveis, fontes e custo em cristais (dados da dbaion2.ru, baixados pelo app) | ✅ |
 | Build: Daevanion completo com ícones e detalhe das skills no clique | ✅ |
+| Grupo: jogadores vistos no jogo (grupo, quem luta perto), busca pelo nome e perfil oficial | ✅ |
+| Comparar build com outro jogador (equipamento, skills, Daevanion, atributos) e salvar builds como referência | ✅ |
 | Overlay de DPS: dano e cura por jogador, All/Mob/Boss, gravações no painel | 🧪 parser próprio, a validar no jogo |
 | DPS: uso das recargas por skill (usos feitos x possíveis, tempo pronta sem uso) | 🧪 a validar no jogo |
 | Atalhos globais: gravar/parar o DPS e ligar/desligar os cliques nos overlays | ✅ Ctrl+Alt+D e Ctrl+Alt+X, trocáveis em Configurações |

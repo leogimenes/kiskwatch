@@ -172,6 +172,17 @@ pub struct Saved {
     pub profile: Option<crate::profile::Profile>,
     /// The DPS tracker's recordings, newest first.
     pub fights: Vec<kiskwatch_core::dps::Fight>,
+    /// Builds kept to compare against, newest first.
+    pub references: Vec<Reference>,
+}
+
+/// A character's build as it was when saved, to compare against later.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Reference {
+    /// When it was saved, in ms, as text: unique among the saved ones.
+    pub id: String,
+    pub label: String,
+    pub profile: crate::profile::Profile,
 }
 
 /// A soul the game said the player picked up.
@@ -185,6 +196,10 @@ pub struct SoulSeen {
 pub const SOULS_KEPT: usize = 100;
 /// Recordings kept; the oldest go first.
 pub const FIGHTS_KEPT: usize = 200;
+/// Builds kept to compare against; the oldest go first.
+pub const REFERENCES_KEPT: usize = 50;
+/// The longest name a saved build takes.
+pub const LABEL_MAX: usize = 50;
 
 impl Saved {
     pub fn boss(&self, server: u32, boss: u32) -> Option<&BossOnMap> {

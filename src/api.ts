@@ -142,6 +142,15 @@ export interface ProfileInfo {
     serverName: string; titleName?: string; profileImage?: string;
   };
   daevanion?: { boardList?: { id: number; name: string; icon: string; open: number; openNodeCount: number; totalNodeCount: number }[] };
+  stat?: { statList?: ProfileStat[] };
+}
+
+export interface ProfileStat {
+  type: string; name: string; value: number; statSecondList?: string[] | null;
+}
+
+export interface ProfileItem {
+  id: number; name: string; grade: string; icon: string; enchantLevel: number; exceedLevel?: number; slotPos: number; slotPosName: string;
 }
 
 export interface ProfileSkill {
@@ -150,6 +159,21 @@ export interface ProfileSkill {
 
 export interface ProfileEquipment {
   skill?: { skillList?: ProfileSkill[] };
+  equipment?: { equipmentList?: ProfileItem[] };
+  petwing?: {
+    pet?: { id: number; name: string; level: number; icon: string } | null;
+    wing?: { id: number; name: string; grade: string; enchantLevel: number; icon: string } | null;
+  };
+}
+
+/** A player the game named around you. */
+export interface SeenPlayer {
+  name: string; class: ClassName | null; seen_ms: number; fighting: boolean;
+}
+
+/** A build kept to compare against. */
+export interface Reference {
+  id: string; label: string; profile: Profile;
 }
 
 export interface BoardNode {
@@ -174,6 +198,8 @@ export interface Saved {
   pet_queue: Record<string, { pets: number[]; last: number | null }>;
   /** DPS recordings, newest first. */
   fights: Fight[];
+  /** Saved builds, newest first. */
+  references: Reference[];
 }
 
 export interface TimerRow {
@@ -237,6 +263,14 @@ export const bossHistory = () => invoke<BossHistory[]>("boss_history");
 export const dpsCompare = (id: string) => invoke<Comparison | null>("dps_compare", { id });
 /** Save a recording's PNG to Pictures/Kiskwatch; returns where it went. */
 export const dpsSaveImage = async (name: string, png: Blob) => invoke<string>("dps_save_image", { name, png: Array.from(new Uint8Array(await png.arrayBuffer())) });
+export const nearbyPlayers = () => invoke<SeenPlayer[]>("nearby_players");
+/** A player by name anywhere in the region: exact names, your server first. */
+export const findPlayer = (name: string) => invoke<Hit[]>("find_player", { name });
+/** Someone's profile, not followed. */
+export const inspectProfile = (serverId: number, characterId: string) => invoke<Profile>("inspect_profile", { serverId, characterId });
+export const saveReference = (profile: Profile, label: string) => invoke<string>("save_reference", { profile, label });
+export const renameReference = (id: string, label: string) => invoke("rename_reference", { id, label });
+export const deleteReference = (id: string) => invoke("delete_reference", { id });
 export { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);

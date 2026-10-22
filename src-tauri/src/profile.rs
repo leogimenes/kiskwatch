@@ -110,6 +110,19 @@ pub async fn search(region: u32, server_id: u32, name: &str) -> Result<Vec<Hit>,
         .collect())
 }
 
+/// A player the game named, on any server of the region: exact names first,
+/// on your server first. Players from other servers meet in dungeons.
+pub async fn find(region: u32, my_server: u32, name: &str) -> Result<Vec<Hit>, String> {
+    Ok(rank(search(region, 0, name).await?, my_server, name))
+}
+
+fn rank(hits: Vec<Hit>, my_server: u32, name: &str) -> Vec<Hit> {
+    let exact: Vec<Hit> = hits.iter().filter(|h| h.name.to_lowercase() == name.to_lowercase()).cloned().collect();
+    let mut list = if exact.is_empty() { hits } else { exact };
+    list.sort_by_key(|h| h.server_id != my_server);
+    list
+}
+
 /// The board ids in an info response.
 fn board_ids(info: &Value) -> Vec<u32> {
     info.pointer("/daevanion/boardList")
@@ -167,6 +180,18 @@ mod tests {
     fn reads_board_ids() {
         let info = serde_json::json!({ "daevanion": { "boardList": [{ "id": 71 }, { "id": 72 }] } });
         assert_eq!(board_ids(&info), vec![71, 72]);
+    }
+
+    fn hit(name: &str, server_id: u32) -> Hit {
+        Hit { character_id: name.into(), name: name.into(), level: 45, server_id, server_name: String::new(), race: 1, pc_id: 0 }
+    }
+
+    #[test]
+    fn finds_the_exact_name_on_your_server_first() {
+        let hits = vec![hit("Amigos", 1406), hit("Amigo", 1401), hit("amigo", 1406)];
+        let found: Vec<_> = rank(hits, 1406, "Amigo").into_iter().map(|h| (h.name, h.server_id)).collect();
+        assert_eq!(found, [("amigo".to_string(), 1406), ("Amigo".to_string(), 1401)]);
+        assert_eq!(rank(vec![hit("Amigos", 1406)], 1406, "Amigo").len(), 1, "no exact name: every hit");
     }
 
     #[test]
