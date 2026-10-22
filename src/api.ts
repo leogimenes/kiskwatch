@@ -343,6 +343,29 @@ export const getChecklist = () => invoke<ChecklistView>("get_checklist");
 export const checklistMark = (character: string, task: string, count: number) => invoke("checklist_mark", { character, task, count });
 export const checklistEdit = (tasks: ChecklistTask[], characters: ChecklistCharacter[]) => invoke("checklist_edit", { tasks, characters });
 
+/** A newer release on GitHub (its latest.json). */
+export interface Release {
+  version: string;
+  tag: string;
+  published_at: string;
+  notes_url: string;
+  installer: { name: string; url: string; sha256: string; size: number | null };
+}
+
+export interface UpdateStatus {
+  current: string;
+  available: Release | null;
+  checked_ms: number;
+  error: string | null;
+  installing: boolean;
+}
+
+export const updateStatus = () => invoke<UpdateStatus>("update_status");
+export const updateCheck = () => invoke<UpdateStatus>("update_check");
+/** Downloads, checks the SHA-256 and runs the installer; the app quits. */
+export const updateInstall = () => invoke("update_install");
+export const onUpdateChanged = (f: () => void) => listen("update-changed", f);
+
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 /** Only this window's notes: the app sends each to one overlay. */

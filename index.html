@@ -24,6 +24,7 @@
         <button id="capture" class="capture-dot" aria-haspopup="dialog" aria-expanded="false" aria-controls="capture-pop" aria-label="Estado da captura"></button>
         <div id="capture-pop" class="popover" role="dialog" aria-label="Estado da captura" hidden></div>
       </div>
+      <button id="update-badge" class="update-badge" type="button" hidden></button>
       <label class="server">Servidor
         <select id="region"></select>
         <select id="server"></select>
@@ -161,7 +162,7 @@
 
       <section id="tab-config" class="tab">
         <h2>Overlays</h2>
-        <label class="row"><input id="timer-overlay" type="checkbox" /> Mostrar o overlay de timers</label>
+        <label class="row"><input id="timer-overlay" type="checkbox" /> Lembrar os timers com aviso no topo da janela do Aion 2</label>
         <div id="cfg-pets" class="cfg-group">
           <label class="row"><input id="pet-overlay" type="checkbox" /> Mostrar o overlay de pets</label>
         </div>
@@ -209,6 +210,16 @@
             <option value="120">2 minutos</option><option value="300">5 minutos</option>
           </select>
         </div>
+
+        <h2 id="update-title">Versão</h2>
+        <p id="update-text"></p>
+        <div class="row">
+          <button id="update-install" class="primary" type="button" hidden>Instalar e reiniciar</button>
+          <button id="update-check" type="button">Procurar atualização</button>
+          <a id="update-notes" href="" target="_blank" hidden>O que mudou</a>
+        </div>
+        <p class="hint">O Kiskwatch procura versões novas no GitHub a cada 6 horas. Antes de instalar, ele confere o SHA-256 do instalador baixado com o da release; se não bater, nada é instalado. Instalar fecha o Kiskwatch e abre de novo na versão nova, com as suas configurações e a posição das janelas.</p>
+        <p id="update-error" class="hk-error" role="alert" hidden></p>
 
         <h2>Créditos</h2>
         <p class="hint">Decodificação de pacotes e dados do jogo vêm do <a href="https://github.com/taengu/A2Tools-DPS-Meter" target="_blank">A2Tools</a> e dos <a href="https://github.com/taengu/A2Tools-Plugins" target="_blank">A2Tools Plugins</a> (GPL-3.0). Kiskwatch também é GPL-3.0.</p>
