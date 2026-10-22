@@ -131,6 +131,16 @@ h2 { font-size: 15px; margin: 20px 0 10px; }
 .skill-level { font-variant-numeric: tabular-nums; color: var(--gold); font-size: 12px; }
 .skill.equipped { border-color: var(--accent); }
 .skill.missing { opacity: 0.45; }
+.skill.elsewhere { border-style: dashed; }
+.skill.elsewhere .skill-level { color: var(--muted); }
+.presets { margin: 4px 0 8px; }
+.presets .link { padding: 0; font: inherit; border: 0; background: none; color: var(--accent); text-decoration: underline; cursor: pointer; }
+.preset-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.preset-tabs button { display: grid; gap: 1px; padding: 4px 14px; font: inherit; color: inherit; background: none; border: 0; border-right: 1px solid var(--line); cursor: pointer; text-align: left; }
+.preset-tabs button:last-child { border-right: 0; }
+.preset-tabs button small { color: var(--muted); font-size: 11px; }
+.preset-tabs button[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.preset-tabs button[aria-pressed="true"] small { color: inherit; opacity: 0.8; }
 .skill.missing .skill-level { color: var(--muted); }
 .boards { display: grid; gap: 6px; max-width: 720px; }
 .board-row { display: grid; grid-template-columns: 28px 120px 1fr auto; gap: 10px; align-items: center; text-align: left; }

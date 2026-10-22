@@ -11,6 +11,7 @@ pub mod effects;
 pub mod framing;
 pub mod history;
 pub mod pets;
+pub mod presets;
 pub mod schedule;
 pub mod stream;
 pub mod varint;
