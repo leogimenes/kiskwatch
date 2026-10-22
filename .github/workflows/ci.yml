@@ -3,10 +3,21 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+
+# A new push to a PR cancels the run still going for the old one; main and tags always finish.
+# Any other label gets a group of its own, so labeling a PR doesn't cancel its tests.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'build-windows' && format('-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
+    # A label other than build-windows changes nothing to test.
+    if: github.event.action != 'labeled' || github.event.label.name == 'build-windows'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,12 +31,19 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  # The full Tauri build takes most of the run, so PRs skip it unless labeled build-windows.
   windows:
+    if: >-
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'build-windows')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          # Only main keeps the cache, so PR builds don't push it out of the 10 GB quota.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
