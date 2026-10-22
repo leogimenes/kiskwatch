@@ -48,3 +48,7 @@ Não crie tags nem releases à mão.
 
 - Testes do núcleo: `cargo test -p kiskwatch-core`. Frontend: `npm run build` (inclui `tsc`).
 - O build do Windows não roda em PR, a não ser com o label `build-windows`. Na `main` ele roda no job `canary`.
+
+## Códigos sem nome
+
+Com a permissão do jogador, o app envia os códigos que não soube nomear (`src/shareReport.ts`, `src/share.ts`, `src-tauri/src/share.rs`) para o Worker em `worker/`, que abre issues com o label `codigos-desconhecidos`. `node scripts/codigos.mjs` junta essas issues e lista o que falta nomear em `data/`.

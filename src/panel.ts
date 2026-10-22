@@ -12,6 +12,7 @@ import { renderGroup } from "./group";
 import { renderChecklist } from "./checklist";
 import "./enchant";
 import "./update";
+import "./share";
 import { applyLook, chime } from "./look";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;

@@ -187,6 +187,8 @@ pub struct Saved {
     pub references: Vec<Reference>,
     /// The daily and weekly checklist, per character.
     pub checklist: kiskwatch_core::checklist::Checklist,
+    /// Whether to share the codes Kiskwatch couldn't name, and which went.
+    pub sharing: crate::share::Sharing,
     /// The DPS overlay was widened once to its new default width (see
     /// `widen_dps`), so a size picked after that stays.
     pub dps_widened: bool,

@@ -8,6 +8,7 @@ mod hotkeys;
 mod log;
 mod pcap;
 mod profile;
+mod share;
 mod state;
 mod updater;
 
@@ -276,7 +277,7 @@ fn place_reminder(app: &AppHandle) {
 /// How far below the top of the game's window the reminder sits, in pixels.
 const REMINDER_MARGIN: i32 = 12;
 
-fn save(app: &AppHandle, state: &App) {
+pub(crate) fn save(app: &AppHandle, state: &App) {
     let saved = state.saved.lock().unwrap();
     if let Err(e) = state::store(app, &saved) {
         log::line(&format!("não deu para salvar o estado: {e}"));
@@ -1080,7 +1081,7 @@ pub fn run() {
             log::line("pronto");
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, share::share_status, share::share_mode, share::share_send])
         .build(tauri::generate_context!());
     let app = match app {
         Ok(app) => app,
