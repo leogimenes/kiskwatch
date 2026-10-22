@@ -29,6 +29,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Atalhos globais: gravar/parar o DPS e ligar/desligar os cliques nos overlays | ✅ Ctrl+Alt+D e Ctrl+Alt+X, trocáveis em Configurações |
 | Dano recebido de cada monstro, skill a skill (golpes, maior golpe), nas gravações | 🧪 parser próprio, a validar no jogo |
 | Checklist diária e semanal por personagem, zerada sozinha nos resets | ✅ |
+| Calculadora de encantamento: tentativas, Kinah e pedras até o alvo, com sorte/azar e pior caso | ✅ chances oficiais (KR) e custos por nível do item |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona

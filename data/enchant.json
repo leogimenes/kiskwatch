@@ -1,0 +1,89 @@
+{
+  "about": "Encantamento (Enhance) do AION 2 Global. Chances e bônus por falha: dados do cliente Global, iguais à divulgação oficial de probabilidades da NCSoft para a Coreia (probability.plaync.com/aion2, 2026-09-30), conferidos em wikily.gg, metabot.gg, allthings.how e gamewith.ai. Custos: tabelas publicadas por nível de item; para outros níveis, custo = coeficiente do passo × nível do item, arredondado a 3 algarismos (bate com as tabelas em ±3%).",
+  "grades": {
+    "common": {
+      "label": "Comum",
+      "max": 5
+    },
+    "rare": {
+      "label": "Raro",
+      "max": 5
+    },
+    "epic": {
+      "label": "Épico",
+      "max": 10
+    },
+    "unique": {
+      "label": "Único",
+      "max": 15
+    }
+  },
+  "gear": {
+    "steps": [
+      { "chance": 1, "pity": 0, "kinah": 125.31, "stones": 5 },
+      { "chance": 1, "pity": 0, "kinah": 179.76, "stones": 7.176 },
+      { "chance": 1, "pity": 0, "kinah": 326.86, "stones": 13.049 },
+      { "chance": 1, "pity": 0, "kinah": 500, "stones": 20 },
+      { "chance": 1, "pity": 0, "kinah": 703.78, "stones": 28.034 },
+      { "chance": 1, "pity": 0, "kinah": 923.16, "stones": 36.805 },
+      { "chance": 1, "pity": 0, "kinah": 1166.97, "stones": 46.391 },
+      { "chance": 1, "pity": 0, "kinah": 1421.45, "stones": 56.605 },
+      { "chance": 1, "pity": 0, "kinah": 1695.65, "stones": 67.562 },
+      { "chance": 1, "pity": 0, "kinah": 1982.15, "stones": 79.133 },
+      { "chance": 0.65, "pity": 0.05, "kinah": 3527.61, "stones": 91.307 },
+      { "chance": 0.5, "pity": 0.05, "kinah": 5270.99, "stones": 104.03 },
+      { "chance": 0.35, "pity": 0.05, "kinah": 8421.97, "stones": 117.242 },
+      { "chance": 0.25, "pity": 0.05, "kinah": 13166.2, "stones": 130.996 },
+      { "chance": 0.2, "pity": 0.05, "kinah": 18238.03, "stones": 145.311 }
+    ],
+    "known": {
+      "1": {
+        "kinah": [125, 250, 500, 500, 750],
+        "stones": [5, 10, 20, 20, 30]
+      },
+      "20": {
+        "kinah": [2500, 3750, 6500, 10000, 14000],
+        "stones": [100, 150, 260, 400, 560]
+      },
+      "23": {
+        "kinah": [2880, 4250, 7500, 11500, 16300, 21300, 26800, 33000, 39000, 46000],
+        "stones": [115, 170, 300, 460, 650, 850, 1070, 1310, 1560, 1820]
+      },
+      "35": {
+        "kinah": [4380, 6300, 11500, 17500, 24500],
+        "stones": [175, 250, 460, 700, 980]
+      },
+      "36": {
+        "kinah": [4500, 6500, 11800, 18000, 25300, 33300, 42000, 51000, 61000, 72000, 127000, 188000, 302000, 480000, 660000],
+        "stones": [180, 260, 470, 720, 1010, 1330, 1670, 2040, 2430, 2850, 3290, 3750, 4220, 4720, 5230]
+      },
+      "45": {
+        "kinah": [5630, 8000, 14800, 22500, 31500, 42000, 53000, 64000, 76000, 89000],
+        "stones": [225, 320, 590, 900, 1260, 1660, 2090, 2550, 3040, 3560]
+      },
+      "50": {
+        "kinah": [6250, 9000, 16300, 25000, 35000, 46000, 58000, 71000, 85000, 99000, 176000, 260000, 420000, 660000, 910000],
+        "stones": [250, 360, 650, 1000, 1400, 1840, 2320, 2830, 3380, 3960, 4570, 5200, 5860, 6550, 7270]
+      },
+      "102": {
+        "kinah": [12800, 18300, 33300, 51000, 72000, 94000, 119000, 145000, 173000, 202000, 360000, 540000, 860000, 1340000, 1860000],
+        "stones": [510, 730, 1330, 2040, 2860, 3750, 4730, 5770, 6890, 8070, 9310, 10610, 11960, 13360, 14820]
+      }
+    }
+  },
+  "amplify": {
+    "about": "Acima do +15, em equipamento Único Splendent. Usa Amplify Stone (Unique). Limite pelo nível do item: 54 → +1, 70 → +3, 86 → +5.",
+    "caps": [
+      [54, 1],
+      [70, 3],
+      [86, 5]
+    ],
+    "steps": [
+      { "chance": 0.66, "pity": 0.05, "kinah": 600000, "stones": 6 },
+      { "chance": 0.5, "pity": 0.04, "kinah": 900000, "stones": 9 },
+      { "chance": 0.33, "pity": 0.03, "kinah": 1400000, "stones": 12 },
+      { "chance": 0.25, "pity": 0.02, "kinah": 2000000, "stones": 15 },
+      { "chance": 0.2, "pity": 0.01, "kinah": 3000000, "stones": 20 }
+    ]
+  }
+}
