@@ -1,6 +1,6 @@
 # Kiskwatch
 
-Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e field bosses com avisos no overlay, coleção de pets com as almas que faltam e onde farmar, e (em breve) build e sugestões por IA.
+Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e field bosses com avisos no topo da janela do jogo, coleção de pets com as almas que faltam e onde farmar, e (em breve) build e sugestões por IA.
 
 > Projeto de fã, sem afiliação com a NCSoft. GPL-3.0.
 
@@ -9,7 +9,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Parte | Estado |
 |---|---|
 | Agenda de eventos, resets e bosses agendados | ✅ com contagem regressiva no fuso da região |
-| Avisos no overlay (1h, 30, 15, 10, 5, 2, 1 min) | ✅ com som |
+| Avisos no topo da janela do jogo (1h, 30, 15, 10, 5, 2, 1 min), só enquanto tocam | ✅ com som |
 | Field bosses pelo mapa do jogo (`01 91`) | ✅ ao abrir o mapa no jogo |
 | Pets: nível, almas, quanto falta, filtros, ordenação | ✅ com edição manual |
 | Pets: leitura automática (`00 90`, `0D 90`, `14 90`) | ✅ no login e a cada alma coletada |
@@ -35,7 +35,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 ## Como funciona
 
 - `crates/core`: o núcleo sem janela nem rede. Acha a conexão do jogo entre tudo que foi capturado (`dispatch.rs`), separa os pacotes do fluxo TCP do jogo, abre os bundles LZ4, decodifica os registros de bosses, pets e combate (`combat.rs`, somado por jogador em `dps.rs`), e calcula a agenda e os avisos. Testável em qualquer sistema: `cargo test -p kiskwatch-core`.
-- `src-tauri`: o app (Tauri 2). `pcap.rs` captura o tráfego via Npcap/libpcap. Quatro janelas: o painel e três overlays transparentes (timers, pets e DPS), sempre no topo, que podem deixar os cliques passarem para o jogo. Guarda o estado em `state.json` na pasta de dados do app.
+- `src-tauri`: o app (Tauri 2). `pcap.rs` captura o tráfego via Npcap/libpcap. Quatro janelas: o painel, dois overlays transparentes (pets e DPS), sempre no topo, que podem deixar os cliques passarem para o jogo, e o lembrete dos timers, que só aparece no topo da janela do jogo quando um aviso toca. Guarda o estado em `state.json` na pasta de dados do app.
 - `src`: as telas (TypeScript + Vite).
 - `data`: dados do jogo (pets, drops, spawns, Kibelisks, agenda, servidores), gerados de A2Tools-Plugins.
 

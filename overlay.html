@@ -2,15 +2,11 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <title>Kiskwatch overlay</title>
+    <title>Kiskwatch lembrete</title>
     <link rel="stylesheet" href="/src/overlay.css" />
   </head>
   <body>
-    <div id="frame">
-      <div class="bar" data-tauri-drag-region>Kiskwatch</div>
-      <div id="alerts"></div>
-      <ul id="next"></ul>
-    </div>
+    <div id="alerts" role="status"></div>
     <script type="module" src="/src/overlay.ts"></script>
   </body>
 </html>
