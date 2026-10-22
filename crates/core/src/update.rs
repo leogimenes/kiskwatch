@@ -1,7 +1,8 @@
 //! Updates: which release is newer than the one running, and whether a
 //! downloaded installer is the one the release published. The app fetches
 //! `latest.json` from the latest GitHub Release, the release workflow writes
-//! it next to the installer and SHA256SUMS.txt.
+//! it next to the installer and SHA256SUMS.txt. On the canary channel it also
+//! fetches the one of the newest canary build ("0.2.3-canary.42.abc1234").
 
 use std::cmp::Ordering;
 
@@ -103,6 +104,20 @@ pub fn newer(current: &str, latest: Latest) -> Option<Latest> {
     (Version::parse(&latest.version)? > now).then_some(latest)
 }
 
+/// The newest of the releases found (the stable one and, on the canary
+/// channel, the newest canary), if it's newer than `current`.
+pub fn newest(current: &str, found: impl IntoIterator<Item = Latest>) -> Option<Latest> {
+    found
+        .into_iter()
+        .filter_map(|l| newer(current, l))
+        .max_by(|a, b| Version::parse(&a.version).cmp(&Version::parse(&b.version)))
+}
+
+/// A build the canary workflow made, not an official release.
+pub fn is_canary(version: &str) -> bool {
+    Version::parse(version).is_some_and(|v| v.pre.first().is_some_and(|p| p == "canary"))
+}
+
 pub fn sha256_hex(bytes: &[u8]) -> String {
     Sha256::digest(bytes).iter().map(|b| format!("{b:02x}")).collect()
 }
@@ -171,6 +186,28 @@ mod tests {
         assert!(newer("0.1.0", latest("0.1.0")).is_none());
         assert!(newer("0.2.0", latest("0.1.9")).is_none());
         assert!(newer("0.1.0", latest("nope")).is_none());
+    }
+
+    #[test]
+    fn canaries_between_releases() {
+        // A canary is the next patch's pre-release: newer than the release it
+        // came after, older than the next official one, in the order they ran.
+        let list = ["0.2.2", "0.2.3-canary.9.fff0000", "0.2.3-canary.10.abc1234", "0.2.3", "0.3.0-canary.11.g012345", "0.3.0"];
+        for pair in list.windows(2) {
+            assert!(v(pair[0]) < v(pair[1]), "{} < {}", pair[0], pair[1]);
+        }
+        assert!(is_canary("0.2.3-canary.10.abc1234"));
+        assert!(!is_canary("0.2.3") && !is_canary("1.0.0-beta.1"));
+    }
+
+    #[test]
+    fn newest_of_both_channels() {
+        let both = || [latest("0.2.2"), latest("0.2.3-canary.10.abc1234")];
+        assert_eq!(newest("0.2.1", both()).unwrap().version, "0.2.3-canary.10.abc1234");
+        assert_eq!(newest("0.2.3-canary.10.abc1234", both()), None);
+        // Back on the stable channel, a canary waits for the next release.
+        assert_eq!(newest("0.2.3-canary.10.abc1234", [latest("0.2.2")]), None);
+        assert_eq!(newest("0.2.3-canary.10.abc1234", [latest("0.2.3")]).unwrap().version, "0.2.3");
     }
 
     #[test]

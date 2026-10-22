@@ -32,6 +32,8 @@ export interface Settings {
   a11y: Accessibility;
   dps: DpsSettings;
   hotkeys: Hotkeys;
+  /** "stable", "canary", or empty to follow the build running. */
+  update_channel: "" | "stable" | "canary";
 }
 
 /** Global keyboard shortcuts, as "Ctrl+Alt+D"; empty is off. */
@@ -354,6 +356,8 @@ export interface Release {
 
 export interface UpdateStatus {
   current: string;
+  /** The channel in use: the settings' pick, or the build running's. */
+  channel: "stable" | "canary";
   available: Release | null;
   checked_ms: number;
   error: string | null;
