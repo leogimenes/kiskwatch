@@ -9,6 +9,7 @@ import { Stop, leg, plan, totals } from "./route";
 import { renderBuild } from "./build";
 import { renderDps } from "./dpsPanel";
 import { renderGroup } from "./group";
+import { renderChecklist } from "./checklist";
 import { applyLook, chime } from "./look";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -754,6 +755,7 @@ async function refresh() {
   renderBuild(saved);
   renderDps(saved);
   renderGroup(saved);
+  renderChecklist();
   renderCapture();
 }
 

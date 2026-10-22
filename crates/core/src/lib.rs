@@ -3,6 +3,7 @@
 
 pub mod boss_map;
 pub mod casts;
+pub mod checklist;
 pub mod combat;
 pub mod dispatch;
 pub mod dps;

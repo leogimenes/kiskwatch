@@ -174,6 +174,8 @@ pub struct Saved {
     pub fights: Vec<kiskwatch_core::dps::Fight>,
     /// Builds kept to compare against, newest first.
     pub references: Vec<Reference>,
+    /// The daily and weekly checklist, per character.
+    pub checklist: kiskwatch_core::checklist::Checklist,
 }
 
 /// A character's build as it was when saved, to compare against later.
