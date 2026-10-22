@@ -13,6 +13,7 @@ import { renderChecklist } from "./checklist";
 import "./enchant";
 import "./update";
 import { applyLook, chime } from "./look";
+import { initTour, tourSettings, tourTab } from "./tour";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -51,8 +52,12 @@ document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((b) =>
     document.querySelectorAll(".tabs button, .tab").forEach((x) => x.classList.remove("active"));
     b.classList.add("active");
     $(`#tab-${b.dataset.tab}`).classList.add("active");
+    tourTab(b.dataset.tab!);
   }),
 );
+
+// The guided tour keeps what was seen in the settings.
+initTour((change) => update((s) => change(s.onboarding)));
 
 // An overlay's gear: the settings tab, on that overlay's options, lit up for a moment.
 onOpenSettings((overlay) => {
@@ -781,6 +786,7 @@ async function refresh() {
   renderGroup(saved);
   renderChecklist();
   renderCapture();
+  tourSettings(saved.settings.onboarding);
 }
 
 onStateChanged(refresh);
