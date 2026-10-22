@@ -46,7 +46,11 @@ export type ClassName = "Gladiator" | "Templar" | "Assassin" | "Ranger" | "Sorce
 
 export interface FightPlayer {
   id: number; name: string; class: ClassName | null; local: boolean; boss_damage: number; mob_damage: number; heal: number;
+  /** When each skill (by base id) was used, in ms from the start; absent in older recordings. */
+  casts?: SkillCasts[];
 }
+
+export interface SkillCasts { skill: number; at: number[] }
 
 /** A DPS recording, live or saved. */
 export interface Fight {

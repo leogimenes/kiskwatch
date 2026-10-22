@@ -2,6 +2,7 @@
 // at by target and kind of bar, rename or delete.
 import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsStart, dpsStop, onDpsChanged } from "./api";
 import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
+import { castsSection } from "./dpsCasts";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -73,6 +74,7 @@ function renderDetail() {
       chips(BARS, b, (v) => { bars = v; render(); })),
     list.length ? el("ol", { className: "dps-rows" }, ...list.map((r) => rowLine(r, b, top)))
       : el("p", { className: "hint" }, "Nada para este alvo."),
+    castsSection(f, saved.profile, renderDetail),
   );
 }
 

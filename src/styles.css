@@ -207,3 +207,16 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .dps-fill.damage { background: var(--class); }
 .dps-fill.heal { background: repeating-linear-gradient(135deg, #7ee07e 0 4px, #4fb34f 4px 8px); }
 @media (max-width: 800px) { .dps-layout { grid-template-columns: 1fr; } }
+
+.casts-box { margin-top: 20px; }
+.casts-box h3 { margin: 0 0 8px; }
+.casts-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+.casts { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.casts th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.casts td { padding: 3px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.casts tr.unmeasured { opacity: 0.6; }
+.casts-skill { display: flex; align-items: center; gap: 8px; white-space: normal; }
+.casts-skill img, .casts-skill .noicon { width: 24px; height: 24px; border-radius: 4px; background: var(--bg); flex: none; }
+.casts-share { display: inline-flex; align-items: center; gap: 6px; }
+.casts-bar { display: inline-block; width: 60px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.casts-bar > span { display: block; height: 100%; background: var(--accent); }

@@ -11,6 +11,7 @@ use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
+use crate::casts::{Casts, SkillCasts};
 use crate::combat::{Class, CombatEvent};
 
 /// An automatic recording ends after this long without new damage.
@@ -41,6 +42,8 @@ pub struct FightPlayer {
     pub boss_damage: i64,
     pub mob_damage: i64,
     pub heal: i64,
+    /// When each skill was used, to set against its cooldown.
+    pub casts: Vec<SkillCasts>,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +55,7 @@ struct Recording {
     /// By (target, actor as the game names it).
     damage: HashMap<(i32, i32), i64>,
     heal: HashMap<i32, i64>,
+    casts: Casts,
 }
 
 /// Who everyone is, from what the game said so far, and the recording.
@@ -125,7 +129,7 @@ impl Meter {
                 self.npcs.insert(id);
                 self.owners.insert(id, owner);
             }
-            CombatEvent::Hit { actor, target, skill, value, .. } => {
+            CombatEvent::Hit { actor, target, skill, value, dot } => {
                 if let Some(c) = Class::of_skill(skill).filter(|_| !self.npcs.contains(&actor)) {
                     self.classes.insert(actor, c);
                 }
@@ -137,6 +141,7 @@ impl Meter {
                 if self.is_player(self.owner(target)) {
                     if let Some(rec) = &mut self.rec {
                         *rec.heal.entry(actor).or_default() += value;
+                        rec.casts.hit(actor, skill, dot, now, rec.started_ms);
                     }
                     return false;
                 }
@@ -147,6 +152,7 @@ impl Meter {
                 }
                 if let Some(rec) = &mut self.rec {
                     *rec.damage.entry((target, actor)).or_default() += value;
+                    rec.casts.hit(actor, skill, dot, now, rec.started_ms);
                     rec.last_gain_ms = now;
                 }
             }
@@ -172,7 +178,7 @@ impl Meter {
     }
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
-        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), heal: HashMap::new() });
+        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), heal: HashMap::new(), casts: Casts::default() });
     }
 
     /// Start recording by hand.
@@ -232,6 +238,9 @@ impl Meter {
             }
         }
         let mut players: Vec<FightPlayer> = players.into_values().collect();
+        for p in &mut players {
+            p.casts = rec.casts.of(p.id);
+        }
         players.sort_by_key(|p| (std::cmp::Reverse(p.boss_damage + p.mob_damage), std::cmp::Reverse(p.heal), p.id));
         Some(Fight { id: rec.started_ms.to_string(), name: rec.name.clone(), started_ms: rec.started_ms, ended_ms: now, players })
     }
@@ -339,6 +348,26 @@ mod tests {
         m.apply(hit(ME, MOB, CLERIC, 10), 1_000, false, named);
         assert_eq!(m.tick(10 * IDLE_END_MS), None);
         assert!(m.recording());
+    }
+
+    #[test]
+    fn skill_uses_are_kept_per_player() {
+        let mut m = meter();
+        m.start("x".into(), 1_000);
+        for (e, now) in [
+            (hit(ME, MOB, CLERIC, 10), 1_000),
+            (hit(ME, BOSS, CLERIC, 10), 1_000),
+            // A heal on a mate is a use too.
+            (hit(ME, MATE, CLERIC, 10), 9_000),
+            (CombatEvent::Hit { actor: ME, target: MOB, skill: 17_030_000, value: 5, dot: true }, 9_000),
+            (hit(MATE, BOSS, GLADIATOR, 10), 2_000),
+        ] {
+            m.apply(e, now, false, named);
+        }
+        let f = m.current(10_000).unwrap();
+        let me = f.players.iter().find(|p| p.id == ME).unwrap();
+        assert_eq!(me.casts, vec![SkillCasts { skill: CLERIC, at: vec![0, 8_000] }]);
+        assert_eq!(f.players.iter().find(|p| p.id == MATE).unwrap().casts[0].at, vec![1_000]);
     }
 
     #[test]
