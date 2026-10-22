@@ -5,5 +5,6 @@
 :root.contrast { --overlay-alpha: 0.95; --o-text: #fff; --o-muted: #dfe5ee; --o-edge: #fff; }
 #frame { margin: 4px; border-radius: 8px; background: rgba(12, 17, 26, var(--overlay-alpha)); color: var(--o-text); border: 1px solid var(--o-edge); }
 .bar { padding: 4px 8px; font-size: 11px; color: #78c8ff; cursor: move; user-select: none; }
-.toast { position: fixed; left: 8px; right: 8px; bottom: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(12, 17, 26, 0.92); color: var(--o-text); border: 1px solid var(--o-edge); font-weight: 600; text-align: center; animation: pop 0.2s ease-out; pointer-events: none; }
+.toast { position: fixed; left: 8px; right: 8px; bottom: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(12, 17, 26, 0.92); color: var(--o-text); border: 1px solid var(--o-edge); font-weight: 600; text-align: center; animation: toast-pop 0.2s ease-out; pointer-events: none; }
+@keyframes toast-pop { from { transform: scale(0.9); opacity: 0; } }
 :root.calm .toast { animation: none; }
