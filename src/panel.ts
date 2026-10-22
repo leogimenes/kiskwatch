@@ -1,7 +1,7 @@
 // The panel: timers with their alarms, the pet collection and its map, settings.
 import {
-  ALARM_LEADS, Accessibility, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getSaved, getSouls, getTimers,
-  onStateChanged, openUrl, setAlarm, setClickThrough, setPet, setSettings,
+  ALARM_LEADS, Accessibility, Hotkeys, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getSaved, getSouls, getTimers,
+  hotkeysStatus, onStateChanged, openUrl, pauseHotkeys, setAlarm, setClickThrough, setHotkeys, setPet, setSettings,
 } from "./api";
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming } from "./farm";
@@ -640,6 +640,86 @@ for (const [id, key, kind] of A11Y) {
 $("#a-font").addEventListener("input", (e) => { $("output[for='a-font']").textContent = `${(e.target as HTMLInputElement).value}%`; });
 $("#a-test").addEventListener("click", () => saved && chime(saved.settings.a11y));
 
+// ---- Shortcuts ----
+const hotkeyButtons = [...document.querySelectorAll<HTMLButtonElement>(".hotkey")];
+const hotkeyError = $("#hk-error");
+let listening: HTMLButtonElement | null = null;
+
+/** A key press as a shortcut ("Ctrl+Alt+D"), or null for a modifier alone. */
+function comboOf(e: KeyboardEvent): string | null {
+  const code = e.code;
+  let key: string | null = null;
+  if (/^Key[A-Z]$/.test(code)) key = code.slice(3);
+  else if (/^Digit\d$/.test(code)) key = code.slice(5);
+  else if (/^(F\d{1,2}|Numpad\d)$/.test(code)) key = code;
+  else if (["Insert", "Home", "End", "PageUp", "PageDown", "Pause", "ScrollLock"].includes(code)) key = code;
+  if (!key) return null;
+  const mods = [e.ctrlKey && "Ctrl", e.altKey && "Alt", e.shiftKey && "Shift"].filter(Boolean);
+  return [...mods, key].join("+");
+}
+
+function hotkeyText(combo: string) {
+  return combo ? combo.split("+").join(" + ") : "desligado";
+}
+
+function renderHotkeys(keys: Hotkeys) {
+  for (const b of hotkeyButtons) {
+    if (b === listening) continue;
+    const combo = keys[b.dataset.hotkey as keyof Hotkeys];
+    b.textContent = hotkeyText(combo);
+    b.classList.toggle("off", !combo);
+  }
+}
+
+function showHotkeyError(text: string | null) {
+  hotkeyError.hidden = !text;
+  hotkeyError.textContent = text ?? "";
+}
+
+function stopListening() {
+  if (!listening) return;
+  listening.classList.remove("listening");
+  listening = null;
+  pauseHotkeys(false).catch(() => {});
+  if (saved) renderHotkeys(saved.settings.hotkeys);
+}
+
+async function pickHotkey(b: HTMLButtonElement, combo: string) {
+  if (!saved) return;
+  const keys = { ...saved.settings.hotkeys, [b.dataset.hotkey as keyof Hotkeys]: combo };
+  listening = null;
+  b.classList.remove("listening");
+  try {
+    await setHotkeys(keys);
+    saved.settings.hotkeys = keys;
+    showHotkeyError(null);
+  } catch (e) {
+    showHotkeyError(String(e));
+  }
+  renderHotkeys(saved.settings.hotkeys);
+}
+
+for (const b of hotkeyButtons) {
+  b.addEventListener("click", () => {
+    if (listening === b) return;
+    stopListening();
+    listening = b;
+    b.classList.add("listening");
+    b.textContent = "aperte o atalho…";
+    // So pressing the current shortcut here records it instead of running it.
+    pauseHotkeys(true).catch(() => {});
+  });
+  b.addEventListener("keydown", (e) => {
+    if (listening !== b) return;
+    e.preventDefault();
+    if (e.key === "Escape") return stopListening();
+    if (e.key === "Backspace" || e.key === "Delete") return void pickHotkey(b, "");
+    const combo = comboOf(e);
+    if (combo) pickHotkey(b, combo);
+  });
+  b.addEventListener("blur", () => { if (listening === b) stopListening(); });
+}
+
 function renderConfig(s: Settings) {
   clickThrough.checked = s.click_through;
   check("#timer-overlay").checked = s.timer_overlay;
@@ -647,6 +727,7 @@ function renderConfig(s: Settings) {
   check("#overlays-with-game").checked = s.overlays_with_game;
   check("#dps-overlay").checked = s.dps.overlay;
   $<HTMLSelectElement>("#dps-start").value = s.dps.start;
+  renderHotkeys(s.hotkeys);
   for (const [id, key, kind] of A11Y) {
     const input = $<HTMLInputElement>(id);
     const v = s.a11y[key];
@@ -666,6 +747,7 @@ async function refresh() {
   regionSel.value = String(server?.region ?? 4);
   fillServers(Number(regionSel.value), saved.settings.server_id);
   renderConfig(saved.settings);
+  if (!listening) showHotkeyError(await hotkeysStatus());
   renderTimers();
   renderPets();
   renderBuild(saved);

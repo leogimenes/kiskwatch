@@ -3,6 +3,7 @@
 import { Saved, SoulSeen, getSaved, getSouls, onStateChanged } from "./api";
 import { GENUS, GENUS_MARK, PET_BY_ID, Pet, SOULS_PER_LEVEL, levelProgress, name, soulsToMax, t } from "./data";
 import { FARMING_MS, nextOnRoute, nextPet } from "./farm";
+import "./toast";
 import { applyLook } from "./look";
 
 let saved: Saved | null = null;
