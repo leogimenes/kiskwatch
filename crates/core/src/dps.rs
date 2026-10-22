@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::casts::{Casts, SkillCasts};
 use crate::combat::{Class, CombatEvent, base_skill};
+use crate::effects::{EffectRecord, Effects, Uptime};
 
 /// An automatic recording ends after this long without new damage.
 pub const IDLE_END_MS: i64 = 30_000;
@@ -39,6 +40,7 @@ pub struct Fight {
     pub players: Vec<FightPlayer>,
     /// Each boss hit, most damaged first: what the boss history goes by.
     pub bosses: Vec<FightBoss>,
+    pub effects: FightEffects,
 }
 
 /// A boss in a recording (every one with the same NPC code counts as one).
@@ -63,6 +65,17 @@ pub struct SkillDamage {
     pub skill: i32,
     pub damage: i64,
     pub hits: u32,
+}
+
+/// The buffs and debuffs over a recording: on each player, and on the
+/// enemy that took the most damage.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct FightEffects {
+    pub target: Option<i32>,
+    pub target_boss: bool,
+    /// Casters are their summons' owners.
+    pub list: Vec<Uptime>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -215,6 +228,7 @@ pub struct Meter {
     codes: HashMap<i32, i32>,
     /// Boss entity → its NPC code.
     bosses: HashMap<i32, i32>,
+    effects: Effects,
     rec: Option<Recording>,
 }
 
@@ -347,8 +361,14 @@ impl Meter {
         started
     }
 
+    /// A buff or debuff going on or off.
+    pub fn apply_effect(&mut self, record: EffectRecord, now: i64) {
+        self.effects.apply(record, now);
+    }
+
     /// An automatic recording that ended: none for a while without damage.
     pub fn tick(&mut self, now: i64) -> Option<Fight> {
+        self.effects.expire(now);
         let rec = self.rec.as_ref()?;
         if rec.auto && now - rec.last_gain_ms >= IDLE_END_MS {
             let end = rec.last_gain_ms;
@@ -358,6 +378,7 @@ impl Meter {
     }
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
+        self.effects.start(now);
         self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new(), taken: HashMap::new(), bosses: HashMap::new() });
     }
 
@@ -376,6 +397,7 @@ impl Meter {
     fn finish(&mut self, end: i64) -> Option<Fight> {
         let fight = self.current(end)?;
         self.rec = None;
+        self.effects.stop();
         Some(fight).filter(|f| f.players.iter().any(|p| p.boss_damage + p.mob_damage + p.heal > 0))
     }
 
@@ -472,7 +494,21 @@ impl Meter {
             })
             .collect();
         bosses.sort_by_key(|b| (std::cmp::Reverse(b.damage), b.code));
-        Some(Fight { id: rec.started_ms.to_string(), name: rec.name.clone(), started_ms: rec.started_ms, ended_ms: now, players, bosses })
+        let effects = self.fight_effects(rec, &players, now);
+        Some(Fight { id: rec.started_ms.to_string(), name: rec.name.clone(), started_ms: rec.started_ms, ended_ms: now, players, bosses, effects })
+    }
+
+    fn fight_effects(&self, rec: &Recording, players: &[FightPlayer], now: i64) -> FightEffects {
+        let mut taken: HashMap<i32, i64> = HashMap::new();
+        for (&(target, _), &n) in &rec.damage {
+            *taken.entry(target).or_default() += n;
+        }
+        let target = taken.into_iter().max_by_key(|&(id, n)| (n, std::cmp::Reverse(id))).map(|(id, _)| id);
+        let mut list = self.effects.uptimes(now, |id| Some(id) == target || players.iter().any(|p| p.id == id));
+        for u in &mut list {
+            u.caster = self.owner(u.caster);
+        }
+        FightEffects { target, target_boss: target.is_some_and(|t| self.bosses.contains_key(&t)), list }
     }
 }
 
@@ -689,6 +725,28 @@ mod tests {
         m.apply(hit(555, MOB, 16_990_001, 60), 0, false, named);
         let f = m.current(1_000).unwrap();
         assert_eq!(f.players[0].skills, vec![SkillStat { skill: 16_990_000, dot: false, mob: Tally { damage: 150, hits: 2, crits: 0, max_hit: 90 }, ..Default::default() }]);
+    }
+
+    #[test]
+        fn buffs_on_players_and_debuffs_on_the_main_target() {
+        use crate::effects::Applied;
+        let on = |entity, abnormal, caster| EffectRecord::Applied(Applied { entity, instance: 1, abnormal, length_ms: 60_000, end_ms: 60_000, caster, skill: None, fresh: true, new: true });
+        let mut m = meter();
+        m.apply_effect(on(ME, 1, ME), 0);
+        m.start("x".into(), 1_000);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 1_000, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, false, named);
+        m.apply(hit(MATE, BOSS, GLADIATOR, 500), 1_000, false, named);
+        m.apply_effect(on(BOSS, 2, 555), 2_000);
+        m.apply_effect(on(MOB, 3, ME), 2_000);
+        let f = m.stop(5_000).unwrap();
+        assert_eq!((f.effects.target, f.effects.target_boss), (Some(BOSS), true));
+        let got: Vec<_> = f.effects.list.iter().map(|u| (u.entity, u.abnormal, u.caster, u.uptime_ms)).collect();
+        assert_eq!(got, vec![(ME, 1, ME, 4_000), (BOSS, 2, ME, 3_000)]);
+        m.start("y".into(), 6_000);
+        m.apply(hit(ME, MOB, CLERIC, 10), 6_000, false, named);
+        let got: Vec<_> = m.current(7_000).unwrap().effects.list.iter().map(|u| (u.entity, u.abnormal, u.uptime_ms)).collect();
+        assert_eq!(got, vec![(ME, 1, 1_000), (MOB, 3, 1_000)], "a new recording counts from its start");
     }
 
     #[test]

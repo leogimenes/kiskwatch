@@ -81,11 +81,23 @@ export interface SkillStat { skill: number; dot: boolean; boss: Tally; mob: Tall
 
 export interface SkillCasts { skill: number; at: number[] }
 
+/** How long one buff or debuff stayed on one entity over a recording. */
+export interface Uptime {
+  entity: number; abnormal: number; skill: number | null; caster: number; uptime_ms: number; applied: number; stacks: number;
+}
+
+/** The buffs and debuffs on each player, and on the enemy that took the most damage. */
+export interface FightEffects {
+  target: number | null; target_boss: boolean; list: Uptime[];
+}
+
 /** A DPS recording, live or saved. */
 export interface Fight {
   id: string; name: string; started_ms: number; ended_ms: number; players: FightPlayer[];
   /** Each boss hit, most damaged first (none in recordings from before). */
   bosses?: FightBoss[];
+  /** Missing from recordings made before buffs were read. */
+  effects?: FightEffects;
 }
 
 export interface SkillDamage { skill: number; damage: number; hits: number }

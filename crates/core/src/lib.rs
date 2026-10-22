@@ -6,6 +6,7 @@ pub mod casts;
 pub mod combat;
 pub mod dispatch;
 pub mod dps;
+pub mod effects;
 pub mod framing;
 pub mod history;
 pub mod pets;

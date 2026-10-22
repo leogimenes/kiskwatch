@@ -248,3 +248,17 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .taken-table tr.boss .taken-skill { font-weight: 600; }
 .taken-skill { position: relative; }
 .taken-bar { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 2px; background: #e06060; }
+
+.fx { margin-top: 18px; max-width: 720px; }
+.fx h3 { margin: 0 0 8px; }
+.fx h4 { margin: 10px 0 4px; font-size: 0.95em; }
+.fx-group.debuff h4 { color: #ff9a7a; }
+.fx-rows { list-style: none; margin: 0; padding: 0; }
+.fx-row { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 2px 8px; margin: 3px 0; padding: 4px 8px 6px; border-radius: 6px; background: color-mix(in srgb, var(--line) 40%, transparent); }
+.fx-icon { width: 24px; height: 24px; border-radius: 4px; object-fit: contain; }
+.fx-icon.none { width: 10px; height: 10px; margin: 7px; border-radius: 50%; background: #8d99ab; }
+.fx-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fx-track { grid-column: 2 / -1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.fx-fill { display: block; height: 100%; background: var(--accent); }
+.fx-group.debuff .fx-fill { background: #ff9a7a; }

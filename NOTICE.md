@@ -12,6 +12,8 @@ Kiskwatch é distribuído sob a GPL-3.0 (veja `LICENSE`) porque reaproveita cód
   - `crates/core/src/combat.rs`: leitura própria de dano, cura, jogadores, invocações e NPCs, seguindo os formatos de registro (`04 38`, `05 38`, `33 36`, `45 36`, `41 36`) documentados no `stream_processor.rs`.
   - `data/combat.json`: gerado por `scripts/import-a2tools-combat.mjs` a partir de `src/data/dot_skill_ids.json`, `resource_restore_skills.json` e `i18n/npcs/pt.json` (códigos dos chefes).
   - `data/npc_names.json`: gerado pelo mesmo script a partir de `i18n/npcs/{pt,en}.json` e `i18n/skills/{pt,en}.json` (nomes dos monstros e das skills deles, para o dano recebido).
+  - `crates/core/src/effects.rs`: leitura própria de buffs e debuffs, seguindo os formatos de registro (`2a 38`, `2b 38`, `2c 38`) documentados no `abnormal.rs`.
+  - `data/abnormals.json`: gerado por `scripts/import-a2tools-abnormals.mjs` a partir de `src/data/abnormals.json` e `i18n/abnormals/{pt,en}.json` (nomes e ícones dos efeitos).
   - `public/classes/*.png`: escudos das classes, de `src/assets`.
 - **A2Tools Plugins**: https://github.com/taengu/A2Tools-Plugins (GPL-3.0)
   - Formato dos registros de pets (`00 90`, `0D 90`, `14 90`) do plugin Pet Soul Tracker.

@@ -8,6 +8,7 @@ use serde::Serialize;
 
 use crate::boss_map::{self, BossMap};
 use crate::combat::{self, CombatEvent};
+use crate::effects::{self, EffectRecord};
 use crate::framing::{self, FrameKind, MAX_BUNDLE_DEPTH};
 use crate::pets::{self, PetRecord};
 
@@ -20,6 +21,7 @@ pub enum GameEvent {
     BossMap(BossMap),
     Pets(PetRecord),
     Combat(CombatEvent),
+    Effect(EffectRecord),
 }
 
 /// Decode one whole packet (length varint included).
@@ -71,7 +73,10 @@ fn read_frame(reader: &mut combat::Reader, kind: FrameKind, bytes: &[u8], payloa
     match kind {
         FrameKind::Packet => match decode(bytes, now_ms) {
             Some(event) => out.push(event),
-            None => out.extend(reader.read(bytes).into_iter().map(GameEvent::Combat)),
+            None => match effects::parse(bytes) {
+                Some(record) => out.push(GameEvent::Effect(record)),
+                None => out.extend(reader.read(bytes).into_iter().map(GameEvent::Combat)),
+            },
         },
         FrameKind::Bundle => {
             if depth > MAX_BUNDLE_DEPTH {

@@ -147,7 +147,7 @@ impl App {
                 saved.pet_queue.entry(server).or_default().apply(&record, &collection);
             }
             // The meter's (see `read_capture`).
-            GameEvent::Combat(_) => return false,
+            GameEvent::Combat(_) | GameEvent::Effect(_) => return false,
             GameEvent::BossMap(map) => {
                 // Only the player's own server's maps (the header is 0 there).
                 if map.header != 0 {
@@ -576,14 +576,16 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
             }
             changed
         };
-        let (combat, events): (Vec<_>, Vec<_>) = events.into_iter().partition(|e| matches!(e, GameEvent::Combat(_)));
+        let (combat, events): (Vec<_>, Vec<_>) = events.into_iter().partition(|e| matches!(e, GameEvent::Combat(_) | GameEvent::Effect(_)));
         if !combat.is_empty() {
             let auto = state.saved.lock().unwrap().settings.dps.start == "hit";
             let mut meter = state.meter.lock().unwrap();
             let mut started = false;
             for e in combat {
-                if let GameEvent::Combat(e) = e {
-                    started |= meter.apply(e, now, auto, |me| fight_name(&state, me));
+                match e {
+                    GameEvent::Combat(e) => started |= meter.apply(e, now, auto, |me| fight_name(&state, me)),
+                    GameEvent::Effect(e) => meter.apply_effect(e, now),
+                    _ => {}
                 }
             }
             if started {
