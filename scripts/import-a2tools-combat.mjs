@@ -5,7 +5,8 @@
 //
 // Game data the DPS tracker reads packets with: which skills' ticks are
 // damage over time, which restore a resource rather than HP, and which NPC
-// codes are bosses. Also data/npc_names.json: the monsters' and their skills'
+// codes are bosses, and the bosses' names (data/boss_names.json) for the
+// boss history. Also data/npc_names.json: the monsters' and their skills'
 // names (Portuguese, else English), for the damage taken.
 
 import fs from "node:fs";
@@ -26,6 +27,8 @@ const combat = {
   bosses: Object.keys(npcs).filter((code) => npcs[code].isBoss).map(Number).sort((a, b) => a - b),
 };
 fs.writeFileSync(out, JSON.stringify(combat) + "\n");
+const bossNames = Object.fromEntries(combat.bosses.map((code) => [code, npcs[code].name]).filter(([, name]) => name && !name.startsWith("?")));
+fs.writeFileSync(path.join(path.dirname(out), "boss_names.json"), JSON.stringify(bossNames) + "\n");
 console.log(`data/combat.json: ${combat.dots.length} DoT skills, ${combat.resource.length} resource skills, ${combat.bosses.length} bosses`);
 
 // Integer keys come out in numeric order.

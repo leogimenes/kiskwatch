@@ -7,6 +7,7 @@ pub mod combat;
 pub mod dispatch;
 pub mod dps;
 pub mod framing;
+pub mod history;
 pub mod pets;
 pub mod schedule;
 pub mod stream;
