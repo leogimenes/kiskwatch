@@ -3,6 +3,7 @@
 import { Accessibility, Alarm, countdown, getSaved, onAlarm, onStateChanged } from "./api";
 import { t } from "./data";
 import { applyLook, chime } from "./look";
+import "./tourNote";
 
 const alerts = document.querySelector("#alerts") as HTMLDivElement;
 const SHOWN = 3;

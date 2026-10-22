@@ -53,6 +53,9 @@ pub struct App {
     gear: Mutex<kiskwatch_core::gear::Lookups>,
     /// A newer release, and how installing it goes.
     update: Mutex<updater::Status>,
+    /// The overlay a step of the panel's guided tour shows, whatever the
+    /// settings say (see `tour_overlay`).
+    tour_overlay: Mutex<Option<String>>,
 }
 
 fn now_ms() -> i64 {
@@ -100,6 +103,7 @@ impl App {
             hotkey_error: Mutex::new(None),
             gear: Default::default(),
             update: Default::default(),
+            tour_overlay: Mutex::new(None),
         }
     }
 
@@ -352,7 +356,9 @@ fn show_overlays(app: &AppHandle, s: &Settings) {
     let game_ok = state.game_running.load(Ordering::Relaxed) || !s.overlays_with_game;
     let focus_ok = state.game_focused.load(Ordering::Relaxed) || !s.overlays_with_focus;
     let reminding = state.reminder_until.load(Ordering::Relaxed) > now_ms();
-    let wanted = [(REMINDER, s.timer_overlay && reminding), ("pets", s.pet_overlay), ("dps", s.dps.overlay)].map(|(label, on)| (label, on && game_ok && focus_ok));
+    let tour = state.tour_overlay.lock().unwrap().clone();
+    let wanted = [(REMINDER, s.timer_overlay && reminding), ("pets", s.pet_overlay), ("dps", s.dps.overlay)]
+        .map(|(label, on)| (label, (on && game_ok && focus_ok) || tour.as_deref() == Some(label)));
     // On the main thread, after any change to the windows already asked for,
     // since Tauri hides them again on those (see `game::show_window`).
     let handle = app.clone();
@@ -379,6 +385,54 @@ fn show_panel(app: &AppHandle) {
 fn open_settings(app: AppHandle, overlay: String) {
     show_panel(&app);
     let _ = app.emit_to("panel", "open-settings", overlay);
+}
+
+/// A step of the panel's guided tour about an overlay: it shows, with a note
+/// on it saying what it is. `None` ends that, back to what the settings say.
+#[tauri::command]
+fn tour_overlay(app: AppHandle, state: State<App>, overlay: Option<String>, note: Option<String>) {
+    let overlay = overlay.filter(|o| [REMINDER, "pets", "dps"].contains(&o.as_str()));
+    let before = std::mem::replace(&mut *state.tour_overlay.lock().unwrap(), overlay.clone());
+    if let Some(label) = before.filter(|b| Some(b) != overlay.as_ref()) {
+        let _ = app.emit_to(label.as_str(), "tour-note", None::<String>);
+    }
+    if let Some(label) = &overlay {
+        if label == REMINDER {
+            place_reminder(&app);
+        }
+        let _ = app.emit_to(label.as_str(), "tour-note", note);
+    }
+    show_overlays_now(&app);
+}
+
+/// The help window, on one topic (a panel tab or an overlay); one window,
+/// made the first time.
+#[tauri::command]
+async fn open_help(app: AppHandle, mut topic: String) -> Result<(), String> {
+    topic.retain(|c| c.is_ascii_alphanumeric() || c == '-');
+    if let Some(w) = app.get_webview_window(HELP) {
+        let _ = app.emit_to(HELP, "help-topic", &topic);
+        let _ = w.unminimize();
+        let _ = w.show();
+        let _ = w.set_focus();
+        return Ok(());
+    }
+    tauri::WebviewWindowBuilder::new(&app, HELP, tauri::WebviewUrl::App(format!("help.html#{topic}").into()))
+        .title("Kiskwatch ajuda")
+        .inner_size(560.0, 640.0)
+        .min_inner_size(380.0, 320.0)
+        .build()
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
+const HELP: &str = "help";
+
+/// The help window's "Ver o tour": the panel comes up and runs that tab's tour.
+#[tauri::command]
+fn open_tour(app: AppHandle, tab: String) {
+    show_panel(&app);
+    let _ = app.emit_to("panel", "start-tour", tab);
 }
 
 fn show_overlays_now(app: &AppHandle) {
@@ -1081,7 +1135,7 @@ pub fn run() {
             log::line("pronto");
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, share::share_status, share::share_mode, share::share_send])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, open_help, open_tour, share::share_status, share::share_mode, share::share_send])
         .build(tauri::generate_context!());
     let app = match app {
         Ok(app) => app,

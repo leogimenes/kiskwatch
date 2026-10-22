@@ -37,6 +37,17 @@ pub struct Settings {
     /// "stable" or "canary"; empty follows the build running (a canary build
     /// stays on canaries).
     pub update_channel: String,
+    pub onboarding: Onboarding,
+}
+
+/// The guided tour of each panel tab, shown the first time the tab opens.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Onboarding {
+    /// "Pular tudo": no tour opens by itself anymore.
+    pub off: bool,
+    /// The tabs whose tour was seen or skipped.
+    pub seen: Vec<String>,
 }
 
 /// The global keyboard shortcuts (see `hotkeys`); empty is off.
@@ -107,6 +118,7 @@ impl Default for Settings {
             dps: DpsSettings::default(),
             hotkeys: Hotkeys::default(),
             update_channel: String::new(),
+            onboarding: Onboarding::default(),
         }
     }
 }
