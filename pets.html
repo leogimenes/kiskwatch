@@ -8,7 +8,10 @@
   </head>
   <body>
     <div id="frame">
-      <div class="bar" data-tauri-drag-region>Pets</div>
+      <div class="bar head" data-tauri-drag-region>
+        <span data-tauri-drag-region>Pets</span>
+        <button class="gear" type="button" data-overlay="pets" title="Configurações deste overlay" aria-label="Configurações deste overlay">⚙</button>
+      </div>
       <section id="now" aria-live="polite"></section>
       <ul id="pinned"></ul>
     </div>

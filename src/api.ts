@@ -297,6 +297,8 @@ export const ALARM_LEADS = [60, 30, 15, 10, 5, 2, 1];
 
 export const getTimers = () => invoke<TimerRow[]>("get_timers");
 export const getSaved = () => invoke<Saved>("get_saved");
+/** Bring the panel up on an overlay's settings (its gear). */
+export const openSettings = (overlay: "pets" | "dps") => invoke<void>("open_settings", { overlay });
 export const setSettings = (settings: Settings) => invoke("set_settings", { settings });
 export const setAlarm = (id: string, leads: number[]) => invoke("set_alarm", { id, leads });
 export const setPet = (pet: number, level: number, points: number) => invoke("set_pet", { pet, level, points });
@@ -367,6 +369,7 @@ export const onUpdateChanged = (f: () => void) => listen("update-changed", f);
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 /** Only this window's notes: the app sends each to one overlay. */
+export const onOpenSettings = (f: (overlay: string) => void) => getCurrentWebviewWindow().listen<string>("open-settings", (e) => f(e.payload));
 export const onToast = (f: (text: string) => void) => getCurrentWebviewWindow().listen<string>("toast", (e) => f(e.payload));
 export const onGearChanged = (f: () => void) => listen("gear-changed", f);
 export const onChecklistChanged = (f: () => void) => listen("checklist-changed", f);

@@ -163,14 +163,18 @@
       <section id="tab-config" class="tab">
         <h2>Overlays</h2>
         <label class="row"><input id="timer-overlay" type="checkbox" /> Lembrar os timers com aviso no topo da janela do Aion 2</label>
-        <label class="row"><input id="pet-overlay" type="checkbox" /> Mostrar o overlay de pets</label>
-        <label class="row"><input id="dps-overlay" type="checkbox" /> Mostrar o overlay de DPS</label>
-        <label class="row">Começar a gravar o DPS
-          <select id="dps-start">
-            <option value="hit">ao bater (automático)</option>
-            <option value="button">só pelo botão</option>
-          </select>
-        </label>
+        <div id="cfg-pets" class="cfg-group">
+          <label class="row"><input id="pet-overlay" type="checkbox" /> Mostrar o overlay de pets</label>
+        </div>
+        <div id="cfg-dps" class="cfg-group">
+          <label class="row"><input id="dps-overlay" type="checkbox" /> Mostrar o overlay de DPS</label>
+          <label class="row">Começar a gravar o DPS
+            <select id="dps-start">
+              <option value="hit">ao bater (automático)</option>
+              <option value="button">só pelo botão</option>
+            </select>
+          </label>
+        </div>
         <label class="row"><input id="overlays-with-game" type="checkbox" /> Mostrar os overlays só com o Aion 2 aberto</label>
         <label class="row"><input id="overlays-with-focus" type="checkbox" /> Mostrar os overlays só com o Aion 2 (ou o Kiskwatch) em primeiro plano</label>
         <label class="row"><input id="click-through" type="checkbox" /> Os overlays deixam os cliques passarem para o jogo</label>

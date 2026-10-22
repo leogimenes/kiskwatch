@@ -363,6 +363,22 @@ fn show_overlays(app: &AppHandle, s: &Settings) {
     });
 }
 
+/// Bring the panel to the front.
+fn show_panel(app: &AppHandle) {
+    if let Some(w) = app.get_webview_window("panel") {
+        let _ = w.unminimize();
+        let _ = w.show();
+        let _ = w.set_focus();
+    }
+}
+
+/// An overlay's gear: the panel comes to the front on that overlay's settings.
+#[tauri::command]
+fn open_settings(app: AppHandle, overlay: String) {
+    show_panel(&app);
+    let _ = app.emit_to("panel", "open-settings", overlay);
+}
+
 fn show_overlays_now(app: &AppHandle) {
     let settings = app.state::<App>().saved.lock().unwrap().settings.clone();
     show_overlays(app, &settings);
@@ -957,6 +973,9 @@ async fn update_install(app: AppHandle) -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // One Kiskwatch at a time: opening it again brings the panel up instead
+        // of a second set of overlays over the first.
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| show_panel(app)))
         .plugin(tauri_plugin_opener::init())
         // Windows go back where they were, from the app's config folder in
         // AppData, which installing a new version leaves alone.
@@ -1012,7 +1031,7 @@ pub fn run() {
             tauri::async_runtime::spawn(updater::watch(app.handle().clone()));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

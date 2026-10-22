@@ -349,4 +349,7 @@ button.primary { background: var(--accent); color: #0b1220; border-color: var(--
 .enchant-steps td:first-child { white-space: nowrap; }
 #enchant { overflow-x: auto; }
 #enchant .hint { max-width: 900px; }
+.cfg-group { border-radius: 6px; }
+.cfg-group.lit { animation: lit 2s ease-out; }
+@keyframes lit { from { background: rgba(120, 200, 255, 0.25); box-shadow: 0 0 0 4px rgba(120, 200, 255, 0.25); } }
 .update-badge { padding: 4px 10px; border-radius: 999px; background: var(--accent); color: #0b1220; border-color: var(--accent); font-size: 12px; }
