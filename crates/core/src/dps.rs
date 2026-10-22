@@ -212,6 +212,17 @@ fn idle(from: i64, acted: &[i64], to: i64) -> Vec<[i64; 2]> {
     out
 }
 
+/// A player the game named around you, for the panel's group tab.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SeenPlayer {
+    pub name: String,
+    pub class: Option<Class>,
+    /// When the game last named them or they last fought.
+    pub seen_ms: i64,
+    /// They hit or healed in the recording under way.
+    pub fighting: bool,
+}
+
 /// Who everyone is, from what the game said so far, and the recording.
 #[derive(Debug, Default)]
 pub struct Meter {
@@ -229,6 +240,8 @@ pub struct Meter {
     /// Boss entity → its NPC code.
     bosses: HashMap<i32, i32>,
     effects: Effects,
+    /// When each player was last named or last fought.
+    seen: HashMap<i32, i64>,
     rec: Option<Recording>,
 }
 
@@ -285,12 +298,14 @@ impl Meter {
             CombatEvent::Me { id, name, class } => {
                 self.me = Some(id);
                 self.names.insert(id, name);
+                self.seen.insert(id, now);
                 if let Some(c) = class {
                     self.classes.insert(id, c);
                 }
             }
             CombatEvent::Player { id, name } => {
                 self.names.insert(id, name);
+                self.seen.insert(id, now);
             }
             CombatEvent::Npc { id, code } => {
                 self.npcs.insert(id);
@@ -326,6 +341,7 @@ impl Meter {
                     }
                     return false;
                 }
+                self.seen.insert(who, now);
                 // A player's spell on a player: healing (or a buff), not damage.
                 if self.is_player(self.owner(target)) {
                     if let Some(rec) = &mut self.rec {
@@ -422,6 +438,31 @@ impl Meter {
         if let Some(rec) = &mut self.rec {
             rec.name = clip_name(name);
         }
+    }
+
+    /// The other players the game named, seen since `since`: those in the
+    /// recording first, then the most recently seen.
+    pub fn roster(&self, since: i64) -> Vec<SeenPlayer> {
+        let fighting: HashSet<i32> = self
+            .rec
+            .iter()
+            .flat_map(|r| r.damage.keys().map(|&(_, a)| a).chain(r.heal.keys().copied()))
+            .map(|a| self.owner(a))
+            .collect();
+        let mut list: Vec<SeenPlayer> = self
+            .names
+            .iter()
+            .filter(|&(&id, _)| self.me != Some(id))
+            .filter_map(|(&id, name)| {
+                let seen_ms = self.seen.get(&id).copied().unwrap_or(0);
+                (seen_ms >= since).then(|| SeenPlayer { name: name.clone(), class: self.classes.get(&id).copied(), seen_ms, fighting: fighting.contains(&id) })
+            })
+            .collect();
+        list.sort_by(|a, b| b.fighting.cmp(&a.fighting).then(b.seen_ms.cmp(&a.seen_ms)).then_with(|| a.name.cmp(&b.name)));
+        // The game hands out a new entity when someone comes back in view.
+        let mut names = HashSet::new();
+        list.retain(|p| names.insert(p.name.clone()));
+        list
     }
 
     /// A player's row, made on first use; none for anyone else.
@@ -745,7 +786,7 @@ mod tests {
     }
 
     #[test]
-        fn buffs_on_players_and_debuffs_on_the_main_target() {
+    fn buffs_on_players_and_debuffs_on_the_main_target() {
         use crate::effects::Applied;
         let on = |entity, abnormal, caster| EffectRecord::Applied(Applied { entity, instance: 1, abnormal, length_ms: 60_000, end_ms: 60_000, caster, skill: None, fresh: true, new: true });
         let mut m = meter();
@@ -764,6 +805,27 @@ mod tests {
         m.apply(hit(ME, MOB, CLERIC, 10), 6_000, false, named);
         let got: Vec<_> = m.current(7_000).unwrap().effects.list.iter().map(|u| (u.entity, u.abnormal, u.uptime_ms)).collect();
         assert_eq!(got, vec![(ME, 1, 1_000), (MOB, 3, 1_000)], "a new recording counts from its start");
+    }
+
+    #[test]
+    fn the_roster_puts_fighters_first_and_leaves_you_out() {
+        let mut m = meter();
+        m.apply(CombatEvent::Player { id: 300, name: "Passante".into() }, 5_000, false, named);
+        m.apply(CombatEvent::Player { id: 301, name: "Antigo".into() }, 0, false, named);
+        m.start("x".into(), 6_000);
+        m.apply(hit(MATE, MOB, GLADIATOR, 50), 6_000, false, named);
+        let names: Vec<_> = m.roster(1).into_iter().map(|p| (p.name, p.fighting)).collect();
+        assert_eq!(names, [("Amigo".to_string(), true), ("Passante".to_string(), false)]);
+        assert_eq!(m.roster(1)[0].class, Some(Class::Gladiator));
+    }
+
+    #[test]
+    fn the_roster_lists_a_name_once() {
+        let mut m = meter();
+        m.apply(CombatEvent::Player { id: 400, name: "Amigo".into() }, 9_000, false, named);
+        let list = m.roster(0);
+        assert_eq!(list.iter().filter(|p| p.name == "Amigo").count(), 1);
+        assert_eq!(list[0].seen_ms, 9_000);
     }
 
     #[test]

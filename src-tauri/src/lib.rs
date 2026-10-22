@@ -435,6 +435,67 @@ fn clear_profile(app: AppHandle, state: State<App>) {
     let _ = app.emit("state-changed", ());
 }
 
+/// The players the game named around you in the last half hour.
+#[tauri::command]
+fn nearby_players(state: State<App>) -> Vec<kiskwatch_core::dps::SeenPlayer> {
+    state.meter.lock().unwrap().roster(now_ms() - 30 * 60_000)
+}
+
+/// A player by name on the official site, anywhere in your region.
+#[tauri::command]
+async fn find_player(state: State<'_, App>, name: String) -> Result<Vec<profile::Hit>, String> {
+    let (region, server) = {
+        let s = &state.saved.lock().unwrap().settings;
+        (s.region(), s.server_id)
+    };
+    profile::find(region, server, name.trim()).await
+}
+
+/// Someone's public profile, to look at and compare; not followed.
+#[tauri::command]
+async fn inspect_profile(server_id: u32, character_id: String) -> Result<profile::Profile, String> {
+    profile::fetch((server_id / 100) % 10, server_id, &character_id, now_ms()).await
+}
+
+fn clip_label(label: &str) -> String {
+    label.trim().chars().take(state::LABEL_MAX).collect()
+}
+
+/// Keep a build to compare against.
+#[tauri::command]
+fn save_reference(app: AppHandle, state: State<App>, profile: profile::Profile, label: String) -> String {
+    let id = now_ms().to_string();
+    let label = Some(clip_label(&label)).filter(|l| !l.is_empty()).unwrap_or_else(|| profile.name.clone());
+    {
+        let mut saved = state.saved.lock().unwrap();
+        saved.references.insert(0, state::Reference { id: id.clone(), label, profile });
+        saved.references.truncate(state::REFERENCES_KEPT);
+    }
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+    id
+}
+
+#[tauri::command]
+fn rename_reference(app: AppHandle, state: State<App>, id: String, label: String) {
+    let label = clip_label(&label);
+    if label.is_empty() {
+        return;
+    }
+    if let Some(r) = state.saved.lock().unwrap().references.iter_mut().find(|r| r.id == id) {
+        r.label = label;
+    }
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
+#[tauri::command]
+fn delete_reference(app: AppHandle, state: State<App>, id: String) {
+    state.saved.lock().unwrap().references.retain(|r| r.id != id);
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
 /// A recording's default name: your character, the date and a random tag.
 fn fight_name(state: &App, me: Option<&str>) -> String {
     use std::hash::{BuildHasher, Hasher};
@@ -656,7 +717,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }
