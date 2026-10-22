@@ -26,6 +26,7 @@ export interface Settings {
   timer_overlay: boolean;
   pet_overlay: boolean;
   overlays_with_game: boolean;
+  overlays_with_focus: boolean;
   pinned_pets: number[];
   route: RouteStop[];
   a11y: Accessibility;

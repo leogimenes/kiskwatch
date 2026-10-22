@@ -630,6 +630,7 @@ check("#pet-overlay").addEventListener("change", (e) => update((s) => { s.pet_ov
 check("#dps-overlay").addEventListener("change", (e) => update((s) => { s.dps.overlay = (e.target as HTMLInputElement).checked; }));
 $<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button"; }));
 check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
+check("#overlays-with-focus").addEventListener("change", (e) => update((s) => { s.overlays_with_focus = (e.target as HTMLInputElement).checked; }));
 
 const A11Y: [string, keyof Accessibility, "check" | "number"][] = [
   ["#a-font", "font_scale", "number"],
@@ -737,6 +738,7 @@ function renderConfig(s: Settings) {
   check("#timer-overlay").checked = s.timer_overlay;
   check("#pet-overlay").checked = s.pet_overlay;
   check("#overlays-with-game").checked = s.overlays_with_game;
+  check("#overlays-with-focus").checked = s.overlays_with_focus;
   check("#dps-overlay").checked = s.dps.overlay;
   $<HTMLSelectElement>("#dps-start").value = s.dps.start;
   renderHotkeys(s.hotkeys);
