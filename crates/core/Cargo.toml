@@ -1,6 +1,6 @@
 [package]
 name = "kiskwatch-core"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 license = "GPL-3.0-or-later"
 description = "Kiskwatch's game-independent core: packet framing and decoders, schedules, pet progress"

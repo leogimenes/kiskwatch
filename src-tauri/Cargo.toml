@@ -1,6 +1,6 @@
 [package]
 name = "kiskwatch"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 license = "GPL-3.0-or-later"
 description = "Kiskwatch: overlay and panel to follow your AION 2 characters"
