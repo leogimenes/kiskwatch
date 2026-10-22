@@ -1,0 +1,10 @@
+.dps-row.pick { cursor: pointer; }
+.dps-row.picked { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dps-skills { max-width: 900px; margin-top: 16px; }
+.dps-skills h3 { margin: 0 0 6px; font-size: 1em; }
+.dps-skills table { width: 100%; border-collapse: collapse; }
+.dps-skills td { vertical-align: middle; }
+.dps-skills td.num, .dps-skills th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dps-skill { display: flex; align-items: center; gap: 8px; }
+.dps-skill img, .dps-skill .noicon { flex: none; width: 26px; height: 26px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); box-sizing: border-box; }
+.dps-skill-bar { display: block; height: 3px; margin-top: 3px; margin-left: auto; border-radius: 2px; background: var(--accent); }

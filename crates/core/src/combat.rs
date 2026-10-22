@@ -27,7 +27,7 @@ use crate::varint::read_varint;
 pub enum CombatEvent {
     /// A hit, or a healing spell landing on a player (the `04 38` record is
     /// the same: the meter tells them apart by who the target is).
-    Hit { actor: i32, target: i32, skill: i32, value: i64, dot: bool },
+    Hit { actor: i32, target: i32, skill: i32, value: i64, dot: bool, crit: bool },
     /// A healing tick, or a player healing themselves.
     Heal { actor: i32, target: i32, amount: i64 },
     /// You: your entity, name and class.
@@ -84,6 +84,13 @@ impl Class {
             _ => return None,
         })
     }
+}
+
+/// The skill a code is a version of: a player skill's last four digits are
+/// the specializations it was used with (17010230 is 17010000, the id the
+/// profile and dbaion2 know it by). Other codes stay as they are.
+pub fn base_skill(skill: i32) -> i32 {
+    if (10_000_000..=19_999_999).contains(&skill) { skill / 10_000 * 10_000 } else { skill }
 }
 
 /// What a skill's ticks are, from the game's data (`data/combat.json`).
@@ -222,7 +229,7 @@ impl Reader {
         }
         let skill = skill as i32;
         at += 1;
-        varint(p, &mut at)?; // hit type: 3 is a critical
+        let crit = varint(p, &mut at)? == 3;
         // The layout's fixed bytes; layouts 6 and 7 carry a plotter whose
         // HP field is a varint the fixed count takes as one byte.
         let mut skip = match layout {
@@ -251,7 +258,7 @@ impl Reader {
         let npc = (1_000_000..=9_999_999).contains(&skill);
         if !npc && !self.lists.resource.contains(&skill) {
             if actor != target {
-                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false });
+                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit });
             } else if value > 1 {
                 out.push(CombatEvent::Heal { actor, target, amount: value.into() });
             }
@@ -283,7 +290,7 @@ impl Reader {
         if heal {
             out.push(CombatEvent::Heal { actor, target, amount: amount.into() });
         } else if actor != target && self.lists.dots.contains(&skill) {
-            out.push(CombatEvent::Hit { actor, target, skill, value: amount.into(), dot: true });
+            out.push(CombatEvent::Hit { actor, target, skill, value: amount.into(), dot: true, crit: false });
         }
     }
 
@@ -465,7 +472,23 @@ mod tests {
     #[test]
     fn reads_a_hit() {
         let p = packet(&[&[0x04, 0x38][..], &hit(5000, 4715, 17_010_000, 1234)].concat());
-        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false }]);
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false, crit: false }]);
+    }
+
+    #[test]
+    fn reads_a_critical() {
+        let mut body = hit(5000, 4715, 17_010_000, 1234);
+        // The hit type follows the skill and its byte.
+        let at = var(5000).len() + 2 + var(4715).len() + 4 + 1;
+        body[at] = 3;
+        let p = packet(&[&[0x04, 0x38][..], &body].concat());
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false, crit: true }]);
+    }
+
+    #[test]
+    fn base_skills_drop_the_specializations() {
+        assert_eq!(base_skill(17_010_230), 17_010_000);
+        assert_eq!(base_skill(30_000_011), 30_000_011, "a theostone");
     }
 
     #[test]
@@ -473,7 +496,7 @@ mod tests {
         let body = [&[0x04, 0x38][..], &hit(5000, 4715, 17_010_000, 10), &[0x01, 0x00], &hit(5001, 4715, 17_010_000, 20)].concat();
         let events = Reader::default().read(&packet(&body));
         assert_eq!(events.len(), 2);
-        assert_eq!(events[1], CombatEvent::Hit { actor: 4715, target: 5001, skill: 17_010_000, value: 20, dot: false });
+        assert_eq!(events[1], CombatEvent::Hit { actor: 4715, target: 5001, skill: 17_010_000, value: 20, dot: false, crit: false });
     }
 
     #[test]
@@ -493,7 +516,7 @@ mod tests {
         let tick = |effect: u8, skill: u32| packet(&[&[0x05, 0x38][..], &var(4800), &[effect], &var(4715), &var(0), &(skill * 100).to_le_bytes(), &var(300)].concat());
         let mut r = Reader::new(SkillLists { dots: [17_030_000].into(), resource: HashSet::new() });
         assert_eq!(r.read(&tick(0x0B, 17_040_000)), vec![CombatEvent::Heal { actor: 4715, target: 4800, amount: 300 }]);
-        assert_eq!(r.read(&tick(0x02, 17_030_000)), vec![CombatEvent::Hit { actor: 4715, target: 4800, skill: 17_030_000, value: 300, dot: true }]);
+        assert_eq!(r.read(&tick(0x02, 17_030_000)), vec![CombatEvent::Hit { actor: 4715, target: 4800, skill: 17_030_000, value: 300, dot: true, crit: false }]);
         assert!(r.read(&tick(0x02, 17_050_000)).is_empty(), "not a damage-over-time skill");
     }
 
