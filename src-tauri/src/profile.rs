@@ -7,6 +7,8 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use kiskwatch_core::gear::Gear;
+
 const SITE: &str = "https://aion2.plaync.com";
 const SEARCH: &str = "https://api-search.plaync.com/aion2global/search/v2/character";
 const LANG: &str = "pt-BR";
@@ -129,6 +131,27 @@ fn board_ids(info: &Value) -> Vec<u32> {
         .and_then(Value::as_array)
         .map(|l| l.iter().filter_map(|b| b.get("id")?.as_u64().map(|id| id as u32)).collect())
         .unwrap_or_default()
+}
+
+/// The item level and combat power of a player the game named, for the DPS
+/// bars: the exact name, on your server first. `None` when the site doesn't
+/// have them.
+pub async fn gear(region: u32, my_server: u32, name: &str) -> Result<Option<Gear>, String> {
+    let shard = shard(region).ok_or("região sem perfil oficial")?;
+    let Some(hit) = find(region, my_server, name).await?.into_iter().find(|h| h.name.to_lowercase() == name.to_lowercase()) else {
+        return Ok(None);
+    };
+    let query = [
+        ("lang", LANG.to_string()),
+        ("region", shard.to_string()),
+        ("serverId", hit.server_id.to_string()),
+        ("characterId", hit.character_id),
+    ];
+    let info = get(&client()?, &format!("{SITE}/api/character/info"), &query).await?;
+    if info.get("profile").is_none_or(Value::is_null) {
+        return Ok(None);
+    }
+    Ok(Some(Gear::from_info(name, &info)))
 }
 
 pub async fn fetch(region: u32, server_id: u32, character_id: &str, now_ms: i64) -> Result<Profile, String> {

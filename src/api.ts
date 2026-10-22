@@ -167,6 +167,10 @@ export interface ProfileEquipment {
 }
 
 /** A player the game named around you. */
+export interface Gear {
+  name: string; item_level: number | null; combat_power: number | null;
+}
+
 export interface SeenPlayer {
   name: string; class: ClassName | null; seen_ms: number; fighting: boolean;
 }
@@ -306,6 +310,9 @@ export const nearbyPlayers = () => invoke<SeenPlayer[]>("nearby_players");
 export const findPlayer = (name: string) => invoke<Hit[]>("find_player", { name });
 /** Someone's profile, not followed. */
 export const inspectProfile = (serverId: number, characterId: string) => invoke<Profile>("inspect_profile", { serverId, characterId });
+/** Item level and combat power of players on the DPS bars, as far as known;
+ *  the rest are looked up and `onGearChanged` fires when they answer. */
+export const playerGear = (names: string[]) => invoke<Gear[]>("player_gear", { names });
 export const saveReference = (profile: Profile, label: string) => invoke<string>("save_reference", { profile, label });
 export const renameReference = (id: string, label: string) => invoke("rename_reference", { id, label });
 export const deleteReference = (id: string) => invoke("delete_reference", { id });
@@ -318,6 +325,7 @@ export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 /** Only this window's notes: the app sends each to one overlay. */
 export const onToast = (f: (text: string) => void) => getCurrentWebviewWindow().listen<string>("toast", (e) => f(e.payload));
+export const onGearChanged = (f: () => void) => listen("gear-changed", f);
 export const onChecklistChanged = (f: () => void) => listen("checklist-changed", f);
 export const onAlarm = (f: (a: Alarm) => void) => listen<Alarm>("alarm", (e) => f(e.payload));
 

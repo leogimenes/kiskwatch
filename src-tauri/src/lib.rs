@@ -39,6 +39,8 @@ pub struct App {
     meter: Mutex<Meter>,
     /// Why a global shortcut isn't working, if one isn't.
     hotkey_error: Mutex<Option<String>>,
+    /// Item level and combat power of the players on the DPS bars.
+    gear: Mutex<kiskwatch_core::gear::Lookups>,
 }
 
 fn now_ms() -> i64 {
@@ -81,6 +83,7 @@ impl App {
                 .collect(),
             meter: Mutex::new(Meter::new(kiskwatch_core::combat::boss_codes())),
             hotkey_error: Mutex::new(None),
+            gear: Default::default(),
         }
     }
 
@@ -479,6 +482,31 @@ async fn inspect_profile(server_id: u32, character_id: String) -> Result<profile
     profile::fetch((server_id / 100) % 10, server_id, &character_id, now_ms()).await
 }
 
+/// Item level and combat power of these players, as far as known; the ones
+/// not known yet are looked up on the official site, and `gear-changed` says
+/// when an answer changes what a bar shows.
+#[tauri::command]
+fn player_gear(app: AppHandle, state: State<App>, names: Vec<String>) -> Vec<kiskwatch_core::gear::Gear> {
+    let (region, server) = {
+        let s = &state.saved.lock().unwrap().settings;
+        (s.region(), s.server_id)
+    };
+    if profile::shard(region).is_none() {
+        return Vec::new();
+    }
+    let (known, start) = state.gear.lock().unwrap().ask(&names, now_ms());
+    for name in start {
+        let app = app.clone();
+        tauri::async_runtime::spawn(async move {
+            let found = profile::gear(region, server, &name).await;
+            if app.state::<App>().gear.lock().unwrap().done(&name, found, now_ms()) {
+                let _ = app.emit("gear-changed", ());
+            }
+        });
+    }
+    known
+}
+
 fn clip_label(label: &str) -> String {
     label.trim().chars().take(state::LABEL_MAX).collect()
 }
@@ -791,7 +819,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

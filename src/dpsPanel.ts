@@ -1,9 +1,9 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
 // at by target and kind of bar, rename or delete; or the recordings by boss.
-import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, revealItemInDir } from "./api";
+import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
-import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
+import { BARS, TARGETS, clock, loadGear, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
 import { castsSection } from "./dpsCasts";
@@ -104,6 +104,7 @@ function renderDetail() {
   const reveal = el("button", { type: "button", className: "link", textContent: note?.path ?? "" });
   reveal.addEventListener("click", () => { if (note?.path) revealItemInDir(note.path); });
   const list = rows(f, t, b);
+  loadGear(list).then((changed) => { if (changed) renderDetail(); });
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const shown = f.players.find((p) => p.id === who) ?? f.players.find((p) => p.local) ?? f.players[0];
   const line = (r: (typeof list)[number]) => {
@@ -168,4 +169,5 @@ export function renderDps(s: Saved) {
 }
 
 onDpsChanged(poll);
+onGearChanged(() => { if (view === "fights") renderDetail(); });
 setInterval(() => { if (live) poll(); }, 1000);
