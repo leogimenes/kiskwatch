@@ -1,4 +1,6 @@
-.dps-head { display: flex; justify-content: space-between; gap: 8px; }
+.dps-head { display: flex; align-items: center; gap: 8px; }
+.dps-head #dps-status { margin-left: auto; }
+.dps-head #dps-status + .gear { margin-left: 0; }
 #dps-status { font-variant-numeric: tabular-nums; color: var(--o-muted); }
 #dps-status.rec { color: #ff7a7a; }
 #dps-status.rec::before { content: "● "; }

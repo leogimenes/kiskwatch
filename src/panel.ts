@@ -1,7 +1,7 @@
 // The panel: timers with their alarms, the pet collection and its map, settings.
 import {
   ALARM_LEADS, Accessibility, Hotkeys, Pace, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getPaces, getSaved, getSouls, getTimers,
-  hotkeysStatus, onStateChanged, openUrl, pauseHotkeys, setAlarm, setClickThrough, setHotkeys, setPet, setSettings,
+  hotkeysStatus, onOpenSettings, onStateChanged, openUrl, pauseHotkeys, setAlarm, setClickThrough, setHotkeys, setPet, setSettings,
 } from "./api";
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming, paceText } from "./farm";
@@ -52,6 +52,17 @@ document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((b) =>
     $(`#tab-${b.dataset.tab}`).classList.add("active");
   }),
 );
+
+// An overlay's gear: the settings tab, on that overlay's options, lit up for a moment.
+onOpenSettings((overlay) => {
+  $<HTMLButtonElement>('.tabs button[data-tab="config"]').click();
+  const group = document.querySelector<HTMLElement>(`#cfg-${overlay}`);
+  if (!group) return;
+  group.scrollIntoView({ block: "center" });
+  group.classList.remove("lit");
+  void group.offsetWidth;
+  group.classList.add("lit");
+});
 
 // ---- Server ----
 const regionSel = $<HTMLSelectElement>("#region");
