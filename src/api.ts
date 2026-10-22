@@ -54,6 +54,11 @@ export type ClassName = "Gladiator" | "Templar" | "Assassin" | "Ranger" | "Sorce
 
 export interface FightPlayer {
   id: number; name: string; class: ClassName | null; local: boolean; boss_damage: number; mob_damage: number; heal: number;
+  /** Damage in each second; empty in recordings from before the timeline. */
+  timeline: number[];
+  /** Stretches of 3 s or more without acting, [from, to] in ms from the start. */
+  idle: [number, number][];
+  idle_ms: number;
   /** Damage by skill, biggest first. */
   skills: SkillStat[];
   /** When each skill (by base id) was used, in ms from the start; absent in older recordings. */

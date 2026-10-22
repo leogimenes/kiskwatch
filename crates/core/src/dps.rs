@@ -6,6 +6,10 @@
 //!
 //! A recording starts on the local player's first hit (or by hand) and ends by
 //! hand, or, when it started by itself, after a while without damage.
+//!
+//! Each player's row also has the fight's timeline: damage second by second,
+//! and the stretches the player stood without hitting (their own hits and
+//! healing spells; summons and damage over time don't count as acting).
 
 use std::collections::{HashMap, HashSet};
 
@@ -18,6 +22,8 @@ use crate::combat::{Class, CombatEvent, base_skill};
 pub const IDLE_END_MS: i64 = 30_000;
 /// The longest name a recording takes.
 pub const NAME_MAX: usize = 50;
+/// This long or more without one of your own hits is time stood still.
+pub const IDLE_GAP_MS: i64 = 3_000;
 
 /// A recording, live or saved.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -42,6 +48,13 @@ pub struct FightPlayer {
     pub boss_damage: i64,
     pub mob_damage: i64,
     pub heal: i64,
+    /// Damage in each second of the recording, summons included.
+    pub timeline: Vec<i64>,
+    /// Stretches of `IDLE_GAP_MS` or more without acting, as [from, to] in
+    /// ms from the start.
+    pub idle: Vec<[i64; 2]>,
+    /// All of them added up.
+    pub idle_ms: i64,
     /// Damage by skill, biggest first.
     pub skills: Vec<SkillStat>,
     /// When each skill was used, to set against its cooldown.
@@ -104,6 +117,31 @@ struct Recording {
     skills: HashMap<(i32, i32, i32, bool), Tally>,
     heal: HashMap<i32, i64>,
     casts: Casts,
+    /// By (actor, second from the start).
+    per_second: HashMap<(i32, i64), i64>,
+    /// When each actor hit or cast a healing spell, oldest first.
+    acted: HashMap<i32, Vec<i64>>,
+}
+
+impl Recording {
+    fn act(&mut self, actor: i32, now: i64) {
+        self.acted.entry(actor).or_default().push(now);
+    }
+}
+
+/// The stretches of `IDLE_GAP_MS` or more between `from`, each time in
+/// `acted` and `to`, from the start.
+fn idle(from: i64, acted: &[i64], to: i64) -> Vec<[i64; 2]> {
+    let mut out = Vec::new();
+    let mut last = from;
+    for &t in acted.iter().chain([&to]) {
+        let t = t.clamp(last, to.max(last));
+        if t - last >= IDLE_GAP_MS {
+            out.push([last - from, t - from]);
+        }
+        last = t;
+    }
+    out
 }
 
 /// Who everyone is, from what the game said so far, and the recording.
@@ -190,6 +228,9 @@ impl Meter {
                     if let Some(rec) = &mut self.rec {
                         *rec.heal.entry(actor).or_default() += value;
                         rec.casts.hit(actor, skill, dot, now, rec.started_ms);
+                        if !dot {
+                            rec.act(actor, now);
+                        }
                     }
                     return false;
                 }
@@ -202,6 +243,11 @@ impl Meter {
                     *rec.damage.entry((target, actor)).or_default() += value;
                     rec.skills.entry((target, actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
                     rec.casts.hit(actor, skill, dot, now, rec.started_ms);
+                    let second = (now - rec.started_ms).max(0) / 1000;
+                    *rec.per_second.entry((actor, second)).or_default() += value;
+                    if !dot {
+                        rec.act(actor, now);
+                    }
                     rec.last_gain_ms = now;
                 }
             }
@@ -227,7 +273,7 @@ impl Meter {
     }
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
-        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default() });
+        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new() });
     }
 
     /// Start recording by hand.
@@ -301,6 +347,22 @@ impl Meter {
         for (&actor, &n) in &rec.heal {
             if let Some(p) = self.row(&mut players, self.owner(actor)) {
                 p.heal += n;
+            }
+        }
+        // The second a hit lands in, up to the last one's.
+        let seconds = (now - rec.started_ms).max(0) / 1000 + 1;
+        for p in players.values_mut() {
+            p.timeline = vec![0; seconds as usize];
+            let none = Vec::new();
+            let acted = rec.acted.get(&p.id).unwrap_or(&none);
+            p.idle = idle(rec.started_ms, acted, now);
+            p.idle_ms = p.idle.iter().map(|[a, b]| b - a).sum();
+        }
+        for (&(actor, second), &n) in &rec.per_second {
+            if let Some(p) = players.get_mut(&self.owner(actor))
+                && let Some(slot) = p.timeline.get_mut(second as usize)
+            {
+                *slot += n;
             }
         }
         let mut players: Vec<FightPlayer> = players.into_values().collect();
@@ -476,5 +538,59 @@ mod tests {
         m.start("a".repeat(80), 0);
         m.rename(&"é".repeat(60));
         assert_eq!(m.current(0).unwrap().name.chars().count(), NAME_MAX);
+    }
+
+    fn dot(actor: i32, target: i32, value: i64) -> CombatEvent {
+        CombatEvent::Hit { actor, target, skill: CLERIC, value, dot: true, crit: false }
+    }
+
+    #[test]
+    fn the_timeline_has_damage_by_second() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 200, false, named);
+        m.apply(hit(555, BOSS, 2_100_000, 5), 900, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 7), 2_500, false, named);
+        let f = m.current(3_000).unwrap();
+        assert_eq!(f.players[0].timeline, vec![15, 0, 7, 0]);
+    }
+
+    #[test]
+    fn standing_still_is_three_seconds_without_your_own_hits() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
+        for (at, e) in [
+            // 0..4 s: the button, then nothing.
+            (4_000, hit(ME, MOB, CLERIC, 10)),
+            (6_000, hit(ME, MOB, CLERIC, 10)),
+            // Your summon and your damage over time don't make you act.
+            (7_000, hit(555, MOB, 2_100_000, 10)),
+            (8_000, dot(ME, MOB, 10)),
+            // A heal on a mate does.
+            (10_000, hit(ME, MATE, CLERIC, 10)),
+            (11_000, hit(ME, MOB, CLERIC, 10)),
+        ] {
+            m.apply(e, at, false, named);
+        }
+        let me = m.stop(20_000).unwrap().players.into_iter().find(|p| p.id == ME).unwrap();
+        assert_eq!(me.idle, vec![[0, 4_000], [6_000, 10_000], [11_000, 20_000]]);
+        assert_eq!(me.idle_ms, 17_000);
+    }
+
+    #[test]
+    fn an_automatic_recording_starts_and_ends_on_a_hit() {
+        let mut m = meter();
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, true, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 3_000, true, named);
+        let f = m.tick(3_000 + IDLE_END_MS).unwrap();
+        assert_eq!((f.players[0].idle_ms, f.players[0].timeline.len()), (0, 3));
+    }
+
+    #[test]
+    fn old_recordings_read_without_a_timeline() {
+        let p: FightPlayer = serde_json::from_str(r#"{"id":1,"name":"a","boss_damage":5}"#).unwrap();
+        assert!(p.timeline.is_empty() && p.idle.is_empty());
     }
 }
