@@ -1,6 +1,6 @@
 // What is being farmed, from the souls the game reported, and the nearest
 // pet to farm after it.
-import { RouteStop, SoulSeen } from "./api";
+import { Pace, RouteStop, SoulSeen } from "./api";
 import { Drop, PETS, Pet, soulsToMax } from "./data";
 
 /** A soul within this long means the pet is still being farmed. */
@@ -49,4 +49,19 @@ export function nextOnRoute(route: RouteStop[], current: number | null, progress
   const at = live.findIndex((s) => s.pet.id === current);
   if (at < 0) return live[0];
   return live[at + 1] ?? null;
+}
+
+/** "45 min", "7 h 30 min", "3 dias". */
+export function duration(ms: number): string {
+  const min = Math.max(1, Math.round(ms / 60_000));
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  if (h >= 48) return `${Math.round(h / 24)} dias`;
+  return min % 60 ? `${h} h ${min % 60} min` : `${h} h`;
+}
+
+/** "12 almas/h · nível 3 em ~7 h 30 min". */
+export function paceText(p: Pace): string {
+  const rate = `${p.per_hour < 10 ? p.per_hour.toFixed(1).replace(".", ",") : Math.round(p.per_hour)} almas/h`;
+  return p.to_max_ms === null ? rate : `${rate} · nível 3 em ~${duration(p.to_max_ms)}`;
 }

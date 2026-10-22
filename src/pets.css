@@ -7,7 +7,7 @@
 .pet .line { display: flex; align-items: center; gap: 6px; }
 .pet .line + .line { margin-top: 3px; }
 .pet .name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pet .note { margin-top: 2px; font-size: 0.85em; color: var(--o-muted); }
+.pet .note { margin-top: 2px; white-space: pre-line; font-size: 0.85em; color: var(--o-muted); }
 .pet .count { font-size: 0.85em; font-variant-numeric: tabular-nums; color: var(--o-gold); white-space: nowrap; }
 .pet.maxed .count { color: var(--natura); }
 .pips { display: inline-flex; gap: 3px; }

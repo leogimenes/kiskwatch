@@ -17,7 +17,7 @@ use kiskwatch_core::checklist::{Character, Checklist, Resets, Task};
 use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
 use kiskwatch_core::dps::{Fight, Meter};
 use kiskwatch_core::schedule::{self, Event};
-use kiskwatch_core::pets::PetRecord;
+use kiskwatch_core::pets::{self, Pace, PetRecord};
 use kiskwatch_core::stream::GameEvent;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -402,6 +402,19 @@ fn get_souls(state: State<App>) -> Vec<SoulSeen> {
     saved.souls.get(&saved.settings.server_id).cloned().unwrap_or_default()
 }
 
+/// The farming pace of each pet with a timed run on the current server.
+#[tauri::command]
+fn get_paces(state: State<App>) -> Vec<Pace> {
+    let saved = state.saved.lock().unwrap();
+    let server = saved.settings.server_id;
+    let mut by_pet: std::collections::BTreeMap<u32, Vec<(i64, u32)>> = Default::default();
+    for s in saved.souls.get(&server).into_iter().flatten() {
+        by_pet.entry(s.pet).or_default().push((s.at_ms, s.amount));
+    }
+    let collection = saved.pets.get(&server).cloned().unwrap_or_default();
+    by_pet.iter().filter_map(|(&pet, pickups)| pets::pace(pet, pickups, collection.get(pet))).collect()
+}
+
 /// Characters by name on the official site, on the selected server.
 #[tauri::command]
 async fn search_characters(state: State<'_, App>, name: String) -> Result<Vec<profile::Hit>, String> {
@@ -778,7 +791,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

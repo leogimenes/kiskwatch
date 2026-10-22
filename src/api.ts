@@ -254,6 +254,17 @@ export interface SoulSeen {
   at_ms: number;
 }
 
+/** A pet's farming pace in its latest run (see `pets::pace`). */
+export interface Pace {
+  pet: number;
+  souls: number;
+  span_ms: number;
+  last_ms: number;
+  per_hour: number;
+  /** Time to level 3 at this pace; null once there. */
+  to_max_ms: number | null;
+}
+
 export interface CaptureStatus {
   running: boolean;
   error: string | null;
@@ -275,6 +286,7 @@ export const pauseHotkeys = (paused: boolean) => invoke("pause_hotkeys", { pause
 export const hotkeysStatus = () => invoke<string | null>("hotkeys_status");
 export const captureStatus = () => invoke<CaptureStatus>("capture_status");
 export const getSouls = () => invoke<SoulSeen[]>("get_souls");
+export const getPaces = () => invoke<Pace[]>("get_paces");
 export const searchCharacters = (name: string) => invoke<Hit[]>("search_characters", { name });
 export const loadProfile = (serverId?: number, characterId?: string) => invoke("load_profile", { serverId, characterId });
 export const clearProfile = () => invoke("clear_profile");

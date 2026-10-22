@@ -1,10 +1,10 @@
 // The panel: timers with their alarms, the pet collection and its map, settings.
 import {
-  ALARM_LEADS, Accessibility, Hotkeys, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getSaved, getSouls, getTimers,
+  ALARM_LEADS, Accessibility, Hotkeys, Pace, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getPaces, getSaved, getSouls, getTimers,
   hotkeysStatus, onStateChanged, openUrl, pauseHotkeys, setAlarm, setClickThrough, setHotkeys, setPet, setSettings,
 } from "./api";
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
-import { farming } from "./farm";
+import { farming, paceText } from "./farm";
 import { Stop, leg, plan, totals } from "./route";
 import { renderBuild } from "./build";
 import { renderDps } from "./dpsPanel";
@@ -24,6 +24,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string,
 let saved: Saved | null = null;
 let timers: TimerRow[] = [];
 let souls: SoulSeen[] = [];
+let paces: Pace[] = [];
 
 /** Save a change to the settings. */
 function update(change: (s: Settings) => void) {
@@ -255,6 +256,12 @@ function togglePin(pet: number) {
 
 let selectedPet: number | null = null;
 
+/** The pace column: souls an hour and the time to level 3, from the last run. */
+function paceCell(p: Pace | undefined): string {
+  if (!p) return "—";
+  return `${paceText(p).replace(" · ", "\n")}\núltimo farm ${new Date(p.last_ms).toLocaleString([], { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`;
+}
+
 function renderPets() {
   const rows = filteredPets();
   const all = PETS.filter((p) => p.genus !== "special" && !p.unreleased);
@@ -267,6 +274,7 @@ function renderPets() {
   const farm = now && PETS.find((p) => p.id === now.pet);
   $("#pet-summary").textContent = `Coleção ${owned.length} · ${maxed} no nível máximo · ${missingTotal} almas faltando no total · ${rows.length} pets na lista`
     + (farm ? ` · farmando ${name(farm.name)}` : "");
+  const paceOf = (pet: number) => paces.find((x) => x.pet === pet);
 
   $("#pets").replaceChildren(
     ...rows.map((r) => {
@@ -289,6 +297,7 @@ function renderPets() {
         el("td", {}, level),
         el("td", {}, points),
         el("td", { className: "missing" }, String(r.missing)),
+        el("td", { className: "pace" }, paceCell(paceOf(r.pet.id))),
         el("td", { className: "where" }, where),
       );
     }),
@@ -744,7 +753,7 @@ function renderConfig(s: Settings) {
 
 // ---- Refresh ----
 async function refresh() {
-  [saved, timers, souls] = await Promise.all([getSaved(), getTimers(), getSouls()]);
+  [saved, timers, souls, paces] = await Promise.all([getSaved(), getTimers(), getSouls(), getPaces()]);
   const server = SERVERS.find((s) => s.id === saved!.settings.server_id);
   regionSel.value = String(server?.region ?? 4);
   fillServers(Number(regionSel.value), saved.settings.server_id);

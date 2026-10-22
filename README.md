@@ -16,6 +16,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Mapa dos spawns dos pets faltantes | ✅ esquemático com zoom, zonas e seleção; arte do mapa via link para o Aion 2 Timers |
 | Overlay de pets (almas recentes, próximo da rota, fixados) | ✅ |
 | Rota de farm (caminho mínimo com Kibelisks, sem IA) | ✅ no mapa e no overlay de pets |
+| Ritmo de farm: almas/hora por pet e tempo até o nível 3 | ✅ no overlay de pets e na lista do painel |
 | Acessibilidade (texto, contraste, daltonismo, animações, som) | ✅ |
 | Captura ao vivo via Npcap | ✅ |
 | Build: skills, stigmas e tabuleiros Daevanion do perfil oficial | ✅ |
