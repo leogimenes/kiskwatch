@@ -1,6 +1,7 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
 // at by target and kind of bar, rename or delete; or the recordings by boss.
 import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsStart, dpsStop, onDpsChanged } from "./api";
+import { effectsSection } from "./dpsEffects";
 import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
@@ -95,6 +96,7 @@ function renderDetail() {
     shown ? castsSection(f, shown, saved.profile, renderDetail) : "",
     timeline(f, f.players),
     takenSection(f, t, victim, (id) => { victim = id; render(); }),
+    effectsSection(f, renderDetail),
     compareBox(f.id, openFight),
   );
 }
