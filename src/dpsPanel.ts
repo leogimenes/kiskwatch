@@ -2,6 +2,7 @@
 // at by target and kind of bar, rename or delete.
 import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsStart, dpsStop, onDpsChanged } from "./api";
 import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
+import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
 import { castsSection } from "./dpsCasts";
 
@@ -87,6 +88,7 @@ function renderDetail() {
       : el("p", { className: "hint" }, "Nada para este alvo."),
     shown && b !== "heal" ? skillTable(f, shown, t, saved, renderDetail) : "",
     shown ? castsSection(f, shown, saved.profile, renderDetail) : "",
+    timeline(f, f.players),
   );
 }
 
