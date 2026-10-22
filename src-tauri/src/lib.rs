@@ -436,8 +436,11 @@ async fn load_profile(app: AppHandle, state: State<'_, App>, server_id: Option<u
         let character_id = character_id.or(current.map(|p| p.character_id.clone())).ok_or("nenhum personagem escolhido")?;
         ((server_id / 100) % 10, server_id, character_id)
     };
-    let fetched = profile::fetch(region, server_id, &character_id, now_ms()).await?;
-    state.saved.lock().unwrap().profile = Some(fetched);
+    let mut fetched = profile::fetch(region, server_id, &character_id, now_ms()).await?;
+    let mut saved = state.saved.lock().unwrap();
+    fetched.file_preset(saved.profile.as_ref());
+    saved.profile = Some(fetched);
+    drop(saved);
     save(&app, &state);
     let _ = app.emit("state-changed", ());
     Ok(())
@@ -453,6 +456,26 @@ async fn game_data(app: AppHandle, name: String) -> Result<serde_json::Value, St
 #[tauri::command]
 fn clear_profile(app: AppHandle, state: State<App>) {
     state.saved.lock().unwrap().profile = None;
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
+/// The user says the profile's read is skill preset `n`.
+#[tauri::command]
+fn move_preset(app: AppHandle, state: State<App>, n: u8) {
+    if let Some(p) = state.saved.lock().unwrap().profile.as_mut() {
+        p.presets.move_to(n);
+    }
+    save(&app, &state);
+    let _ = app.emit("state-changed", ());
+}
+
+/// Drops a skill preset kept from an earlier read.
+#[tauri::command]
+fn forget_preset(app: AppHandle, state: State<App>, n: u8) {
+    if let Some(p) = state.saved.lock().unwrap().profile.as_mut() {
+        p.presets.forget(n);
+    }
     save(&app, &state);
     let _ = app.emit("state-changed", ());
 }
@@ -791,7 +814,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }
