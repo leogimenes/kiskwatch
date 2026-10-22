@@ -543,6 +543,17 @@ fn dps_compare(state: State<App>, id: String) -> Option<kiskwatch_core::history:
     kiskwatch_core::history::compare(fight, &saved.fights)
 }
 
+/// Save a recording's image (drawn by the panel) to Pictures/Kiskwatch, under
+/// the recording's name; returns where it went.
+#[tauri::command]
+fn dps_save_image(app: AppHandle, name: String, png: Vec<u8>) -> Result<String, String> {
+    let dir = app.path().picture_dir().or_else(|_| app.path().download_dir()).map_err(|e| e.to_string())?.join("Kiskwatch");
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let path = dir.join(format!("{}.png", kiskwatch_core::dps::file_name(&name)));
+    std::fs::write(&path, png).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().into_owned())
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct CaptureStatus {
     #[serde(flatten)]
@@ -645,7 +656,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }
