@@ -175,6 +175,9 @@ pub struct Saved {
     pub profile: Option<crate::profile::Profile>,
     /// The DPS tracker's recordings, newest first.
     pub fights: Vec<kiskwatch_core::dps::Fight>,
+    /// When the DPS overlay was last cleared, in ms: it leaves out
+    /// recordings that ended before.
+    pub dps_cleared_ms: i64,
     /// Builds kept to compare against, newest first.
     pub references: Vec<Reference>,
     /// The daily and weekly checklist, per character.

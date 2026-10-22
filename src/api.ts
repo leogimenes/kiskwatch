@@ -216,6 +216,8 @@ export interface Saved {
   pet_queue: Record<string, { pets: number[]; last: number | null }>;
   /** DPS recordings, newest first. */
   fights: Fight[];
+  /** When the DPS overlay was last cleared, in ms. */
+  dps_cleared_ms: number;
   /** Saved builds, newest first. */
   references: Reference[];
 }
@@ -315,6 +317,7 @@ export const gameData = <T>(name: "skill-points" | "daevanion" | "skills") => in
 export const dpsLive = () => invoke<Fight | null>("dps_live");
 export const dpsStart = () => invoke("dps_start");
 export const dpsStop = () => invoke("dps_stop");
+export const dpsClear = () => invoke("dps_clear");
 /** Rename the recording under way (no id) or a saved one. */
 export const dpsRename = (id: string | null, name: string) => invoke("dps_rename", { id, name });
 export const dpsDelete = (id: string) => invoke("dps_delete", { id });

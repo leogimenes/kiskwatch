@@ -1,6 +1,6 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
 // at by target and kind of bar, rename or delete; or the recordings by boss.
-import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
+import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
 import { BARS, TARGETS, clock, loadGear, rowLine, rows, short } from "./dpsView";
@@ -47,10 +47,12 @@ function renderLive() {
   const auto = saved?.settings.dps.start === "hit";
   const button = el("button", { type: "button", textContent: live ? "Parar a gravação" : "Gravar agora", className: live ? "rec" : "" });
   button.addEventListener("click", async () => { if (live) await dpsStop(); else await dpsStart(); await poll(); });
+  const clear = el("button", { type: "button", textContent: "Limpar", title: "Zera a gravação em andamento (sem salvar) e limpa o overlay" });
+  clear.addEventListener("click", async () => { await dpsClear(); await poll(); });
   box.replaceChildren(
     live ? el("strong", { className: "rec" }, `● Gravando: ${live.name} · ${clock(Date.now() - live.started_ms)}`)
       : el("span", { className: "hint" }, auto ? "A gravação começa sozinha no seu primeiro golpe e termina depois de 30 s sem dano." : "A gravação começa e termina pelo botão (aqui ou no overlay)."),
-    button);
+    button, clear);
 }
 
 function renderList() {
