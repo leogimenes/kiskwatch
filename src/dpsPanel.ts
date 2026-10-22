@@ -3,6 +3,7 @@
 import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsStart, dpsStop, onDpsChanged } from "./api";
 import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
 import { skillTable } from "./dpsSkills";
+import { castsSection } from "./dpsCasts";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -85,6 +86,7 @@ function renderDetail() {
     list.length ? el("ol", { className: "dps-rows" }, ...list.map(line))
       : el("p", { className: "hint" }, "Nada para este alvo."),
     shown && b !== "heal" ? skillTable(f, shown, t, saved, renderDetail) : "",
+    shown ? castsSection(f, shown, saved.profile, renderDetail) : "",
   );
 }
 

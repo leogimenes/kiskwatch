@@ -2,6 +2,7 @@
 //! card, so it builds and tests anywhere.
 
 pub mod boss_map;
+pub mod casts;
 pub mod combat;
 pub mod dispatch;
 pub mod dps;
