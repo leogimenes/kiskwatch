@@ -84,7 +84,29 @@ export interface SkillCasts { skill: number; at: number[] }
 /** A DPS recording, live or saved. */
 export interface Fight {
   id: string; name: string; started_ms: number; ended_ms: number; players: FightPlayer[];
+  /** Each boss hit, most damaged first (none in recordings from before). */
+  bosses?: FightBoss[];
 }
+
+export interface SkillDamage { skill: number; damage: number; hits: number }
+
+export interface FightBoss {
+  code: number; first_ms: number; last_ms: number; damage: number; my_damage: number; my_skills: SkillDamage[];
+}
+
+/** One recording against a boss: time from its first to last hit. */
+export interface Attempt {
+  fight_id: string; name: string; started_ms: number; kill_ms: number; my_dps: number; group_dps: number; players: number;
+}
+
+export interface BossHistory {
+  code: number; attempts: Attempt[]; best_id: string; avg_kill_ms: number; fastest_kill_ms: number; avg_my_dps: number; avg_group_dps: number;
+}
+
+export interface SkillDiff { skill: number; damage: number; hits: number; dps: number; best_damage: number; best_hits: number; best_dps: number }
+
+/** A recording against your best one against the same boss. */
+export interface Comparison { code: number; now: Attempt; best: Attempt; is_best: boolean; skills: SkillDiff[] }
 
 export interface PetProgress {
   level: number;
@@ -199,6 +221,8 @@ export const dpsStop = () => invoke("dps_stop");
 /** Rename the recording under way (no id) or a saved one. */
 export const dpsRename = (id: string | null, name: string) => invoke("dps_rename", { id, name });
 export const dpsDelete = (id: string) => invoke("dps_delete", { id });
+export const bossHistory = () => invoke<BossHistory[]>("boss_history");
+export const dpsCompare = (id: string) => invoke<Comparison | null>("dps_compare", { id });
 export { openUrl } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);

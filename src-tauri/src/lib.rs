@@ -529,6 +529,20 @@ fn dps_delete(app: AppHandle, state: State<App>, id: String) {
     let _ = app.emit("dps-changed", ());
 }
 
+/// Every saved recording, grouped by the boss each was against.
+#[tauri::command]
+fn boss_history(state: State<App>) -> Vec<kiskwatch_core::history::BossHistory> {
+    kiskwatch_core::history::by_boss(&state.saved.lock().unwrap().fights)
+}
+
+/// A saved recording against your best one against the same boss.
+#[tauri::command]
+fn dps_compare(state: State<App>, id: String) -> Option<kiskwatch_core::history::Comparison> {
+    let saved = state.saved.lock().unwrap();
+    let fight = saved.fights.iter().find(|f| f.id == id)?;
+    kiskwatch_core::history::compare(fight, &saved.fights)
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct CaptureStatus {
     #[serde(flatten)]
@@ -629,7 +643,7 @@ pub fn run() {
             std::thread::spawn(move || dps_clock(handle));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, capture_status, game_running, search_characters, load_profile, clear_profile, game_data, dps_live, dps_start, dps_stop, dps_rename, dps_delete, boss_history, dps_compare])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

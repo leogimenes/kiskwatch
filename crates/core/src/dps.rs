@@ -37,6 +37,32 @@ pub struct Fight {
     /// The last damage, or when it was stopped by hand.
     pub ended_ms: i64,
     pub players: Vec<FightPlayer>,
+    /// Each boss hit, most damaged first: what the boss history goes by.
+    pub bosses: Vec<FightBoss>,
+}
+
+/// A boss in a recording (every one with the same NPC code counts as one).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct FightBoss {
+    pub code: i32,
+    /// The first and last hit any player landed on it.
+    pub first_ms: i64,
+    pub last_ms: i64,
+    /// Everyone's damage on it, and yours.
+    pub damage: i64,
+    pub my_damage: i64,
+    /// Your damage on it by skill (summons' under their own skill), most first.
+    pub my_skills: Vec<SkillDamage>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SkillDamage {
+    /// The skill without its level: a player skill's code to the ten thousand.
+    pub skill: i32,
+    pub damage: i64,
+    pub hits: u32,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -139,6 +165,17 @@ struct Recording {
     acted: HashMap<i32, Vec<i64>>,
     /// By (player hit, NPC code, skill): damage, hits, the biggest.
     taken: HashMap<(i32, i32, i32), (i64, u32, i64)>,
+    /// By boss code.
+    bosses: HashMap<i32, BossTally>,
+}
+
+#[derive(Debug, Clone, Default)]
+struct BossTally {
+    first_ms: i64,
+    last_ms: i64,
+    damage: i64,
+    my_damage: i64,
+    my_skills: HashMap<i32, (i64, u32)>,
 }
 
 impl Recording {
@@ -176,7 +213,8 @@ pub struct Meter {
     npcs: HashSet<i32>,
     /// NPC → its code.
     codes: HashMap<i32, i32>,
-    bosses: HashSet<i32>,
+    /// Boss entity → its NPC code.
+    bosses: HashMap<i32, i32>,
     rec: Option<Recording>,
 }
 
@@ -227,7 +265,7 @@ impl Meter {
                 self.npcs.insert(id);
                 self.codes.insert(id, code);
                 if self.boss_codes.contains(&code) {
-                    self.bosses.insert(id);
+                    self.bosses.insert(id, code);
                 } else {
                     self.bosses.remove(&id);
                 }
@@ -273,6 +311,8 @@ impl Meter {
                     self.begin(n, true, now);
                     started = true;
                 }
+                let boss = self.bosses.get(&target).copied();
+                let mine = self.me == Some(who);
                 if let Some(rec) = &mut self.rec {
                     *rec.damage.entry((target, actor)).or_default() += value;
                     rec.skills.entry((target, actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
@@ -283,6 +323,17 @@ impl Meter {
                         rec.act(actor, now);
                     }
                     rec.last_gain_ms = now;
+                    if let Some(code) = boss {
+                        let t = rec.bosses.entry(code).or_insert_with(|| BossTally { first_ms: now, ..Default::default() });
+                        t.last_ms = now;
+                        t.damage += value;
+                        if mine {
+                            t.my_damage += value;
+                            let s = t.my_skills.entry(base_skill(skill)).or_default();
+                            s.0 += value;
+                            s.1 += 1;
+                        }
+                    }
                 }
             }
             CombatEvent::Heal { actor, amount, .. } => {
@@ -307,7 +358,7 @@ impl Meter {
     }
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
-        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new(), taken: HashMap::new() });
+        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new(), taken: HashMap::new(), bosses: HashMap::new() });
     }
 
     /// Start recording by hand.
@@ -354,7 +405,7 @@ impl Meter {
         let mut players: HashMap<i32, FightPlayer> = HashMap::new();
         for (&(target, actor), &n) in &rec.damage {
             if let Some(p) = self.row(&mut players, self.owner(actor)) {
-                if self.bosses.contains(&target) {
+                if self.bosses.contains_key(&target) {
                     p.boss_damage += n;
                 } else {
                     p.mob_damage += n;
@@ -368,7 +419,7 @@ impl Meter {
                 continue;
             }
             let s = skills.entry((who, skill, dot)).or_insert_with(|| SkillStat { skill, dot, ..Default::default() });
-            if self.bosses.contains(&target) { &mut s.boss } else { &mut s.mob }.merge(t);
+            if self.bosses.contains_key(&target) { &mut s.boss } else { &mut s.mob }.merge(t);
         }
         for ((who, ..), s) in skills {
             if let Some(p) = self.row(&mut players, who) {
@@ -411,7 +462,17 @@ impl Meter {
             p.taken.sort_by_key(|t| (std::cmp::Reverse(t.damage), t.npc, t.skill));
         }
         players.sort_by_key(|p| (std::cmp::Reverse(p.boss_damage + p.mob_damage), std::cmp::Reverse(p.heal), p.id));
-        Some(Fight { id: rec.started_ms.to_string(), name: rec.name.clone(), started_ms: rec.started_ms, ended_ms: now, players })
+        let mut bosses: Vec<FightBoss> = rec
+            .bosses
+            .iter()
+            .map(|(&code, t)| {
+                let mut my_skills: Vec<SkillDamage> = t.my_skills.iter().map(|(&skill, &(damage, hits))| SkillDamage { skill, damage, hits }).collect();
+                my_skills.sort_by_key(|s| (std::cmp::Reverse(s.damage), s.skill));
+                FightBoss { code, first_ms: t.first_ms, last_ms: t.last_ms, damage: t.damage, my_damage: t.my_damage, my_skills }
+            })
+            .collect();
+        bosses.sort_by_key(|b| (std::cmp::Reverse(b.damage), b.code));
+        Some(Fight { id: rec.started_ms.to_string(), name: rec.name.clone(), started_ms: rec.started_ms, ended_ms: now, players, bosses })
     }
 }
 
@@ -478,6 +539,25 @@ mod tests {
         let me = f.players.iter().find(|p| p.id == ME).unwrap();
         assert_eq!((me.mob_damage, me.boss_damage, me.heal), (30, 70, 50));
         assert_eq!(f.ended_ms, 1_000);
+    }
+
+    #[test]
+    fn bosses_keep_their_time_and_your_skills() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        for (e, at) in [
+            (hit(ME, MOB, CLERIC, 30), 500),
+            (hit(ME, BOSS, CLERIC + 3, 70), 1_000),
+            (hit(MATE, BOSS, GLADIATOR, 200), 2_000),
+            (hit(ME, BOSS, CLERIC + 7, 30), 4_000),
+        ] {
+            m.apply(e, at, false, named);
+        }
+        let f = m.stop(9_000).unwrap();
+        assert_eq!(f.bosses.len(), 1);
+        let b = &f.bosses[0];
+        assert_eq!((b.code, b.first_ms, b.last_ms, b.damage, b.my_damage), (BOSS_CODE, 1_000, 4_000, 300, 100));
+        assert_eq!(b.my_skills, vec![SkillDamage { skill: CLERIC, damage: 100, hits: 2 }]);
     }
 
     #[test]
