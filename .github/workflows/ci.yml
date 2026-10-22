@@ -27,6 +27,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - run: node scripts/version.mjs check
+      # Só um PR de release (branch release/vX.Y.Z) muda a versão, e sempre para cima.
+      - if: github.event_name == 'pull_request'
+        run: |
+          git fetch --depth=1 origin "$GITHUB_BASE_REF"
+          node scripts/version.mjs check-pr
       - run: cargo test -p kiskwatch-core
       - run: npm ci
       - run: npm run build
