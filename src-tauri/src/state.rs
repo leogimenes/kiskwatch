@@ -19,7 +19,8 @@ pub struct Settings {
     /// Alarm lead times (minutes) by timer id.
     pub alarms: BTreeMap<String, Vec<u32>>,
     pub click_through: bool,
-    /// Show the timers overlay, and the pets overlay.
+    /// Remind of the timers at the top of the game's window as their
+    /// alarms ring; show the pets overlay.
     pub timer_overlay: bool,
     pub pet_overlay: bool,
     /// Show the overlays only while the game is running.

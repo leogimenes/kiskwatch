@@ -1,0 +1,67 @@
+name: Release
+
+# Ao mesclar um PR de release (branch release/vX.Y.Z) na main: gera o instalador, cria a tag
+# vX.Y.Z no commit do merge e publica a release com o instalador, SHA256SUMS.txt e latest.json.
+# Se falhar, "Re-run jobs" nesta execução tenta de novo; nada é publicado antes do último passo.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event.pull_request.merged && startsWith(github.event.pull_request.head.ref, 'release/v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ github.event.pull_request.merge_commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Conferir a versão
+        id: version
+        run: |
+          version=$(node scripts/version.mjs get)
+          branch="${{ github.event.pull_request.head.ref }}"
+          if [ "$branch" != "release/v$version" ]; then
+            echo "::error::o branch $branch não bate com a versão $version dos arquivos"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
+            echo "::error::a tag v$version já existe"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: false
+      - run: npm ci
+      - run: npx tauri build
+      - run: node scripts/release-assets.mjs release
+      - name: Publicar a release
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          # Versão com sufixo (1.0.0-beta.1) sai como prerelease e não vira a "latest" do atualizador.
+          extra=(--latest)
+          case "$version" in *-*) extra=(--prerelease --latest=false) ;; esac
+          gh release create "v$version" release/* \
+            --target "$SHA" \
+            --title "Kiskwatch v$version" \
+            --generate-notes \
+            "${extra[@]}"
