@@ -10,7 +10,7 @@ mod profile;
 mod state;
 
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 
 use kiskwatch_core::checklist::{Character, Checklist, Resets, Task};
@@ -20,7 +20,8 @@ use kiskwatch_core::schedule::{self, Event};
 use kiskwatch_core::pets::{self, Pace, PetRecord};
 use kiskwatch_core::stream::GameEvent;
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
+use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 use state::{FieldBoss, Hotkeys, Saved, Settings, SoulSeen};
 
@@ -301,6 +302,27 @@ fn show_overlays(app: &AppHandle, s: &Settings) {
 fn show_overlays_now(app: &AppHandle) {
     let settings = app.state::<App>().saved.lock().unwrap().settings.clone();
     show_overlays(app, &settings);
+}
+
+/// What is kept of each window between runs and new versions: where it is and
+/// its size. Not whether it shows, which the settings decide (`show_overlays`).
+const WINDOW_FLAGS: StateFlags = StateFlags::POSITION.union(StateFlags::SIZE).union(StateFlags::MAXIMIZED);
+
+/// Bumped on every move or resize; a save waits for it to settle.
+static WINDOW_MOVES: AtomicU64 = AtomicU64::new(0);
+
+/// Save where the windows are a second after one stops moving. The plugin
+/// only saves on a clean exit, and an installer closing the app for a new
+/// version doesn't always give it one.
+fn save_windows_soon(app: &AppHandle) {
+    let ticket = WINDOW_MOVES.fetch_add(1, Ordering::Relaxed) + 1;
+    let app = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_secs(1));
+        if WINDOW_MOVES.load(Ordering::Relaxed) == ticket {
+            let _ = app.save_window_state(WINDOW_FLAGS);
+        }
+    });
 }
 
 /// Follow the game starting and quitting, and the overlays with it.
@@ -807,6 +829,14 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        // Windows go back where they were, from the app's config folder in
+        // AppData, which installing a new version leaves alone.
+        .plugin(tauri_plugin_window_state::Builder::new().with_state_flags(WINDOW_FLAGS).build())
+        .on_window_event(|window, event| {
+            if matches!(event, WindowEvent::Moved(_) | WindowEvent::Resized(_)) {
+                save_windows_soon(window.app_handle());
+            }
+        })
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
