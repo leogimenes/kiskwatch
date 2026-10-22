@@ -8,6 +8,7 @@ mod hotkeys;
 mod pcap;
 mod profile;
 mod state;
+mod updater;
 
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -44,6 +45,8 @@ pub struct App {
     hotkey_error: Mutex<Option<String>>,
     /// Item level and combat power of the players on the DPS bars.
     gear: Mutex<kiskwatch_core::gear::Lookups>,
+    /// A newer release, and how installing it goes.
+    update: Mutex<updater::Status>,
 }
 
 fn now_ms() -> i64 {
@@ -88,6 +91,7 @@ impl App {
             meter: Mutex::new(Meter::new(kiskwatch_core::combat::boss_codes())),
             hotkey_error: Mutex::new(None),
             gear: Default::default(),
+            update: Default::default(),
         }
     }
 
@@ -323,9 +327,13 @@ fn save_windows_soon(app: &AppHandle) {
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_secs(1));
         if WINDOW_MOVES.load(Ordering::Relaxed) == ticket {
-            let _ = app.save_window_state(WINDOW_FLAGS);
+            save_windows(&app);
         }
     });
+}
+
+fn save_windows(app: &AppHandle) {
+    let _ = app.save_window_state(WINDOW_FLAGS);
 }
 
 /// Follow the game starting and quitting, and the overlays with it.
@@ -864,6 +872,23 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
     }
 }
 
+#[tauri::command]
+fn update_status(app: AppHandle) -> updater::Status {
+    updater::status(&app)
+}
+
+#[tauri::command]
+async fn update_check(app: AppHandle) -> Result<updater::Status, String> {
+    Ok(updater::check(&app).await)
+}
+
+/// Download the newer release, check its SHA-256 and install it; Kiskwatch
+/// quits for the installer and comes back on the new version.
+#[tauri::command]
+async fn update_install(app: AppHandle) -> Result<(), String> {
+    updater::install(&app).await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -915,9 +940,10 @@ pub fn run() {
             std::thread::spawn(move || read_capture(handle, rx));
             let handle = app.handle().clone();
             std::thread::spawn(move || dps_clock(handle));
+            tauri::async_runtime::spawn(updater::watch(app.handle().clone()));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install])
         .run(tauri::generate_context!())
         .expect("error while running Kiskwatch");
 }

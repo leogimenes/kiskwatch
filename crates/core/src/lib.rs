@@ -15,4 +15,5 @@ pub mod pets;
 pub mod presets;
 pub mod schedule;
 pub mod stream;
+pub mod update;
 pub mod varint;

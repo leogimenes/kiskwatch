@@ -349,3 +349,4 @@ button.primary { background: var(--accent); color: #0b1220; border-color: var(--
 .enchant-steps td:first-child { white-space: nowrap; }
 #enchant { overflow-x: auto; }
 #enchant .hint { max-width: 900px; }
+.update-badge { padding: 4px 10px; border-radius: 999px; background: var(--accent); color: #0b1220; border-color: var(--accent); font-size: 12px; }
