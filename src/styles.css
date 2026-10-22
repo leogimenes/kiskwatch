@@ -193,7 +193,9 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .dps-list button { width: 100%; display: grid; gap: 2px; text-align: left; }
 .dps-list button.active { border-color: var(--accent); }
 .dps-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dps-title { display: flex; gap: 8px; }
+.dps-title { display: flex; gap: 8px; flex-wrap: wrap; }
+.dps-exported { margin: 6px 0 0; }
+.dps-exported .link { padding: 0; border: 0; color: var(--accent); text-decoration: underline; word-break: break-all; text-align: left; }
 .dps-rename { flex: 1; font: inherit; font-size: 1.1em; font-weight: 600; }
 .dps-filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
 .chip-group { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }

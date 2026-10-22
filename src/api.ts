@@ -235,7 +235,9 @@ export const dpsRename = (id: string | null, name: string) => invoke("dps_rename
 export const dpsDelete = (id: string) => invoke("dps_delete", { id });
 export const bossHistory = () => invoke<BossHistory[]>("boss_history");
 export const dpsCompare = (id: string) => invoke<Comparison | null>("dps_compare", { id });
-export { openUrl } from "@tauri-apps/plugin-opener";
+/** Save a recording's PNG to Pictures/Kiskwatch; returns where it went. */
+export const dpsSaveImage = async (name: string, png: Blob) => invoke<string>("dps_save_image", { name, png: Array.from(new Uint8Array(await png.arrayBuffer())) });
+export { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
 
 export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);

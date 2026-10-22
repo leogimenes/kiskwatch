@@ -1,7 +1,8 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
 // at by target and kind of bar, rename or delete; or the recordings by boss.
-import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsStart, dpsStop, onDpsChanged } from "./api";
+import { DpsBars, DpsTarget, Fight, Saved, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
+import { fightImage } from "./dpsImage";
 import { BARS, TARGETS, clock, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
@@ -26,6 +27,8 @@ let who: number | null = null;
 /** Whose damage taken is shown, by player id. */
 let victim: number | null = null;
 let view: "fights" | "bosses" = "fights";
+/** What the last copy or save said, for the recording it was about. */
+let exported: { id: string; text: string; path?: string } | null = null;
 
 const when = (ms: number) => new Date(ms).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const damageOf = (f: Fight) => f.players.reduce((n, p) => n + p.boss_damage + p.mob_damage, 0);
@@ -74,6 +77,32 @@ function renderDetail() {
   name.addEventListener("change", () => { if (name.value.trim()) dpsRename(f.id, name.value); });
   const del = el("button", { type: "button", textContent: "Apagar" });
   del.addEventListener("click", () => { if (confirm(`Apagar "${f.name}"?`)) dpsDelete(f.id); });
+  const said = (text: string, path?: string) => { exported = { id: f.id, text, path }; renderDetail(); };
+  const copy = el("button", { type: "button", textContent: "Copiar imagem", title: "Copia a gravação como imagem, do jeito que está filtrada, para colar no Discord" });
+  copy.addEventListener("click", async () => {
+    try {
+      // The promise goes straight in so the copy still counts as the click's.
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": fightImage(f, t, b) })]);
+      said("Imagem copiada. Cole no Discord com Ctrl+V.");
+    } catch {
+      try {
+        said("Não deu para copiar; a imagem foi salva em", await dpsSaveImage(f.name, await fightImage(f, t, b)));
+      } catch (e) {
+        said(`Não deu para copiar nem salvar a imagem: ${e}`);
+      }
+    }
+  });
+  const save = el("button", { type: "button", textContent: "Salvar PNG", title: "Salva a imagem em Imagens\\Kiskwatch" });
+  save.addEventListener("click", async () => {
+    try {
+      said("Imagem salva em", await dpsSaveImage(f.name, await fightImage(f, t, b)));
+    } catch (e) {
+      said(`Não deu para salvar a imagem: ${e}`);
+    }
+  });
+  const note = exported?.id === f.id ? exported : null;
+  const reveal = el("button", { type: "button", className: "link", textContent: note?.path ?? "" });
+  reveal.addEventListener("click", () => { if (note?.path) revealItemInDir(note.path); });
   const list = rows(f, t, b);
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const shown = f.players.find((p) => p.id === who) ?? f.players.find((p) => p.local) ?? f.players[0];
@@ -85,7 +114,8 @@ function renderDetail() {
     return li;
   };
   box.replaceChildren(
-    el("div", { className: "dps-title" }, name, del),
+    el("div", { className: "dps-title" }, name, copy, save, del),
+    ...(note ? [el("p", { className: "hint dps-exported", role: "status" }, note.text, ...(note.path ? [" ", reveal] : []))] : []),
     el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`),
     el("div", { className: "dps-filters" },
       chips(TARGETS, t, (v) => { target = v; render(); }),

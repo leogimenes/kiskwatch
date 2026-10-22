@@ -237,6 +237,23 @@ pub fn clip_name(name: &str) -> String {
     name.trim().chars().take(NAME_MAX).collect()
 }
 
+/// A recording's name as a file name Windows accepts: "Leozin 21/10 22:05 #K3P"
+/// becomes "Leozin 21-10 22-05 K3P".
+pub fn file_name(name: &str) -> String {
+    let mut out = String::new();
+    for c in clip_name(name).chars() {
+        match c {
+            '/' | '\\' | ':' | '|' => out.push('-'),
+            '#' | '<' | '>' | '"' | '?' | '*' => {}
+            c if c.is_control() => {}
+            c => out.push(c),
+        }
+    }
+    let out = out.split_whitespace().collect::<Vec<_>>().join(" ");
+    let out = out.trim_matches(|c: char| c == '.' || c == ' ');
+    if out.is_empty() { "Luta".into() } else { out.into() }
+}
+
 impl Meter {
     pub fn new(boss_codes: HashSet<i32>) -> Self {
         Self { boss_codes, ..Default::default() }
@@ -809,5 +826,13 @@ mod tests {
     fn old_recordings_read_without_a_timeline() {
         let p: FightPlayer = serde_json::from_str(r#"{"id":1,"name":"a","boss_damage":5}"#).unwrap();
         assert!(p.timeline.is_empty() && p.idle.is_empty());
+    }
+
+    #[test]
+    fn file_names_windows_accepts() {
+        assert_eq!(file_name("Leozin 21/10 22:05 #K3P"), "Leozin 21-10 22-05 K3P");
+        assert_eq!(file_name(" a<b>\"c\"?* . "), "abc");
+        assert_eq!(file_name("..."), "Luta");
+        assert_eq!(file_name("Ação com Ñ"), "Ação com Ñ");
     }
 }
