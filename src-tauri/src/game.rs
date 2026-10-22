@@ -39,16 +39,18 @@ pub struct Foreground {
     system: System,
     /// The last process in front, and whether it was the game.
     last: Option<(u32, bool)>,
+    /// The game's window, the last time it was in front.
+    game_window: Option<isize>,
 }
 
 impl Foreground {
     pub fn new() -> Self {
-        Self { system: System::new_with_specifics(RefreshKind::nothing()), last: None }
+        Self { system: System::new_with_specifics(RefreshKind::nothing()), last: None, game_window: None }
     }
 
     /// None while no window is in front, as for a moment when switching.
     pub fn front(&mut self) -> Option<Front> {
-        let pid = foreground_pid()?;
+        let (hwnd, pid) = foreground()?;
         if pid == std::process::id() {
             return Some(Front::Us);
         }
@@ -62,12 +64,21 @@ impl Foreground {
                 game
             }
         };
+        if game {
+            self.game_window = Some(hwnd);
+        }
         Some(if game { Front::Game } else { Front::Other })
+    }
+
+    /// The game's window, the last time it was in front.
+    pub fn game_window(&self) -> Option<isize> {
+        self.game_window
     }
 }
 
+/// The window in front and its process.
 #[cfg(windows)]
-fn foreground_pid() -> Option<u32> {
+fn foreground() -> Option<(isize, u32)> {
     use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
     // SAFETY: plain Win32 calls with no pointers kept.
     unsafe {
@@ -77,12 +88,43 @@ fn foreground_pid() -> Option<u32> {
         }
         let mut pid = 0u32;
         GetWindowThreadProcessId(hwnd, &mut pid);
-        (pid != 0).then_some(pid)
+        (pid != 0).then_some((hwnd as isize, pid))
     }
 }
 
 #[cfg(not(windows))]
-fn foreground_pid() -> Option<u32> {
+fn foreground() -> Option<(isize, u32)> {
+    None
+}
+
+/// Where a window's inside is on the screen, in pixels: its left, top and
+/// width, without the title bar when the game runs in a window. None once
+/// the window is gone.
+#[cfg(windows)]
+pub fn client_area(hwnd: isize) -> Option<(i32, i32, u32)> {
+    use windows_sys::Win32::Foundation::{POINT, RECT};
+    use windows_sys::Win32::Graphics::Gdi::ClientToScreen;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetClientRect, IsWindow};
+    let hwnd = hwnd as windows_sys::Win32::Foundation::HWND;
+    // SAFETY: plain Win32 calls on a handle we check first; the structs are ours.
+    unsafe {
+        if IsWindow(hwnd) == 0 {
+            return None;
+        }
+        let mut rect = RECT { left: 0, top: 0, right: 0, bottom: 0 };
+        if GetClientRect(hwnd, &mut rect) == 0 {
+            return None;
+        }
+        let mut corner = POINT { x: 0, y: 0 };
+        if ClientToScreen(hwnd, &mut corner) == 0 {
+            return None;
+        }
+        Some((corner.x, corner.y, rect.right.max(0) as u32))
+    }
+}
+
+#[cfg(not(windows))]
+pub fn client_area(_hwnd: isize) -> Option<(i32, i32, u32)> {
     None
 }
 

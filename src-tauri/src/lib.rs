@@ -10,7 +10,7 @@ mod profile;
 mod state;
 
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI64, AtomicIsize, AtomicU64, Ordering};
 use std::time::Duration;
 
 use kiskwatch_core::checklist::{Character, Checklist, Resets, Task};
@@ -33,6 +33,10 @@ pub struct App {
     game_running: AtomicBool,
     /// The game, or Kiskwatch, is in front (see `watch_focus`).
     game_focused: AtomicBool,
+    /// The game's window, the last time it was in front; 0 before.
+    game_window: AtomicIsize,
+    /// Until when a timer's reminder shows (unix ms; see `remind`).
+    reminder_until: AtomicI64,
     saved: Mutex<Saved>,
     capture: std::sync::Arc<Mutex<pcap::CaptureState>>,
     dispatch: Mutex<(DispatchStatus, i64)>,
@@ -76,6 +80,8 @@ impl App {
         Self {
             game_running: AtomicBool::new(game::running()),
             game_focused: AtomicBool::new(true),
+            game_window: AtomicIsize::new(0),
+            reminder_until: AtomicI64::new(0),
             saved: Mutex::new(saved),
             capture: Default::default(),
             dispatch: Mutex::new((DispatchStatus { locked: false, server_port: None }, 0)),
@@ -210,11 +216,60 @@ async fn alarm_clock(app: AppHandle) {
             };
             for (lead, start_ms) in due {
                 let _ = app.emit("alarm", Alarm { id: row.id.clone(), name: row.name.clone(), lead, start_ms });
+                remind(&app);
             }
         }
         last = now;
     }
 }
+
+/// The reminder window, at the top of the game's: hidden but while an alarm
+/// rings, for as long as the settings keep an alarm on the screen.
+const REMINDER: &str = "overlay";
+
+/// Show the reminder for an alarm just rung, at the top of the game's window,
+/// and hide it once its time is up.
+fn remind(app: &AppHandle) {
+    let state = app.state::<App>();
+    let (on, seconds) = {
+        let saved = state.saved.lock().unwrap();
+        (saved.settings.timer_overlay, saved.settings.a11y.alert_seconds.max(1))
+    };
+    if !on {
+        return;
+    }
+    let until = now_ms() + i64::from(seconds) * 1000;
+    state.reminder_until.store(until, Ordering::Relaxed);
+    place_reminder(app);
+    show_overlays_now(app);
+    let app = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_secs(u64::from(seconds)) + Duration::from_millis(200));
+        // A later alarm keeps it up longer.
+        if app.state::<App>().reminder_until.load(Ordering::Relaxed) <= now_ms() {
+            show_overlays_now(&app);
+        }
+    });
+}
+
+/// Put the reminder at the top middle of the game's window, or of the screen
+/// while the game hasn't been in front yet.
+fn place_reminder(app: &AppHandle) {
+    let Some(w) = app.get_webview_window(REMINDER) else { return };
+    let Ok(size) = w.outer_size() else { return };
+    let hwnd = app.state::<App>().game_window.load(Ordering::Relaxed);
+    let area = (hwnd != 0).then(|| game::client_area(hwnd)).flatten().or_else(|| {
+        let m = w.current_monitor().ok().flatten().or_else(|| w.primary_monitor().ok().flatten())?;
+        Some((m.position().x, m.position().y, m.size().width))
+    });
+    if let Some((left, top, width)) = area {
+        let x = left + (i64::from(width) - i64::from(size.width)).max(0) as i32 / 2;
+        let _ = w.set_position(tauri::PhysicalPosition::new(x, top + REMINDER_MARGIN));
+    }
+}
+
+/// How far below the top of the game's window the reminder sits, in pixels.
+const REMINDER_MARGIN: i32 = 12;
 
 fn save(app: &AppHandle, state: &App) {
     let saved = state.saved.lock().unwrap();
@@ -281,7 +336,8 @@ fn set_pet(app: AppHandle, state: State<App>, pet: u32, level: u32, points: u32)
     let _ = app.emit("state-changed", ());
 }
 
-const OVERLAYS: [&str; 3] = ["overlay", "pets", "dps"];
+/// The overlays one can move (the reminder places itself).
+const OVERLAYS: [&str; 2] = ["pets", "dps"];
 
 /// Show or hide each overlay as the settings say, and with the game running
 /// and in front.
@@ -289,7 +345,8 @@ fn show_overlays(app: &AppHandle, s: &Settings) {
     let state = app.state::<App>();
     let game_ok = state.game_running.load(Ordering::Relaxed) || !s.overlays_with_game;
     let focus_ok = state.game_focused.load(Ordering::Relaxed) || !s.overlays_with_focus;
-    let wanted = [("overlay", s.timer_overlay), ("pets", s.pet_overlay), ("dps", s.dps.overlay)].map(|(label, on)| (label, on && game_ok && focus_ok));
+    let reminding = state.reminder_until.load(Ordering::Relaxed) > now_ms();
+    let wanted = [(REMINDER, s.timer_overlay && reminding), ("pets", s.pet_overlay), ("dps", s.dps.overlay)].map(|(label, on)| (label, on && game_ok && focus_ok));
     // On the main thread, after any change to the windows already asked for,
     // since Tauri hides them again on those (see `game::show_window`).
     let handle = app.clone();
@@ -351,7 +408,15 @@ fn watch_focus(app: AppHandle) {
         // No window in front, as while switching: keep what we had.
         let Some(front) = fg.front() else { continue };
         let focused = front != game::Front::Other;
-        if app.state::<App>().game_focused.swap(focused, Ordering::Relaxed) != focused {
+        let state = app.state::<App>();
+        if let Some(hwnd) = fg.game_window() {
+            // The game moved to another window or screen: the reminder follows.
+            if state.game_window.swap(hwnd, Ordering::Relaxed) != hwnd && state.reminder_until.load(Ordering::Relaxed) > now_ms() {
+                place_reminder(&app);
+                show_overlays_now(&app);
+            }
+        }
+        if state.game_focused.swap(focused, Ordering::Relaxed) != focused {
             show_overlays_now(&app);
         }
     }
@@ -435,18 +500,18 @@ fn on_hotkey(app: &AppHandle, action: hotkeys::Action) {
         hotkeys::Action::ClickThrough => {
             let on = !state.saved.lock().unwrap().settings.click_through;
             match click_through(app, &state, on) {
-                Ok(()) => toast(app, &["overlay", "dps", "pets"], if on { "Cliques passam para o jogo" } else { "Overlays podem ser movidos" }),
-                Err(e) => toast(app, &["overlay", "dps", "pets"], &format!("Não deu para mudar os cliques: {e}")),
+                Ok(()) => toast(app, &["dps", "pets"], if on { "Cliques passam para o jogo" } else { "Overlays podem ser movidos" }),
+                Err(e) => toast(app, &["dps", "pets"], &format!("Não deu para mudar os cliques: {e}")),
             }
         }
         hotkeys::Action::Dps => {
             let recording = state.meter.lock().unwrap().current(now_ms()).is_some();
             if recording {
                 dps_end(app, &state);
-                toast(app, &["dps", "overlay", "pets"], "DPS: gravação parada");
+                toast(app, &["dps", "pets"], "DPS: gravação parada");
             } else {
                 dps_begin(app, &state);
-                toast(app, &["dps", "overlay", "pets"], "DPS: gravando");
+                toast(app, &["dps", "pets"], "DPS: gravando");
             }
         }
     }
@@ -870,7 +935,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         // Windows go back where they were, from the app's config folder in
         // AppData, which installing a new version leaves alone.
-        .plugin(tauri_plugin_window_state::Builder::new().with_state_flags(WINDOW_FLAGS).build())
+        .plugin(tauri_plugin_window_state::Builder::new().with_state_flags(WINDOW_FLAGS).with_denylist(&[REMINDER]).build())
         .on_window_event(|window, event| {
             if matches!(event, WindowEvent::Moved(_) | WindowEvent::Resized(_)) {
                 save_windows_soon(window.app_handle());
@@ -899,6 +964,10 @@ pub fn run() {
                 if let Some(w) = app.get_webview_window(label) {
                     let _ = w.set_ignore_cursor_events(click_through);
                 }
+            }
+            // Nothing to click or move on the reminder: clicks go to the game.
+            if let Some(w) = app.get_webview_window(REMINDER) {
+                let _ = w.set_ignore_cursor_events(true);
             }
             show_overlays_now(app.handle());
             let handle = app.handle().clone();
