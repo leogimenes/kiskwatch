@@ -183,6 +183,8 @@ pub struct Saved {
     pub references: Vec<Reference>,
     /// The daily and weekly checklist, per character.
     pub checklist: kiskwatch_core::checklist::Checklist,
+    /// Whether to share the codes Kiskwatch couldn't name, and which went.
+    pub sharing: crate::share::Sharing,
 }
 
 /// A character's build as it was when saved, to compare against later.
