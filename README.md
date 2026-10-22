@@ -30,12 +30,14 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Dano recebido de cada monstro, skill a skill (golpes, maior golpe), nas gravações | 🧪 parser próprio, a validar no jogo |
 | Checklist diária e semanal por personagem, zerada sozinha nos resets | ✅ |
 | Calculadora de encantamento: tentativas, Kinah e pedras até o alvo, com sorte/azar e pior caso | ✅ chances oficiais (KR) e custos por nível do item |
+| Atualizador automático: avisa da versão nova e instala com o SHA-256 conferido | ✅ a partir da primeira release |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona
 
 - `crates/core`: o núcleo sem janela nem rede. Acha a conexão do jogo entre tudo que foi capturado (`dispatch.rs`), separa os pacotes do fluxo TCP do jogo, abre os bundles LZ4, decodifica os registros de bosses, pets e combate (`combat.rs`, somado por jogador em `dps.rs`), e calcula a agenda e os avisos. Testável em qualquer sistema: `cargo test -p kiskwatch-core`.
 - `src-tauri`: o app (Tauri 2). `pcap.rs` captura o tráfego via Npcap/libpcap. Quatro janelas: o painel, dois overlays transparentes (pets e DPS), sempre no topo, que podem deixar os cliques passarem para o jogo, e o lembrete dos timers, que só aparece no topo da janela do jogo quando um aviso toca. Guarda o estado em `state.json` na pasta de dados do app.
+- Atualizações: `updater.rs` lê o `latest.json` da última release do GitHub a cada 6 horas e, quando o jogador pede, baixa o instalador, confere o SHA-256 (`crates/core/src/update.rs`) e o roda no modo passivo; o app fecha e volta na versão nova.
 - `src`: as telas (TypeScript + Vite).
 - `data`: dados do jogo (pets, drops, spawns, Kibelisks, agenda, servidores), gerados de A2Tools-Plugins.
 
