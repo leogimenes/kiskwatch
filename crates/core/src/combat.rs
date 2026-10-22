@@ -254,9 +254,14 @@ impl Reader {
         if !(0..=99_999_999).contains(&value) {
             return None;
         }
-        // A monster's skill (seven digits): damage a player took, not done.
+        // A monster's skill (seven digits): damage a player took, not done;
+        // the meter tells them apart by who the actor is.
         let npc = (1_000_000..=9_999_999).contains(&skill);
-        if !npc && !self.lists.resource.contains(&skill) {
+        if npc {
+            if actor != target && value > 0 {
+                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit });
+            }
+        } else if !self.lists.resource.contains(&skill) {
             if actor != target {
                 out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit });
             } else if value > 1 {
@@ -500,9 +505,18 @@ mod tests {
     }
 
     #[test]
-    fn a_monster_hitting_you_is_not_damage_done() {
+    fn a_monster_hitting_you_comes_with_its_skill() {
         let p = packet(&[&[0x04, 0x38][..], &hit(4715, 5000, 2_000_100, 99)].concat());
-        assert!(Reader::default().read(&p).is_empty());
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 5000, target: 4715, skill: 2_000_100, value: 99, dot: false, crit: false }]);
+    }
+
+    /// Gatekeeper Pinopi (entity 47573) hitting a player (9681) for 1,258
+    /// with its skill 1607550, as A2Tools recorded it on 2026-10-15.
+    #[test]
+    fn reads_a_bosss_hit_on_a_player() {
+        let body: Vec<u8> = (0..58).step_by(2).map(|i| u8::from_str_radix(&"D14B0600D5F3027E871800020202000243ED940901000000904EEA090100"[i..i + 2], 16).unwrap()).collect();
+        let p = packet(&[&[0x04, 0x38][..], &body].concat());
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 47573, target: 9681, skill: 1_607_550, value: 1258, dot: false, crit: false }]);
     }
 
     #[test]

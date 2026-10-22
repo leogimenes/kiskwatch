@@ -2,7 +2,8 @@
 //!
 //! The meter follows what `combat` reads: who is a player (named, or using a
 //! class's skills), whose summons are whose, which monsters are bosses. A
-//! recording adds up each player's damage, by target, and healing.
+//! recording adds up each player's damage, by target, and healing, and the
+//! damage each player took from monsters, by monster and skill.
 //!
 //! A recording starts on the local player's first hit (or by hand) and ends by
 //! hand, or, when it started by itself, after a while without damage.
@@ -59,6 +60,8 @@ pub struct FightPlayer {
     pub skills: Vec<SkillStat>,
     /// When each skill was used, to set against its cooldown.
     pub casts: Vec<SkillCasts>,
+    /// What monsters did to this player, most damage first.
+    pub taken: Vec<Taken>,
 }
 
 /// One skill's damage in a recording: on bosses and on everything else.
@@ -105,6 +108,19 @@ impl SkillStat {
     }
 }
 
+/// The damage a player took from one monster's skill.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Taken {
+    /// The monster's NPC code; 0 when its spawn was missed.
+    pub npc: i32,
+    pub boss: bool,
+    pub skill: i32,
+    pub damage: i64,
+    pub hits: u32,
+    pub max_hit: i64,
+}
+
 #[derive(Debug, Clone)]
 struct Recording {
     name: String,
@@ -121,6 +137,8 @@ struct Recording {
     per_second: HashMap<(i32, i64), i64>,
     /// When each actor hit or cast a healing spell, oldest first.
     acted: HashMap<i32, Vec<i64>>,
+    /// By (player hit, NPC code, skill): damage, hits, the biggest.
+    taken: HashMap<(i32, i32, i32), (i64, u32, i64)>,
 }
 
 impl Recording {
@@ -156,6 +174,8 @@ pub struct Meter {
     owners: HashMap<i32, i32>,
     /// Entities that spawned as NPCs or summons: never players.
     npcs: HashSet<i32>,
+    /// NPC → its code.
+    codes: HashMap<i32, i32>,
     bosses: HashSet<i32>,
     rec: Option<Recording>,
 }
@@ -205,6 +225,7 @@ impl Meter {
             }
             CombatEvent::Npc { id, code } => {
                 self.npcs.insert(id);
+                self.codes.insert(id, code);
                 if self.boss_codes.contains(&code) {
                     self.bosses.insert(id);
                 } else {
@@ -220,7 +241,20 @@ impl Meter {
                     self.classes.insert(actor, c);
                 }
                 let who = self.owner(actor);
-                if !self.is_player(who) || value <= 0 {
+                if value <= 0 {
+                    return false;
+                }
+                if !self.is_player(who) {
+                    // A monster's hit on a player: damage taken.
+                    if self.is_player(target)
+                        && let Some(rec) = &mut self.rec
+                    {
+                        let code = self.codes.get(&actor).copied().unwrap_or(0);
+                        let t = rec.taken.entry((target, code, skill)).or_default();
+                        t.0 += value;
+                        t.1 += 1;
+                        t.2 = t.2.max(value);
+                    }
                     return false;
                 }
                 // A player's spell on a player: healing (or a buff), not damage.
@@ -273,7 +307,7 @@ impl Meter {
     }
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
-        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new() });
+        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new(), taken: HashMap::new() });
     }
 
     /// Start recording by hand.
@@ -283,7 +317,7 @@ impl Meter {
         }
     }
 
-    /// Stop recording; the fight, if anyone did anything.
+    /// Stop recording; the fight, if anyone did damage or healed.
     pub fn stop(&mut self, now: i64) -> Option<Fight> {
         self.finish(now)
     }
@@ -291,7 +325,7 @@ impl Meter {
     fn finish(&mut self, end: i64) -> Option<Fight> {
         let fight = self.current(end)?;
         self.rec = None;
-        Some(fight).filter(|f| !f.players.is_empty())
+        Some(fight).filter(|f| f.players.iter().any(|p| p.boss_damage + p.mob_damage + p.heal > 0))
     }
 
     pub fn rename(&mut self, name: &str) {
@@ -365,9 +399,16 @@ impl Meter {
                 *slot += n;
             }
         }
+        // After the timelines: a player who only took damage has none.
+        for (&(target, npc, skill), &(damage, hits, max_hit)) in &rec.taken {
+            if let Some(p) = self.row(&mut players, target) {
+                p.taken.push(Taken { npc, boss: self.boss_codes.contains(&npc), skill, damage, hits, max_hit });
+            }
+        }
         let mut players: Vec<FightPlayer> = players.into_values().collect();
         for p in &mut players {
             p.casts = rec.casts.of(p.id);
+            p.taken.sort_by_key(|t| (std::cmp::Reverse(t.damage), t.npc, t.skill));
         }
         players.sort_by_key(|p| (std::cmp::Reverse(p.boss_damage + p.mob_damage), std::cmp::Reverse(p.heal), p.id));
         Some(Fight { id: rec.started_ms.to_string(), name: rec.name.clone(), started_ms: rec.started_ms, ended_ms: now, players })
@@ -457,6 +498,44 @@ mod tests {
         m.start("x".into(), 0);
         m.apply(hit(MOB, ME, 2_000_100, 99), 0, false, named);
         assert_eq!(m.stop(1_000), None);
+    }
+
+    #[test]
+    fn damage_taken_by_monster_and_skill() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        for e in [
+            hit(ME, BOSS, CLERIC, 70),
+            hit(BOSS, ME, 2_301_001, 400),
+            hit(BOSS, ME, 2_301_001, 600),
+            hit(BOSS, ME, 2_301_002, 2_000),
+            hit(MOB, ME, 2_000_100, 30),
+            hit(BOSS, MATE, 2_301_001, 900),
+            // A spawn the meter missed: code 0.
+            hit(7777, ME, 2_000_100, 5),
+        ] {
+            m.apply(e, 500, false, named);
+        }
+        let f = m.stop(1_000).unwrap();
+        let me = f.players.iter().find(|p| p.id == ME).unwrap();
+        let rows: Vec<_> = me.taken.iter().map(|t| (t.npc, t.boss, t.skill, t.damage, t.hits, t.max_hit)).collect();
+        assert_eq!(rows, vec![
+            (BOSS_CODE, true, 2_301_002, 2_000, 1, 2_000),
+            (BOSS_CODE, true, 2_301_001, 1_000, 2, 600),
+            (2_000_002, false, 2_000_100, 30, 1, 30),
+            (0, false, 2_000_100, 5, 1, 5),
+        ]);
+        // Taking damage is not dealing it.
+        assert_eq!((me.boss_damage, me.mob_damage), (70, 0));
+        let mate = f.players.iter().find(|p| p.id == MATE).unwrap();
+        assert_eq!((mate.taken.len(), mate.taken[0].damage), (1, 900));
+    }
+
+    #[test]
+    fn damage_taken_does_not_start_a_recording() {
+        let mut m = meter();
+        assert!(!m.apply(hit(BOSS, ME, 2_301_001, 400), 0, true, named));
+        assert!(!m.recording());
     }
 
     #[test]

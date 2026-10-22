@@ -236,3 +236,15 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .casts-share { display: inline-flex; align-items: center; gap: 6px; }
 .casts-bar { display: inline-block; width: 60px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .casts-bar > span { display: block; height: 100%; background: var(--accent); }
+
+.taken { margin-top: 20px; max-width: 720px; }
+.taken h3 { margin: 0 0 6px; }
+.taken select { margin-bottom: 6px; font: inherit; }
+.taken-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.taken-table th { text-align: left; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line); padding: 4px 6px; }
+.taken-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.taken-table .num { text-align: right; white-space: nowrap; }
+.taken-table th:nth-child(n + 3) { text-align: right; }
+.taken-table tr.boss .taken-skill { font-weight: 600; }
+.taken-skill { position: relative; }
+.taken-bar { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 2px; background: #e06060; }
