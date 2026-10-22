@@ -325,3 +325,13 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .check-editor input:not([type]) { width: 220px; }
 .check-empty { padding: 12px 0; }
 button.primary { background: var(--accent); color: #0b1220; border-color: var(--accent); }
+
+/* Enchant tab */
+.enchant-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; max-width: 900px; margin-bottom: 14px; }
+.enchant-field { display: grid; gap: 4px; color: var(--muted); font-size: 13px; }
+.enchant-field select, .enchant-field input { width: 100%; min-width: 0; box-sizing: border-box; color: var(--text); font-size: 14px; }
+.enchant-steps { max-width: 960px; font-variant-numeric: tabular-nums; }
+.enchant-steps tr.risky td:nth-child(2) { color: var(--gold); }
+.enchant-steps td:first-child { white-space: nowrap; }
+#enchant { overflow-x: auto; }
+#enchant .hint { max-width: 900px; }

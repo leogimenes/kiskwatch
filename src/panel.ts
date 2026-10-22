@@ -10,6 +10,7 @@ import { renderBuild } from "./build";
 import { renderDps } from "./dpsPanel";
 import { renderGroup } from "./group";
 import { renderChecklist } from "./checklist";
+import "./enchant";
 import { applyLook, chime } from "./look";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
