@@ -5,6 +5,7 @@
 mod game;
 mod gamedata;
 mod hotkeys;
+mod log;
 mod pcap;
 mod profile;
 mod state;
@@ -278,7 +279,7 @@ const REMINDER_MARGIN: i32 = 12;
 fn save(app: &AppHandle, state: &App) {
     let saved = state.saved.lock().unwrap();
     if let Err(e) = state::store(app, &saved) {
-        eprintln!("kiskwatch: could not save state: {e}");
+        log::line(&format!("não deu para salvar o estado: {e}"));
     }
 }
 
@@ -405,8 +406,17 @@ fn save_windows_soon(app: &AppHandle) {
     });
 }
 
-fn save_windows(app: &AppHandle) {
-    let _ = app.save_window_state(WINDOW_FLAGS);
+/// On the main thread: the plugin holds its lock while asking each window
+/// where it is, and from another thread that question waits for the main
+/// thread, which waits for the same lock on any move or resize there. The two
+/// froze each other.
+pub(crate) fn save_windows(app: &AppHandle) {
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        if let Err(e) = handle.save_window_state(WINDOW_FLAGS) {
+            log::line(&format!("não deu para salvar a posição das janelas: {e}"));
+        }
+    });
 }
 
 /// Follow the game starting and quitting, and the overlays with it.
@@ -972,10 +982,15 @@ async fn update_install(app: AppHandle) -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    log::catch_panics();
+    log::line(&format!("Kiskwatch {} abrindo", env!("CARGO_PKG_VERSION")));
+    let app = tauri::Builder::default()
         // One Kiskwatch at a time: opening it again brings the panel up instead
         // of a second set of overlays over the first.
-        .plugin(tauri_plugin_single_instance::init(|app, _, _| show_panel(app)))
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            log::line("aberto de novo: o painel vem para a frente");
+            show_panel(app);
+        }))
         .plugin(tauri_plugin_opener::init())
         // Windows go back where they were, from the app's config folder in
         // AppData, which installing a new version leaves alone.
@@ -1029,9 +1044,21 @@ pub fn run() {
             let handle = app.handle().clone();
             std::thread::spawn(move || dps_clock(handle));
             tauri::async_runtime::spawn(updater::watch(app.handle().clone()));
+            log::line("pronto");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings])
-        .run(tauri::generate_context!())
-        .expect("error while running Kiskwatch");
+        .build(tauri::generate_context!());
+    let app = match app {
+        Ok(app) => app,
+        Err(e) => {
+            log::line(&format!("não abriu: {e}"));
+            panic!("error while building Kiskwatch: {e}");
+        }
+    };
+    app.run(|_, event| {
+        if let tauri::RunEvent::Exit = event {
+            log::line("fechando");
+        }
+    });
 }

@@ -54,7 +54,12 @@ async fn fetch_latest() -> Result<Option<Latest>, String> {
 }
 
 fn set(app: &AppHandle, change: impl FnOnce(&mut Status)) -> Status {
-    let state = app.state::<crate::App>();
+    // The panel's page loads, and asks, while Tauri is still making the other
+    // windows, before `setup` has managed the app's state: `state()` would
+    // panic there, on the main thread, and Windows ends the app on the spot.
+    let Some(state) = app.try_state::<crate::App>() else {
+        return Status { current: app.package_info().version.to_string(), ..Default::default() };
+    };
     let mut status = state.update.lock().unwrap();
     change(&mut status);
     status.clone()
@@ -123,6 +128,7 @@ fn launch(app: &AppHandle, path: &std::path::Path) -> Result<(), String> {
     }
     std::process::Command::new(path).args(["/P", "/UPDATE", "/R"]).spawn().map_err(|e| format!("não deu para abrir o instalador: {e}"))?;
     crate::save_windows(app);
+    crate::log::line(&format!("fechando para instalar {}", path.display()));
     app.exit(0);
     Ok(())
 }
@@ -130,7 +136,7 @@ fn launch(app: &AppHandle, path: &std::path::Path) -> Result<(), String> {
 /// Install the newer release, if there is one.
 pub async fn install(app: &AppHandle) -> Result<(), String> {
     let latest = {
-        let state = app.state::<crate::App>();
+        let state = app.try_state::<crate::App>().ok_or("o Kiskwatch ainda está abrindo")?;
         let mut status = state.update.lock().unwrap();
         if status.installing {
             return Ok(());
