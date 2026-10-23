@@ -8,8 +8,25 @@
     <link rel="stylesheet" href="/src/boss.css" />
   </head>
   <body>
+    <div id="titlebar" class="titlebar" data-tauri-drag-region>
+      <h1 class="brand" data-tauri-drag-region>
+        <svg class="brand-mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1 15 8 8 15 1 8Z" /><path d="M8 4.5 11.5 8 8 11.5 4.5 8Z" /></svg>
+        Kiskwatch
+      </h1>
+      <div class="win-controls">
+        <button id="win-min" class="win-btn" type="button" aria-label="Minimizar" title="Minimizar">
+          <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 5.5h10" /></svg>
+        </button>
+        <button id="win-max" class="win-btn" type="button" aria-label="Maximizar" title="Maximizar">
+          <svg class="icon-max" viewBox="0 0 10 10" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9" /></svg>
+          <svg class="icon-restore" viewBox="0 0 10 10" aria-hidden="true"><rect x="0.5" y="2.5" width="7" height="7" /><path d="M2.5 2.5V0.5h7v7h-2" /></svg>
+        </button>
+        <button id="win-close" class="win-btn close" type="button" aria-label="Fechar" title="Fechar">
+          <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0.5 0.5l9 9M9.5 0.5l-9 9" /></svg>
+        </button>
+      </div>
+    </div>
     <header class="top">
-      <h1>Kiskwatch</h1>
       <nav class="tabs">
         <button data-tab="timers" class="active">Timers</button>
         <button data-tab="pets">Pets</button>

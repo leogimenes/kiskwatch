@@ -12,6 +12,7 @@ import { renderGroup } from "./group";
 import { renderChecklist } from "./checklist";
 import "./enchant";
 import "./update";
+import "./titlebar";
 import "./share";
 import { applyLook, chime } from "./look";
 import { initTour, tourSettings, tourTab } from "./tour";
