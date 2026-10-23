@@ -133,7 +133,7 @@ export async function fightImage(f: Fight, target: DpsTarget, bars: DpsBars): Pr
   const boss = target === "boss" ? bossMs(f) : null;
   g.font = `13px ${FONT}`;
   g.fillStyle = MUTED;
-  g.fillText(fit(g, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)}${boss ? ` (${clock(boss)} no chefe)` : ""} · ${label(TARGETS, target)} · ${label(BARS, bars)} · ${short(total)} no grupo (${short(total / secs)}/s)`, W - 2 * PAD), PAD, 56);
+  g.fillText(fit(g, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)}${boss ? ` (${clock(boss)} no chefe)` : ` (${clock(secs * 1000)} em combate)`} · ${label(TARGETS, target)} · ${label(BARS, bars)} · ${short(total)} no grupo (${short(total / secs)}/s)`, W - 2 * PAD), PAD, 56);
 
   let y = HEAD;
   if (!list.length) {

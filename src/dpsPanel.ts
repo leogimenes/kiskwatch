@@ -4,7 +4,7 @@
 import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
-import { BARS, TARGETS, bossMs, clock, loadGear, rowLine, rows, short } from "./dpsView";
+import { BARS, TARGETS, bossMs, clock, combatSeconds, loadGear, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
 import { castsSection } from "./dpsCasts";
@@ -129,7 +129,8 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
     el("div", { className: "dps-title" }, name, copy, save, del, ...(underBoss ? [elsewhere] : [])),
     ...(note ? [el("p", { className: "hint dps-exported", role: "status" }, note.text, ...(note.path ? [" ", reveal] : []))] : []),
     el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`,
-      boss ? el("span", { title: "No filtro Boss, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`) : ""),
+      boss ? el("span", { title: "No filtro Boss, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`)
+        : el("span", { title: "O dano por segundo conta só o tempo em combate: fora os trechos de 3 s ou mais em que ninguém do grupo agiu (caminhadas e esperas entre os pulls)" }, ` · ${clock(combatSeconds(f) * 1000)} em combate (base do /s)`)),
     el("div", { className: "dps-filters" },
       chips(TARGETS, t, (v) => { if (underBoss) bossTarget = v; else target = v; again(); }),
       chips(BARS, b, (v) => { bars = v; again(); })),

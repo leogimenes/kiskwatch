@@ -24,7 +24,7 @@ export interface Row {
   heal: number;
   /** What the row is sorted and measured by. */
   total: number;
-  /** Per second over the recording (over the time on the bosses, for Boss). */
+  /** Per second in combat (on the bosses, for Boss); see `secondsFor`. */
   rate: number;
   share: number;
   color: string;
@@ -41,12 +41,46 @@ export function bossMs(f: Fight): number | null {
   return Math.max(1000, Math.max(...hit.map((b) => b.last_ms)) - Math.min(...hit.map((b) => b.first_ms)));
 }
 
-/** The seconds a target's numbers go per: the time on the bosses for Boss,
- *  so every recording of the same fight says the same no matter when it
- *  started or stopped; the whole recording otherwise. */
+/** Stretches of a recording, [from, to] in seconds from the start. */
+export type Windows = [number, number][];
+
+/** When the group was fighting: the recording minus the stretches of 3 s
+ *  or more nobody acted in (each player's `idle`). Recordings from before
+ *  the timeline count whole. */
+export function combatWindows(f: Fight): Windows {
+  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
+  if (!f.players.some((p) => p.timeline.length)) return [[0, secs]];
+  let calm: Windows = [[0, secs]];
+  for (const p of f.players) {
+    const idle = p.idle.map(([a, b]) => [a / 1000, b / 1000] as [number, number]);
+    const both: Windows = [];
+    for (const [a, b] of calm) for (const [c, d] of idle) {
+      const [x, y] = [Math.max(a, c), Math.min(b, d)];
+      if (y > x) both.push([x, y]);
+    }
+    calm = both;
+  }
+  calm = calm.filter(([a, b]) => b - a >= 3).sort((x, y) => x[0] - y[0]);
+  const out: Windows = [];
+  let from = 0;
+  for (const [a, b] of calm) {
+    if (a > from) out.push([from, a]);
+    from = Math.max(from, b);
+  }
+  if (secs > from) out.push([from, secs]);
+  return out;
+}
+
+/** The seconds the group was fighting (see `combatWindows`). */
+export const combatSeconds = (f: Fight) => Math.max(1, combatWindows(f).reduce((n, [a, b]) => n + b - a, 0));
+
+/** The seconds a target's numbers go per: the time on the bosses for Boss;
+ *  the time the group was fighting otherwise, without the walks and waits
+ *  between pulls. Either way, recordings of different stretches of the same
+ *  play come out alike, whenever each one started or stopped. */
 export function secondsFor(f: Fight, target: DpsTarget) {
   const boss = target === "boss" ? bossMs(f) : null;
-  return boss ? boss / 1000 : seconds(f);
+  return boss ? boss / 1000 : combatSeconds(f);
 }
 
 /** The rows for a target and a kind of bar, biggest first. With `limit`,

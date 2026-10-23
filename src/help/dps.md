@@ -20,11 +20,16 @@ Escolha uma gravação na lista para ver:
 
 Dá para renomear, apagar e **exportar a gravação como imagem** para colar no Discord.
 
+### Como o dano por segundo é calculado
+
+- **Total**: a soma dos golpes de cada jogador que chegaram ao seu app, com summons e dano contínuo.
+- **Duração**: do primeiro golpe de quem grava até 30 s sem dano (ou até o botão, numa gravação iniciada à mão).
+- **/s** em **All** e **Mob**: o total dividido pelo **tempo em combate**, que é a duração sem os trechos de 3 s ou mais em que ninguém do grupo agiu (caminhadas e esperas entre os pulls).
+- **/s** em **Boss**: o dano no chefe dividido pelo tempo do primeiro ao último golpe de qualquer jogador nele, igual à visão **por chefe**.
+
 ### Por que dois jogadores veem números diferentes
 
-Cada app grava do seu jeito: começa no primeiro golpe de quem grava e para depois de 30 s sem dano (ou no botão). Por isso o tempo total muda de uma gravação para outra, e o dano por segundo em **All** e **Mob** muda junto.
-
-No filtro **Boss**, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, igual em todas as gravações da mesma luta e igual à visão **por chefe**. Mesmo assim, o jogo só manda a cada um o que acontece perto dele: quem estava longe pode ver menos golpes dos outros.
+Cada app grava um trecho: começa no primeiro golpe de quem grava e para em momentos diferentes. Os totais só batem se as gravações cobrirem o mesmo trecho; a porcentagem de cada um e o /s ficam parecidos. Além disso, o jogo só manda a cada um o que acontece perto dele: quem estava longe pode ver menos golpes dos outros.
 
 ## Por chefe
 

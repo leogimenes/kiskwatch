@@ -7,6 +7,7 @@
 // the group was fighting counts, not the walks between fights.
 import { Fight, FightPlayer, Profile, SkillCasts } from "./api";
 import { GameData, iconUrl, loadGameData } from "./buildData";
+import { Windows, combatWindows } from "./dpsView";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = Object.assign(document.createElement(tag), props);
@@ -26,36 +27,6 @@ export interface CastRow {
   possible: number | null;
   /** Seconds the skill was ready and not used. */
   idle: number | null;
-}
-
-/** Stretches of a recording, [from, to] in seconds from the start. */
-export type Windows = [number, number][];
-
-/** When the group was fighting: the recording minus the stretches of 3 s
- *  or more nobody acted in (each player's `idle`). Recordings from before
- *  the timeline count whole. */
-export function combatWindows(f: Fight): Windows {
-  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
-  if (!f.players.some((p) => p.timeline.length)) return [[0, secs]];
-  let calm: Windows = [[0, secs]];
-  for (const p of f.players) {
-    const idle = p.idle.map(([a, b]) => [a / 1000, b / 1000] as [number, number]);
-    const both: Windows = [];
-    for (const [a, b] of calm) for (const [c, d] of idle) {
-      const [x, y] = [Math.max(a, c), Math.min(b, d)];
-      if (y > x) both.push([x, y]);
-    }
-    calm = both;
-  }
-  calm = calm.filter(([a, b]) => b - a >= 3).sort((x, y) => x[0] - y[0]);
-  const out: Windows = [];
-  let from = 0;
-  for (const [a, b] of calm) {
-    if (a > from) out.push([from, a]);
-    from = Math.max(from, b);
-  }
-  if (secs > from) out.push([from, secs]);
-  return out;
 }
 
 /** Combat seconds between `from` and `to`. */

@@ -1,7 +1,7 @@
 // The DPS tab's damage taken: what each monster's skill did to a player over
 // a recording, with the names A2Tools has for them.
 import { DpsTarget, Fight, FightPlayer, Taken } from "./api";
-import { short } from "./dpsView";
+import { secondsFor, short } from "./dpsView";
 import namesJson from "../data/npc_names.json";
 
 const NAMES = namesJson as { npcs: Record<string, string>; skills: Record<string, string> };
@@ -40,7 +40,7 @@ export function takenSection(f: Fight, target: DpsTarget, victim: number | null,
   }
   const list = p.taken.filter((t) => target === "all" || (target === "boss") === t.boss);
   const sum = list.reduce((n, t) => n + t.damage, 0);
-  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
+  const secs = secondsFor(f, target);
   if (!list.length) {
     box.append(el("p", { className: "hint" }, target === "boss" ? "Nenhum chefe acertou este jogador." : "Nenhum monstro comum acertou este jogador."));
     return box;
