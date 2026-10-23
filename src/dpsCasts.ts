@@ -2,7 +2,9 @@
 // a recording against how many its cooldown allowed, and how long it sat
 // ready. Cooldowns come from dbaion2 (at the profile's skill level for your
 // own character); when someone used a skill faster than that, a stigma or a
-// Daevanion node shortened it, and the shortest gap seen is the cooldown.
+// Daevanion node shortened it, and the shortest gap seen is the cooldown
+// (unless it's under half: charges, or one use read as two). Only the time
+// the group was fighting counts, not the walks between fights.
 import { Fight, FightPlayer, Profile, SkillCasts } from "./api";
 import { GameData, iconUrl, loadGameData } from "./buildData";
 
@@ -26,24 +28,77 @@ export interface CastRow {
   idle: number | null;
 }
 
-/** One skill's row: uses against what the cooldown allowed over `secs`. */
-export function castRow(c: SkillCasts, secs: number, data: number | null): Omit<CastRow, "name" | "icon"> {
+/** Stretches of a recording, [from, to] in seconds from the start. */
+export type Windows = [number, number][];
+
+/** When the group was fighting: the recording minus the stretches of 3 s
+ *  or more nobody acted in (each player's `idle`). Recordings from before
+ *  the timeline count whole. */
+export function combatWindows(f: Fight): Windows {
+  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
+  if (!f.players.some((p) => p.timeline.length)) return [[0, secs]];
+  let calm: Windows = [[0, secs]];
+  for (const p of f.players) {
+    const idle = p.idle.map(([a, b]) => [a / 1000, b / 1000] as [number, number]);
+    const both: Windows = [];
+    for (const [a, b] of calm) for (const [c, d] of idle) {
+      const [x, y] = [Math.max(a, c), Math.min(b, d)];
+      if (y > x) both.push([x, y]);
+    }
+    calm = both;
+  }
+  calm = calm.filter(([a, b]) => b - a >= 3).sort((x, y) => x[0] - y[0]);
+  const out: Windows = [];
+  let from = 0;
+  for (const [a, b] of calm) {
+    if (a > from) out.push([from, a]);
+    from = Math.max(from, b);
+  }
+  if (secs > from) out.push([from, secs]);
+  return out;
+}
+
+/** Combat seconds between `from` and `to`. */
+function fighting(w: Windows, from: number, to: number) {
+  return w.reduce((n, [a, b]) => n + Math.max(0, Math.min(b, to) - Math.max(a, from)), 0);
+}
+
+/** A shortest gap below this share of the game data's cooldown isn't a
+ *  reduction: a skill with charges, or one use read as two. */
+const MAX_REDUCTION = 0.5;
+
+/** One skill's row: uses against what the cooldown allowed while fighting.
+ *  The cooldown keeps running between fights, so each one starts ready. */
+export function castRow(c: SkillCasts, w: Windows, data: number | null): Omit<CastRow, "name" | "icon"> {
   const uses = c.at.length;
   const gaps = c.at.slice(1).map((t, i) => (t - c.at[i]) / 1000);
   const shortest = gaps.length ? Math.min(...gaps) : Infinity;
   let cooldown = data, reduced = false;
-  if (cooldown != null && shortest < cooldown * 0.95) [cooldown, reduced] = [shortest, true];
+  if (cooldown != null && shortest < cooldown * 0.95 && shortest >= cooldown * MAX_REDUCTION) [cooldown, reduced] = [shortest, true];
   if (cooldown == null || cooldown < MIN_COOLDOWN) return { skill: c.skill, uses, cooldown, reduced, possible: null, idle: null };
-  const possible = Math.max(uses, Math.floor(secs / cooldown) + 1);
-  const at = c.at.map((t) => t / 1000);
-  let idle = at[0] ?? secs;
-  for (let i = 1; i < at.length; i++) idle += Math.max(0, at[i] - at[i - 1] - cooldown);
-  if (at.length) idle += Math.max(0, secs - at[at.length - 1] - cooldown);
+  // Used as soon as it's ready, from each fight's start on.
+  let most = 0, ready = 0;
+  for (const [a, b] of w) {
+    const from = Math.max(a, ready);
+    if (from > b) continue;
+    const n = Math.floor((b - from) / cooldown) + 1;
+    most += n;
+    ready = from + n * cooldown;
+  }
+  const possible = Math.max(uses, most);
+  const end = w.length ? w[w.length - 1][1] : 0;
+  let idle = 0;
+  ready = 0;
+  for (const t of c.at.map((t) => t / 1000)) {
+    idle += fighting(w, ready, t);
+    ready = Math.max(ready, t + cooldown);
+  }
+  idle += fighting(w, ready, end);
   return { skill: c.skill, uses, cooldown, reduced, possible, idle };
 }
 
 /** A player's rows, the most uses lost first; unmeasured skills last. */
-export function castRows(p: FightPlayer, secs: number, game: GameData | null, profile: Profile | null): CastRow[] {
+export function castRows(p: FightPlayer, w: Windows, game: GameData | null, profile: Profile | null): CastRow[] {
   const mine = p.local ? profile?.equipment.skill?.skillList ?? [] : [];
   return (p.casts ?? []).map((c) => {
     const known = game?.skills.get(c.skill);
@@ -51,7 +106,7 @@ export function castRows(p: FightPlayer, secs: number, game: GameData | null, pr
     const level = own?.acquired ? known?.levels?.find((l) => l.level === own.skillLevel) : undefined;
     const data = known && known.type !== "passive" ? level?.cooldownSec ?? known.cooldownSec : null;
     return {
-      ...castRow(c, secs, data),
+      ...castRow(c, w, data),
       name: own?.name || known?.name || `Skill ${c.skill}`,
       icon: own?.icon || (known?.icon ? iconUrl(known.icon) : ""),
     };
@@ -96,15 +151,14 @@ export function castsSection(f: Fight, p: FightPlayer, profile: Profile | null, 
     box.append(el("p", { className: "hint" }, "Nenhum uso de skill deste jogador nesta gravação (gravações antigas não guardavam os usos)."));
     return box;
   }
-  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
-  const rows = castRows(p, secs, game, profile);
+  const rows = castRows(p, combatWindows(f), game, profile);
   const measured = rows.filter((r) => r.possible != null);
   const lost = measured.reduce((n, r) => n + r.possible! - r.uses, 0);
   box.append(
     el("div", { className: "casts-head" },
       el("span", { className: "hint" }, measured.length ? `${lost} uso(s) a mais cabiam nas recargas de ${measured.length} skill(s)` : game ? "" : "Carregando recargas da dbaion2…")),
     table(rows),
-    el("p", { className: "hint" }, "Possíveis: quantas vezes a recarga deixava usar desde o início da gravação. Pronta sem uso: tempo somado com a skill disponível e parada. Golpes a menos de 1 s um do outro contam como um uso; danos contínuos não contam."),
+    el("p", { className: "hint" }, "Possíveis: quantas vezes a recarga deixava usar durante o combate. Pronta sem uso: tempo de combate somado com a skill disponível e parada. Fora de combate (3 s ou mais sem ninguém do grupo agir) não conta, e a recarga segue correndo entre as lutas. Golpes a menos de 1 s um do outro contam como um uso; danos contínuos não contam."),
   );
   return box;
 }
