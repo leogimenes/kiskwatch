@@ -180,6 +180,11 @@ impl App {
             }
             // The meter's (see `read_capture`).
             GameEvent::Combat(_) | GameEvent::Effect(_) => return false,
+            // The dungeon diagnostic: straight to the log.
+            GameEvent::Log(line) => {
+                log::line(&line);
+                return false;
+            }
             GameEvent::BossMap(map) => {
                 // Only the player's own server's maps (the header is 0 there).
                 if map.header != 0 {
