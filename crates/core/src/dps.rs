@@ -56,6 +56,18 @@ pub struct FightBoss {
     pub my_damage: i64,
     /// Your damage on it by skill (summons' under their own skill), most first.
     pub my_skills: Vec<SkillDamage>,
+    /// Each player's damage on it, most first (none in recordings from before).
+    pub players: Vec<BossPlayer>,
+}
+
+/// A player's damage on one boss, summons included.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BossPlayer {
+    pub id: i32,
+    pub damage: i64,
+    /// By skill, biggest first; the hits are under `boss`.
+    pub skills: Vec<SkillStat>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -189,6 +201,8 @@ struct BossTally {
     damage: i64,
     my_damage: i64,
     my_skills: HashMap<i32, (i64, u32)>,
+    /// By (actor, base skill, dot).
+    skills: HashMap<(i32, i32, bool), Tally>,
 }
 
 impl Recording {
@@ -376,6 +390,7 @@ impl Meter {
                         let t = rec.bosses.entry(code).or_insert_with(|| BossTally { first_ms: now, ..Default::default() });
                         t.last_ms = now;
                         t.damage += value;
+                        t.skills.entry((actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
                         if mine {
                             t.my_damage += value;
                             let s = t.my_skills.entry(base_skill(skill)).or_default();
@@ -560,7 +575,25 @@ impl Meter {
             .map(|(&code, t)| {
                 let mut my_skills: Vec<SkillDamage> = t.my_skills.iter().map(|(&skill, &(damage, hits))| SkillDamage { skill, damage, hits }).collect();
                 my_skills.sort_by_key(|s| (std::cmp::Reverse(s.damage), s.skill));
-                FightBoss { code, first_ms: t.first_ms, last_ms: t.last_ms, damage: t.damage, my_damage: t.my_damage, my_skills }
+                let mut by: HashMap<i32, BossPlayer> = HashMap::new();
+                for (&(actor, skill, dot), tally) in &t.skills {
+                    let who = self.owner(actor);
+                    if !self.is_player(who) {
+                        continue;
+                    }
+                    let p = by.entry(who).or_insert_with(|| BossPlayer { id: who, ..Default::default() });
+                    p.damage += tally.damage;
+                    match p.skills.iter_mut().find(|s| s.skill == skill && s.dot == dot) {
+                        Some(s) => s.boss.merge(tally),
+                        None => p.skills.push(SkillStat { skill, dot, boss: *tally, ..Default::default() }),
+                    }
+                }
+                let mut players: Vec<BossPlayer> = by.into_values().collect();
+                for p in &mut players {
+                    p.skills.sort_by_key(|s| (std::cmp::Reverse(s.boss.damage), s.skill, s.dot));
+                }
+                players.sort_by_key(|p| (std::cmp::Reverse(p.damage), p.id));
+                FightBoss { code, first_ms: t.first_ms, last_ms: t.last_ms, damage: t.damage, my_damage: t.my_damage, my_skills, players }
             })
             .collect();
         bosses.sort_by_key(|b| (std::cmp::Reverse(b.damage), b.code));
@@ -666,6 +699,9 @@ mod tests {
         let b = &f.bosses[0];
         assert_eq!((b.code, b.first_ms, b.last_ms, b.damage, b.my_damage), (BOSS_CODE, 1_000, 4_000, 300, 100));
         assert_eq!(b.my_skills, vec![SkillDamage { skill: CLERIC, damage: 100, hits: 2 }]);
+        let players: Vec<_> = b.players.iter().map(|p| (p.id, p.damage, p.skills.len())).collect();
+        assert_eq!(players, [(MATE, 200, 1), (ME, 100, 1)]);
+        assert_eq!(b.players[1].skills[0].boss, Tally { damage: 100, hits: 2, crits: 0, max_hit: 70 });
     }
 
     #[test]
@@ -682,6 +718,29 @@ mod tests {
         assert_eq!((me.skills[0].boss.damage, me.skills[0].mob.damage), (70, 30));
         assert_eq!((f.bosses[0].damage, f.bosses[0].my_damage), (70, 70));
         assert_eq!((f.effects.target, f.effects.target_boss), (Some(BOSS), true));
+    }
+
+    #[test]
+    fn each_boss_keeps_everyones_damage_apart() {
+        const OTHER: i32 = 9200;
+        let mut m = Meter::new([BOSS_CODE, 2_301_300].into());
+        for e in [
+            CombatEvent::Me { id: ME, name: "Leozin".into(), class: Some(Class::Cleric) },
+            CombatEvent::Player { id: MATE, name: "Amigo".into() },
+            CombatEvent::Npc { id: BOSS, code: BOSS_CODE },
+            CombatEvent::Npc { id: OTHER, code: 2_301_300 },
+            CombatEvent::Summon { id: 555, owner: MATE },
+        ] {
+            m.apply(e, 0, false, named);
+        }
+        m.start("x".into(), 0);
+        for e in [hit(ME, BOSS, CLERIC, 50), hit(555, BOSS, 2_100_000, 30), hit(MATE, OTHER, GLADIATOR, 500), hit(ME, OTHER, CLERIC, 10)] {
+            m.apply(e, 500, false, named);
+        }
+        let f = m.stop(1_000).unwrap();
+        let by = |code| f.bosses.iter().find(|b| b.code == code).unwrap().players.iter().map(|p| (p.id, p.damage)).collect::<Vec<_>>();
+        assert_eq!(by(BOSS_CODE), [(ME, 50), (MATE, 30)], "a summon's damage is its owner's");
+        assert_eq!(by(2_301_300), [(MATE, 500), (ME, 10)]);
     }
 
     #[test]

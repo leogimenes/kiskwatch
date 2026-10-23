@@ -117,7 +117,12 @@ export interface SkillDamage { skill: number; damage: number; hits: number }
 
 export interface FightBoss {
   code: number; first_ms: number; last_ms: number; damage: number; my_damage: number; my_skills: SkillDamage[];
+  /** Each player's damage on it, most first (missing in recordings from before). */
+  players?: BossPlayer[];
 }
+
+/** A player's damage on one boss; the skills' hits are under `boss`. */
+export interface BossPlayer { id: number; damage: number; skills: SkillStat[] }
 
 /** One recording against a boss: time from its first to last hit. */
 export interface Attempt {

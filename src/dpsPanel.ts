@@ -1,15 +1,15 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
 // at by target and kind of bar, rename or delete; or the recordings by boss,
 // each one opening right under its boss with the Boss filter on.
-import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
+import { DpsBars, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
-import { BARS, TARGETS, bossMs, clock, combatSeconds, loadGear, rowLine, rows, short } from "./dpsView";
+import { BARS, TARGETS, Target, bossTime, clock, combatSeconds, fightBosses, loadGear, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
 import { castsSection } from "./dpsCasts";
 import { takenSection } from "./taken";
-import { compareBox, renderBosses } from "./bossHistory";
+import { bossName, compareBox, renderBosses } from "./bossHistory";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -21,7 +21,8 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string,
 let saved: Saved | null = null;
 let live: Fight | null = null;
 let picked: string | null = null;
-let target: DpsTarget | null = null;
+/** The filter picked in Gravações: a boss by its code, or All, Mob, Boss. */
+let target: Target | null = null;
 let bars: DpsBars | null = null;
 /** The player whose skills show: you, or the top one, until another is clicked. */
 let who: number | null = null;
@@ -30,7 +31,7 @@ let victim: number | null = null;
 let view: "fights" | "bosses" = "fights";
 /** The recording open under its boss in the boss view, and its own filter. */
 let bossOpen: string | null = null;
-let bossTarget: DpsTarget = "boss";
+let bossTarget: Target = "boss";
 /** What the last copy or save said, for the recording it was about. */
 let exported: { id: string; text: string; path?: string } | null = null;
 
@@ -80,7 +81,10 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
     return;
   }
   const again = () => renderDetail(box, id, underBoss);
-  const t = underBoss ? bossTarget : target ?? saved.settings.dps.target, b = bars ?? saved.settings.dps.bars;
+  const bosses = fightBosses(f);
+  let t = underBoss ? bossTarget : target ?? saved.settings.dps.target;
+  if (typeof t === "number" && !bosses.some((x) => x.code === t)) t = "boss";
+  const b = bars ?? saved.settings.dps.bars;
   const name = el("input", { value: f.name, maxLength: 50, ariaLabel: "Nome da gravação", className: "dps-rename" });
   name.addEventListener("change", () => { if (name.value.trim()) dpsRename(f.id, name.value); });
   const del = el("button", { type: "button", textContent: "Apagar" });
@@ -112,7 +116,7 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
   const reveal = el("button", { type: "button", className: "link", textContent: note?.path ?? "" });
   reveal.addEventListener("click", () => { if (note?.path) revealItemInDir(note.path); });
   const list = rows(f, t, b);
-  const boss = t === "boss" ? bossMs(f) : null;
+  const boss = bossTime(f, t);
   loadGear(list).then((changed) => { if (changed) again(); });
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const shown = f.players.find((p) => p.id === who) ?? f.players.find((p) => p.local) ?? f.players[0];
@@ -129,10 +133,10 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
     el("div", { className: "dps-title" }, name, copy, save, del, ...(underBoss ? [elsewhere] : [])),
     ...(note ? [el("p", { className: "hint dps-exported", role: "status" }, note.text, ...(note.path ? [" ", reveal] : []))] : []),
     el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`,
-      boss ? el("span", { title: "No filtro Boss, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`)
+      boss ? el("span", { title: "Nos filtros de chefe, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`)
         : el("span", { title: "O dano por segundo conta só o tempo em combate: fora os trechos de 3 s ou mais em que ninguém do grupo agiu (caminhadas e esperas entre os pulls)" }, ` · ${clock(combatSeconds(f) * 1000)} em combate (base do /s)`)),
     el("div", { className: "dps-filters" },
-      chips(TARGETS, t, (v) => { if (underBoss) bossTarget = v; else target = v; again(); }),
+      targetChips(t, bosses.map((x) => x.code), (v) => { if (underBoss) bossTarget = v; else target = v; again(); }),
       chips(BARS, b, (v) => { bars = v; again(); })),
     list.length ? el("ol", { className: "dps-rows" }, ...list.map(line))
       : el("p", { className: "hint" }, "Nada para este alvo."),
@@ -145,13 +149,27 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
   );
 }
 
-/** Open a recording in the Gravações list, on the Boss filter, so its
- *  numbers are the ones the history shows. */
+/** The filter that shows the numbers the boss history does: the boss the
+ *  recording hit hardest, or Boss for one from before bosses kept players. */
+function mainBoss(id: string): Target {
+  const f = saved?.fights.find((x) => x.id === id);
+  return (f && fightBosses(f)[0]?.code) ?? "boss";
+}
+
+/** All, Mob and Boss, then each boss the recording hit, by name. */
+function targetChips(current: Target, bosses: number[], pick: (v: Target) => void) {
+  const key = (t: Target) => typeof t === "number" ? `b${t}` : t;
+  const options: [string, string][] = [...TARGETS, ...bosses.map((c): [string, string] => [`b${c}`, bossName(c)])];
+  return chips(options, key(current), (v) => pick(v.startsWith("b") && v !== "boss" ? Number(v.slice(1)) : v as Target));
+}
+
+/** Open a recording in the Gravações list, on its boss, so its numbers are
+ *  the ones the history shows. */
 function openFight(id: string) {
   picked = id;
   who = null;
   victim = null;
-  target = "boss";
+  target = mainBoss(id);
   view = "fights";
   render();
   $("#dps-detail").scrollIntoView({ block: "start" });
@@ -160,7 +178,7 @@ function openFight(id: string) {
 /** Opens a recording under its boss, or closes it when it was open. */
 function openUnderBoss(id: string) {
   bossOpen = bossOpen === id ? null : id;
-  bossTarget = "boss";
+  bossTarget = mainBoss(id);
   who = null;
   victim = null;
   render();

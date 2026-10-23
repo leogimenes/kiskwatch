@@ -12,7 +12,7 @@ O medidor de dano e cura: grava as lutas e mostra quanto cada jogador causou.
 
 Escolha uma gravação na lista para ver:
 
-- dano e cura por jogador, contra **todos**, só **monstros** ou só **chefes**;
+- dano e cura por jogador, contra **todos**, só **monstros**, só **chefes** ou **cada chefe** em separado (um botão com o nome de cada chefe atingido na gravação);
 - dano por skill, golpes, críticos e maior golpe;
 - a linha do tempo da luta, o tempo parado e o uso das recargas;
 - o dano que cada jogador recebeu, por skill de monstro;
@@ -25,7 +25,7 @@ Dá para renomear, apagar e **exportar a gravação como imagem** para colar no 
 - **Total**: a soma dos golpes de cada jogador que chegaram ao seu app, com summons e dano contínuo.
 - **Duração**: do primeiro golpe de quem grava até 30 s sem dano (ou até o botão, numa gravação iniciada à mão).
 - **/s** em **All** e **Mob**: o total dividido pelo **tempo em combate**, que é a duração sem os trechos de 3 s ou mais em que ninguém do grupo agiu (caminhadas e esperas entre os pulls).
-- **/s** em **Boss**: o dano no chefe dividido pelo tempo do primeiro ao último golpe de qualquer jogador nele, igual à visão **por chefe**.
+- **/s** em **Boss** e em cada chefe: o dano no chefe dividido pelo tempo do primeiro ao último golpe de qualquer jogador nele, igual à visão **por chefe**.
 
 ### Por que dois jogadores veem números diferentes
 

@@ -1,7 +1,7 @@
 // The DPS tab's damage taken: what each monster's skill did to a player over
 // a recording, with the names A2Tools has for them.
-import { DpsTarget, Fight, FightPlayer, Taken } from "./api";
-import { secondsFor, short } from "./dpsView";
+import { Fight, FightPlayer, Taken } from "./api";
+import { Target, secondsFor, short } from "./dpsView";
 import namesJson from "../data/npc_names.json";
 
 const NAMES = namesJson as { npcs: Record<string, string>; skills: Record<string, string> };
@@ -24,8 +24,9 @@ export function firstVictim(f: Fight): FightPlayer | null {
 }
 
 /** The section: a player to pick (when more than one was hit) and their
- *  table, by the target chips (Boss shows only the bosses' skills). */
-export function takenSection(f: Fight, target: DpsTarget, victim: number | null, pick: (id: number) => void) {
+ *  table, by the target chips (Boss shows only the bosses' skills, one boss
+ *  only its own). */
+export function takenSection(f: Fight, target: Target, victim: number | null, pick: (id: number) => void) {
   const hit = f.players.filter((p) => p.taken.length);
   const box = el("section", { className: "taken" }, el("h3", {}, "Dano recebido"));
   const p = hit.find((x) => x.id === victim) ?? firstVictim(f);
@@ -38,11 +39,11 @@ export function takenSection(f: Fight, target: DpsTarget, victim: number | null,
     select.addEventListener("change", () => pick(Number(select.value)));
     box.append(select);
   }
-  const list = p.taken.filter((t) => target === "all" || (target === "boss") === t.boss);
+  const list = p.taken.filter((t) => typeof target === "number" ? t.npc === target : target === "all" || (target === "boss") === t.boss);
   const sum = list.reduce((n, t) => n + t.damage, 0);
   const secs = secondsFor(f, target);
   if (!list.length) {
-    box.append(el("p", { className: "hint" }, target === "boss" ? "Nenhum chefe acertou este jogador." : "Nenhum monstro comum acertou este jogador."));
+    box.append(el("p", { className: "hint" }, typeof target === "number" ? "Este chefe não acertou este jogador." : target === "boss" ? "Nenhum chefe acertou este jogador." : "Nenhum monstro comum acertou este jogador."));
     return box;
   }
   const hits = list.reduce((n, t) => n + t.hits, 0);

@@ -3,7 +3,7 @@
 // profile (in Portuguese) where it has the skill, else from dbaion2.
 import { DpsTarget, Fight, FightPlayer, Saved, SkillStat, Tally, gameData } from "./api";
 import { Skill, iconUrl } from "./buildData";
-import { secondsFor, short } from "./dpsView";
+import { Target, bossOf, secondsFor, short } from "./dpsView";
 import "./dpsSkills.css";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -47,10 +47,14 @@ export function tally(s: SkillStat, target: DpsTarget): Tally {
 const percent = (n: number) => `${Math.round(n * 100)}%`;
 
 /** The table of a player's skills on a target, biggest first. */
-export function skillTable(f: Fight, p: FightPlayer, target: DpsTarget, saved: Saved | null, redraw: () => void) {
+export function skillTable(f: Fight, p: FightPlayer, target: Target, saved: Saved | null, redraw: () => void) {
   loadSkills(redraw);
   const secs = secondsFor(f, target);
-  const list = (p.skills ?? []).map((s) => ({ s, t: tally(s, target) })).filter((r) => r.t.damage > 0).sort((a, b) => b.t.damage - a.t.damage);
+  // On one boss, the skills it kept for that boss, their hits under `boss`.
+  const [skills, on] = typeof target === "number"
+    ? [bossOf(f, target)?.players?.find((x) => x.id === p.id)?.skills ?? [], "boss" as const]
+    : [p.skills ?? [], target];
+  const list = skills.map((s) => ({ s, t: tally(s, on) })).filter((r) => r.t.damage > 0).sort((a, b) => b.t.damage - a.t.damage);
   const head = el("h3", {}, `Skills de ${p.name} `, el("span", { className: "hint" }, "· clique num jogador acima para ver as dele"));
   if (!list.length) return el("section", { className: "dps-skills" }, head, el("p", { className: "hint" }, "Nenhuma skill com dano neste alvo."));
   const sum = list.reduce((n, r) => n + r.t.damage, 0);
