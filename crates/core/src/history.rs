@@ -171,6 +171,7 @@ mod tests {
                 damage: group,
                 my_damage: mine.iter().map(|s| s.1).sum(),
                 my_skills: mine.iter().map(|&(skill, damage)| SkillDamage { skill, damage, hits: 1 }).collect(),
+                ..Default::default()
             }],
             ..Default::default()
         }

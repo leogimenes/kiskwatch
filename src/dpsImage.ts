@@ -1,7 +1,8 @@
 // A recording drawn as a PNG to paste in Discord: the same rows as the DPS
 // tab, for the chosen target and bars, on a dark card that reads on its own.
-import { DpsBars, DpsTarget, Fight } from "./api";
-import { BARS, Row, TARGETS, bossMs, clock, rows, secondsFor, short } from "./dpsView";
+import { DpsBars, Fight } from "./api";
+import { BARS, Row, TARGETS, Target, bossTime, clock, rows, secondsFor, short } from "./dpsView";
+import { bossName } from "./bossHistory";
 
 const W = 640;
 const PAD = 20;
@@ -109,7 +110,7 @@ async function drawRow(g: CanvasRenderingContext2D, r: Row, y: number, bars: Dps
 }
 
 /** The recording as a PNG. */
-export async function fightImage(f: Fight, target: DpsTarget, bars: DpsBars): Promise<Blob> {
+export async function fightImage(f: Fight, target: Target, bars: DpsBars): Promise<Blob> {
   const list = rows(f, target, bars);
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const h = HEAD + Math.max(1, list.length) * ROW + FOOT;
@@ -130,10 +131,10 @@ export async function fightImage(f: Fight, target: DpsTarget, bars: DpsBars): Pr
   const label = (options: [string, string][], v: string) => options.find(([k]) => k === v)?.[1] ?? v;
   const total = list.reduce((n, r) => n + r.total, 0);
   const secs = secondsFor(f, target);
-  const boss = target === "boss" ? bossMs(f) : null;
+  const boss = bossTime(f, target);
   g.font = `13px ${FONT}`;
   g.fillStyle = MUTED;
-  g.fillText(fit(g, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)}${boss ? ` (${clock(boss)} no chefe)` : ""} · ${label(TARGETS, target)} · ${label(BARS, bars)} · ${short(total)} no grupo (${short(total / secs)}/s)`, W - 2 * PAD), PAD, 56);
+  g.fillText(fit(g, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)}${boss ? ` (${clock(boss)} no chefe)` : ` (${clock(secs * 1000)} em combate)`} · ${typeof target === "number" ? bossName(target) : label(TARGETS, target)} · ${label(BARS, bars)} · ${short(total)} no grupo (${short(total / secs)}/s)`, W - 2 * PAD), PAD, 56);
 
   let y = HEAD;
   if (!list.length) {
