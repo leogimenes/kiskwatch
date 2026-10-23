@@ -24,7 +24,7 @@ export interface Row {
   heal: number;
   /** What the row is sorted and measured by. */
   total: number;
-  /** Per second over the recording. */
+  /** Per second over the recording (over the time on the bosses, for Boss). */
   rate: number;
   share: number;
   color: string;
@@ -32,10 +32,27 @@ export interface Row {
 
 export const seconds = (f: Fight) => Math.max(1, (f.ended_ms - f.started_ms) / 1000);
 
+/** The time on the bosses, from the first hit anyone landed on one to the
+ *  last (at least a second), as the boss history counts it; null when the
+ *  recording hit none or is from before bosses were kept. */
+export function bossMs(f: Fight): number | null {
+  const hit = (f.bosses ?? []).filter((b) => b.damage > 0);
+  if (!hit.length) return null;
+  return Math.max(1000, Math.max(...hit.map((b) => b.last_ms)) - Math.min(...hit.map((b) => b.first_ms)));
+}
+
+/** The seconds a target's numbers go per: the time on the bosses for Boss,
+ *  so every recording of the same fight says the same no matter when it
+ *  started or stopped; the whole recording otherwise. */
+export function secondsFor(f: Fight, target: DpsTarget) {
+  const boss = target === "boss" ? bossMs(f) : null;
+  return boss ? boss / 1000 : seconds(f);
+}
+
 /** The rows for a target and a kind of bar, biggest first. With `limit`,
  *  your own row stays in even when it would be cut. */
 export function rows(f: Fight, target: DpsTarget, bars: DpsBars, limit = Infinity): Row[] {
-  const secs = seconds(f);
+  const secs = secondsFor(f, target);
   const all = f.players.map((p) => {
     const damage = target === "boss" ? p.boss_damage : target === "mob" ? p.mob_damage : p.boss_damage + p.mob_damage;
     const heal = p.heal;

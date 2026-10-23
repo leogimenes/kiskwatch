@@ -53,8 +53,9 @@ export async function renderBosses(box: HTMLElement, pick: (fightId: string) => 
         el("span", { className: "dps-num" }, clock(a.kill_ms)),
         el("span", { className: "dps-num" }, `${short(a.my_dps)}/s`),
         el("span", { className: "dps-num hint" }, `grupo ${short(a.group_dps)}/s · ${a.players}`),
+        el("span", { className: "boss-open" }, "Detalhes →"),
         el("span", { className: "boss-track" }, bar));
-      b.title = a.name;
+      b.title = `${a.name}: abrir a gravação no filtro Boss`;
       b.addEventListener("click", () => pick(a.fight_id));
       return el("li", {}, b);
     };
@@ -62,7 +63,7 @@ export async function renderBosses(box: HTMLElement, pick: (fightId: string) => 
       el("h3", {}, bossName(h.code)),
       el("p", { className: "hint" },
         `${h.attempts.length} gravação(ões) · tempo médio ${clock(h.avg_kill_ms)} · mais rápida ${clock(h.fastest_kill_ms)} · seu DPS médio ${short(h.avg_my_dps)}/s · grupo ${short(h.avg_group_dps)}/s`),
-      el("div", { className: "boss-head hint" }, el("span", {}, "Quando"), el("span", {}, "Tempo"), el("span", {}, "Seu DPS"), el("span", {}, "Grupo")),
+      el("div", { className: "boss-head hint" }, el("span", {}, "Quando"), el("span", {}, "Tempo no chefe"), el("span", {}, "Seu DPS"), el("span", {}, "Grupo"), el("span", {})),
       el("ol", { className: "boss-attempts" }, ...h.attempts.map(line)));
   }));
 }

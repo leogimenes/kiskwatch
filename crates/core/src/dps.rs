@@ -166,10 +166,10 @@ struct Recording {
     auto: bool,
     started_ms: i64,
     last_gain_ms: i64,
-    /// By (target, actor as the game names it).
-    damage: HashMap<(i32, i32), i64>,
-    /// By (target, actor, base skill, dot).
-    skills: HashMap<(i32, i32, i32, bool), Tally>,
+    /// By (target, actor as the game names it, the target was a boss).
+    damage: HashMap<(i32, i32, bool), i64>,
+    /// By (on a boss, actor, base skill, dot).
+    skills: HashMap<(bool, i32, i32, bool), Tally>,
     heal: HashMap<i32, i64>,
     casts: Casts,
     /// By (actor, second from the start).
@@ -361,8 +361,10 @@ impl Meter {
                 let boss = self.bosses.get(&target).copied();
                 let mine = self.me == Some(who);
                 if let Some(rec) = &mut self.rec {
-                    *rec.damage.entry((target, actor)).or_default() += value;
-                    rec.skills.entry((target, actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
+                    // Boss or not as it was when hit: the game hands a dead
+                    // boss's entity to the next NPC that spawns.
+                    *rec.damage.entry((target, actor, boss.is_some())).or_default() += value;
+                    rec.skills.entry((boss.is_some(), actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
                     rec.casts.hit(actor, skill, dot, now, rec.started_ms);
                     let second = (now - rec.started_ms).max(0) / 1000;
                     *rec.per_second.entry((actor, second)).or_default() += value;
@@ -456,7 +458,7 @@ impl Meter {
         let fighting: HashSet<i32> = self
             .rec
             .iter()
-            .flat_map(|r| r.damage.keys().map(|&(_, a)| a).chain(r.heal.keys().copied()))
+            .flat_map(|r| r.damage.keys().map(|&(_, a, _)| a).chain(r.heal.keys().copied()))
             .map(|a| self.owner(a))
             .collect();
         let mut list: Vec<SeenPlayer> = self
@@ -493,9 +495,9 @@ impl Meter {
     pub fn current(&self, now: i64) -> Option<Fight> {
         let rec = self.rec.as_ref()?;
         let mut players: HashMap<i32, FightPlayer> = HashMap::new();
-        for (&(target, actor), &n) in &rec.damage {
+        for (&(_, actor, boss), &n) in &rec.damage {
             if let Some(p) = self.row(&mut players, self.owner(actor)) {
-                if self.bosses.contains_key(&target) {
+                if boss {
                     p.boss_damage += n;
                 } else {
                     p.mob_damage += n;
@@ -503,13 +505,13 @@ impl Meter {
             }
         }
         let mut skills: HashMap<(i32, i32, bool), SkillStat> = HashMap::new();
-        for (&(target, actor, skill, dot), t) in &rec.skills {
+        for (&(boss, actor, skill, dot), t) in &rec.skills {
             let who = self.owner(actor);
             if !self.is_player(who) {
                 continue;
             }
             let s = skills.entry((who, skill, dot)).or_insert_with(|| SkillStat { skill, dot, ..Default::default() });
-            if self.bosses.contains_key(&target) { &mut s.boss } else { &mut s.mob }.merge(t);
+            if boss { &mut s.boss } else { &mut s.mob }.merge(t);
         }
         for ((who, ..), s) in skills {
             if let Some(p) = self.row(&mut players, who) {
@@ -567,16 +569,18 @@ impl Meter {
     }
 
     fn fight_effects(&self, rec: &Recording, players: &[FightPlayer], now: i64) -> FightEffects {
-        let mut taken: HashMap<i32, i64> = HashMap::new();
-        for (&(target, _), &n) in &rec.damage {
-            *taken.entry(target).or_default() += n;
+        let mut taken: HashMap<i32, (i64, bool)> = HashMap::new();
+        for (&(target, _, boss), &n) in &rec.damage {
+            let t = taken.entry(target).or_default();
+            t.0 += n;
+            t.1 |= boss;
         }
-        let target = taken.into_iter().max_by_key(|&(id, n)| (n, std::cmp::Reverse(id))).map(|(id, _)| id);
-        let mut list = self.effects.uptimes(now, |id| Some(id) == target || players.iter().any(|p| p.id == id));
+        let target = taken.into_iter().max_by_key(|&(id, (n, _))| (n, std::cmp::Reverse(id))).map(|(id, (_, boss))| (id, boss));
+        let mut list = self.effects.uptimes(now, |id| target.is_some_and(|(t, _)| t == id) || players.iter().any(|p| p.id == id));
         for u in &mut list {
             u.caster = self.owner(u.caster);
         }
-        FightEffects { target, target_boss: target.is_some_and(|t| self.bosses.contains_key(&t)), list }
+        FightEffects { target: target.map(|(t, _)| t), target_boss: target.is_some_and(|(_, boss)| boss), list }
     }
 }
 
@@ -662,6 +666,22 @@ mod tests {
         let b = &f.bosses[0];
         assert_eq!((b.code, b.first_ms, b.last_ms, b.damage, b.my_damage), (BOSS_CODE, 1_000, 4_000, 300, 100));
         assert_eq!(b.my_skills, vec![SkillDamage { skill: CLERIC, damage: 100, hits: 2 }]);
+    }
+
+    #[test]
+    fn a_boss_entity_handed_to_another_npc_keeps_its_damage_as_boss() {
+        let mut m = meter();
+        m.start("x".into(), 0);
+        m.apply(hit(ME, BOSS, CLERIC, 70), 500, false, named);
+        // The boss died and the game gave its entity to a plain monster.
+        m.apply(CombatEvent::Npc { id: BOSS, code: 2_000_002 }, 600, false, named);
+        m.apply(hit(ME, BOSS, CLERIC, 30), 700, false, named);
+        let f = m.stop(1_000).unwrap();
+        let me = &f.players[0];
+        assert_eq!((me.boss_damage, me.mob_damage), (70, 30));
+        assert_eq!((me.skills[0].boss.damage, me.skills[0].mob.damage), (70, 30));
+        assert_eq!((f.bosses[0].damage, f.bosses[0].my_damage), (70, 70));
+        assert_eq!((f.effects.target, f.effects.target_boss), (Some(BOSS), true));
     }
 
     #[test]

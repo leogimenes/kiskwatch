@@ -20,9 +20,15 @@ Escolha uma gravação na lista para ver:
 
 Dá para renomear, apagar e **exportar a gravação como imagem** para colar no Discord.
 
+### Por que dois jogadores veem números diferentes
+
+Cada app grava do seu jeito: começa no primeiro golpe de quem grava e para depois de 30 s sem dano (ou no botão). Por isso o tempo total muda de uma gravação para outra, e o dano por segundo em **All** e **Mob** muda junto.
+
+No filtro **Boss**, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, igual em todas as gravações da mesma luta e igual à visão **por chefe**. Mesmo assim, o jogo só manda a cada um o que acontece perto dele: quem estava longe pode ver menos golpes dos outros.
+
 ## Por chefe
 
-A visão **por chefe** junta as lutas contra o mesmo chefe e compara uma luta com a sua melhor.
+A visão **por chefe** junta as lutas contra o mesmo chefe e compara uma luta com a sua melhor. O tempo é o do primeiro ao último golpe no chefe. Clique numa luta (**Detalhes →**) para abrir a gravação já no filtro **Boss**, com o dano de cada jogador e de cada skill.
 
 ## Overlay de DPS
 
