@@ -7,6 +7,12 @@
 //! in one of them) and the codes of the first NPCs that spawn after it.
 //! Going into a dungeon and out then shows what marks the way in and out, and
 //! which NPC codes are the dungeon's.
+//!
+//! The first try (2026-10-23) showed the game switching connections on the
+//! way in and out, and `21 36 01 00 00 00 <map u32>` (with `01 40` and `02 40`
+//! carrying the same map) before you are named on coming back to Verteron
+//! (map 1010). Those records go in the log whole, whenever they come, to read
+//! the dungeon's map.
 
 use std::collections::VecDeque;
 
@@ -22,6 +28,9 @@ const MAX_NPCS: usize = 40;
 /// Packets kept to look back on, and the bytes kept of each.
 const KEPT: usize = 400;
 const HEAD: usize = 32;
+/// Records that seem to carry the map: logged whole (up to `WHOLE` bytes).
+const MAP_RECORDS: [[u8; 2]; 3] = [[0x21, 0x36], [0x01, 0x40], [0x02, 0x40]];
+const WHOLE: usize = 96;
 
 #[derive(Debug, Clone)]
 struct Seen {
@@ -66,6 +75,9 @@ impl ZoneTrace {
         let Ok(at) = usize::try_from(n.length) else { return };
         let Some(opcode) = bytes.get(at..at + 2) else { return };
         let seen = Seen { at: now, opcode: [opcode[0], opcode[1]], len: bytes.len(), head: bytes[..bytes.len().min(HEAD)].to_vec() };
+        if MAP_RECORDS.contains(&seen.opcode) {
+            self.lines.push(format!("zona: registro {:02x} {:02x} ({} bytes): {}", seen.opcode[0], seen.opcode[1], bytes.len(), hex(&bytes[..bytes.len().min(WHOLE)])));
+        }
         if self.since_ms.is_some_and(|t| now - t <= AFTER_MS) {
             self.after.push(seen.clone());
         }
@@ -140,5 +152,12 @@ mod tests {
         assert_eq!(t.take_lines(), ["zona: NPCs logo depois: 500 600"]);
         t.event(&me(11), 30_000);
         assert_eq!(t.take_lines()[0], "zona: você é a entidade 11 (antes 10)");
+    }
+
+    #[test]
+    fn map_records_go_whole() {
+        let mut t = ZoneTrace::default();
+        t.packet(&[0x0b, 0x21, 0x36, 1, 0, 0, 0, 0xf2, 3, 0, 0], 0);
+        assert_eq!(t.take_lines(), ["zona: registro 21 36 (11 bytes): 0b 21 36 01 00 00 00 f2 03 00 00"]);
     }
 }

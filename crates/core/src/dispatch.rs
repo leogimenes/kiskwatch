@@ -157,7 +157,10 @@ impl Dispatcher {
         // This is the game now: read everything it sent so far.
         let pending = std::mem::take(&mut flow.pending);
         let mut stream = GameStream::new();
-        let events = stream.push(&pending, now_ms);
+        // A new connection: the game switched servers, as on going into a
+        // dungeon or out (the dungeon diagnostic, `zone`).
+        let mut events = vec![GameEvent::Log(format!("zona: nova conexão do jogo, servidor {}:{}", key.0, key.1))];
+        events.extend(stream.push(&pending, now_ms));
         flow.stream = Some(stream);
         if let Some(old) = self.active.replace(key) {
             self.flows.remove(&old);
@@ -228,7 +231,8 @@ mod tests {
         assert!(d.offer(game.send(level_up(1016, 2)), 0).is_empty());
         assert!(!d.status().locked);
         let events = lock(&mut d, &mut game, 100);
-        assert_eq!(events, vec![GameEvent::Pets(PetRecord::LevelUp { pet: 1016, level: 2 })]);
+        assert!(matches!(&events[0], GameEvent::Log(l) if l.ends_with(":13328")), "the switch, for the log");
+        assert_eq!(events[1..], [GameEvent::Pets(PetRecord::LevelUp { pet: 1016, level: 2 })]);
         assert_eq!(d.status(), DispatchStatus { locked: true, server_port: Some(13328) });
         assert_eq!(d.offer(game.send(level_up(1017, 1)), 2_000), vec![GameEvent::Pets(PetRecord::LevelUp { pet: 1017, level: 1 })]);
     }
@@ -274,7 +278,7 @@ mod tests {
         let quiet = 1_000 + QUIET_MS;
         assert!(d.offer(new.send(level_up(1020, 1)), quiet).is_empty());
         let events = lock(&mut d, &mut new, quiet + 100);
-        assert_eq!(events, vec![GameEvent::Pets(PetRecord::LevelUp { pet: 1020, level: 1 })]);
+        assert_eq!(events[1..], [GameEvent::Pets(PetRecord::LevelUp { pet: 1020, level: 1 })]);
         assert_eq!(d.status().server_port, Some(13329));
     }
 }
