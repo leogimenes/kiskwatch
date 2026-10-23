@@ -1,5 +1,6 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
-// at by target and kind of bar, rename or delete; or the recordings by boss.
+// at by target and kind of bar, rename or delete; or the recordings by boss,
+// each one opening right under its boss with the Boss filter on.
 import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
@@ -27,6 +28,9 @@ let who: number | null = null;
 /** Whose damage taken is shown, by player id. */
 let victim: number | null = null;
 let view: "fights" | "bosses" = "fights";
+/** The recording open under its boss in the boss view, and its own filter. */
+let bossOpen: string | null = null;
+let bossTarget: DpsTarget = "boss";
 /** What the last copy or save said, for the recording it was about. */
 let exported: { id: string; text: string; path?: string } | null = null;
 
@@ -67,19 +71,21 @@ function renderList() {
   }) : [el("li", { className: "hint" }, "Nenhuma gravação ainda. Ligue o overlay de DPS em Configurações.")]));
 }
 
-function renderDetail() {
-  const box = $("#dps-detail");
-  const f = saved?.fights.find((x) => x.id === picked);
+/** A recording's detail in `box`: in the Gravações list, or under its boss
+ *  in the boss view, where it starts on the Boss filter. */
+function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
+  const f = saved?.fights.find((x) => x.id === id);
   if (!f || !saved) {
     box.replaceChildren();
     return;
   }
-  const t = target ?? saved.settings.dps.target, b = bars ?? saved.settings.dps.bars;
+  const again = () => renderDetail(box, id, underBoss);
+  const t = underBoss ? bossTarget : target ?? saved.settings.dps.target, b = bars ?? saved.settings.dps.bars;
   const name = el("input", { value: f.name, maxLength: 50, ariaLabel: "Nome da gravação", className: "dps-rename" });
   name.addEventListener("change", () => { if (name.value.trim()) dpsRename(f.id, name.value); });
   const del = el("button", { type: "button", textContent: "Apagar" });
   del.addEventListener("click", () => { if (confirm(`Apagar "${f.name}"?`)) dpsDelete(f.id); });
-  const said = (text: string, path?: string) => { exported = { id: f.id, text, path }; renderDetail(); };
+  const said = (text: string, path?: string) => { exported = { id: f.id, text, path }; again(); };
   const copy = el("button", { type: "button", textContent: "Copiar imagem", title: "Copia a gravação como imagem, do jeito que está filtrada, para colar no Discord" });
   copy.addEventListener("click", async () => {
     try {
@@ -107,36 +113,38 @@ function renderDetail() {
   reveal.addEventListener("click", () => { if (note?.path) revealItemInDir(note.path); });
   const list = rows(f, t, b);
   const boss = t === "boss" ? bossMs(f) : null;
-  loadGear(list).then((changed) => { if (changed) renderDetail(); });
+  loadGear(list).then((changed) => { if (changed) again(); });
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const shown = f.players.find((p) => p.id === who) ?? f.players.find((p) => p.local) ?? f.players[0];
   const line = (r: (typeof list)[number]) => {
     const li = rowLine(r, b, top);
     li.classList.add("pick");
     li.classList.toggle("picked", r.player === shown);
-    li.addEventListener("click", () => { who = r.player.id; render(); });
+    li.addEventListener("click", () => { who = r.player.id; again(); });
     return li;
   };
+  const elsewhere = el("button", { type: "button", textContent: "Abrir em Gravações", title: "Abre esta gravação na lista de gravações, com o filtro Boss" });
+  elsewhere.addEventListener("click", () => openFight(f.id));
   box.replaceChildren(
-    el("div", { className: "dps-title" }, name, copy, save, del),
+    el("div", { className: "dps-title" }, name, copy, save, del, ...(underBoss ? [elsewhere] : [])),
     ...(note ? [el("p", { className: "hint dps-exported", role: "status" }, note.text, ...(note.path ? [" ", reveal] : []))] : []),
     el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`,
       boss ? el("span", { title: "No filtro Boss, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`) : ""),
     el("div", { className: "dps-filters" },
-      chips(TARGETS, t, (v) => { target = v; render(); }),
-      chips(BARS, b, (v) => { bars = v; render(); })),
+      chips(TARGETS, t, (v) => { if (underBoss) bossTarget = v; else target = v; again(); }),
+      chips(BARS, b, (v) => { bars = v; again(); })),
     list.length ? el("ol", { className: "dps-rows" }, ...list.map(line))
       : el("p", { className: "hint" }, "Nada para este alvo."),
-    shown && b !== "heal" ? skillTable(f, shown, t, saved, renderDetail) : "",
-    shown ? castsSection(f, shown, saved.profile, renderDetail) : "",
+    shown && b !== "heal" ? skillTable(f, shown, t, saved, again) : "",
+    shown ? castsSection(f, shown, saved.profile, again) : "",
     timeline(f, f.players),
-    takenSection(f, t, victim, (id) => { victim = id; render(); }),
-    effectsSection(f, renderDetail),
-    compareBox(f.id, openFight),
+    takenSection(f, t, victim, (v) => { victim = v; again(); }),
+    effectsSection(f, again),
+    compareBox(f.id, underBoss ? openUnderBoss : openFight),
   );
 }
 
-/** Open a recording from the boss history, on the Boss filter, so its
+/** Open a recording in the Gravações list, on the Boss filter, so its
  *  numbers are the ones the history shows. */
 function openFight(id: string) {
   picked = id;
@@ -146,6 +154,21 @@ function openFight(id: string) {
   view = "fights";
   render();
   $("#dps-detail").scrollIntoView({ block: "start" });
+}
+
+/** Opens a recording under its boss, or closes it when it was open. */
+function openUnderBoss(id: string) {
+  bossOpen = bossOpen === id ? null : id;
+  bossTarget = "boss";
+  who = null;
+  victim = null;
+  render();
+}
+
+function bossDetail(id: string) {
+  const box = el("div", { className: "boss-detail" });
+  renderDetail(box, id, true);
+  return box;
 }
 
 function renderView() {
@@ -158,7 +181,7 @@ function render() {
   renderLive();
   renderView();
   if (view === "bosses") {
-    renderBosses($("#boss-history"), openFight);
+    renderBosses($("#boss-history"), bossOpen, openUnderBoss, bossDetail);
     return;
   }
   renderList();
