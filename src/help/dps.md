@@ -28,7 +28,7 @@ No filtro **Boss**, o dano por segundo conta do primeiro ao último golpe de qua
 
 ## Por chefe
 
-A visão **por chefe** junta as lutas contra o mesmo chefe e compara uma luta com a sua melhor. O tempo é o do primeiro ao último golpe no chefe. Clique numa luta (**Detalhes →**) para abrir a gravação já no filtro **Boss**, com o dano de cada jogador e de cada skill.
+A visão **por chefe** junta as lutas contra o mesmo chefe e compara uma luta com a sua melhor. O tempo é o do primeiro ao último golpe no chefe. Clique numa luta (**Detalhes ▾**) para abrir o **detalhamento** logo abaixo dela, já com o filtro **Boss**: dano por jogador e por skill, linha do tempo, dano recebido e a comparação com a melhor luta. Clique de novo para fechar, ou em **Abrir em Gravações** para vê-la na lista de gravações com o mesmo filtro.
 
 ## Overlay de DPS
 
