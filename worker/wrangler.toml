@@ -1,0 +1,9 @@
+# Recebe os relatórios de códigos sem nome do Kiskwatch e abre uma issue no
+# GitHub. Publicar: veja worker/README.md.
+name = "kiskwatch-codigos"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+REPO = "leogimenes/kiskwatch"
+LABEL = "codigos-desconhecidos"

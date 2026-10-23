@@ -6,7 +6,8 @@
     "panel",
     "overlay",
     "pets",
-    "dps"
+    "dps",
+    "help"
   ],
   "permissions": [
     "core:default",

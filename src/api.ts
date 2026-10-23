@@ -32,6 +32,17 @@ export interface Settings {
   a11y: Accessibility;
   dps: DpsSettings;
   hotkeys: Hotkeys;
+  /** "stable", "canary", or empty to follow the build running. */
+  update_channel: "" | "stable" | "canary";
+  onboarding: Onboarding;
+}
+
+/** The panel's guided tour: one per tab, the first time the tab opens. */
+export interface Onboarding {
+  /** "Pular tudo": no tour opens by itself. */
+  off: boolean;
+  /** Tabs whose tour was seen or skipped. */
+  seen: string[];
 }
 
 /** Global keyboard shortcuts, as "Ctrl+Alt+D"; empty is off. */
@@ -299,6 +310,13 @@ export const getTimers = () => invoke<TimerRow[]>("get_timers");
 export const getSaved = () => invoke<Saved>("get_saved");
 /** Bring the panel up on an overlay's settings (its gear). */
 export const openSettings = (overlay: "pets" | "dps") => invoke<void>("open_settings", { overlay });
+/** The help window, on a tab's (or the overlays') topic. */
+export const openHelp = (topic: string) => invoke<void>("open_help", { topic });
+/** From the help window: the panel runs that tab's tour. */
+export const openTour = (tab: string) => invoke<void>("open_tour", { tab });
+/** A tour step about an overlay shows it with a note; null puts it back as the settings say. */
+export const tourOverlay = (overlay: TourOverlay | null, note: string | null = null) => invoke<void>("tour_overlay", { overlay, note });
+export type TourOverlay = "overlay" | "pets" | "dps";
 export const setSettings = (settings: Settings) => invoke("set_settings", { settings });
 export const setAlarm = (id: string, leads: number[]) => invoke("set_alarm", { id, leads });
 export const setPet = (pet: number, level: number, points: number) => invoke("set_pet", { pet, level, points });
@@ -354,6 +372,8 @@ export interface Release {
 
 export interface UpdateStatus {
   current: string;
+  /** The channel in use: the settings' pick, or the build running's. */
+  channel: "stable" | "canary";
   available: Release | null;
   checked_ms: number;
   error: string | null;
@@ -370,6 +390,9 @@ export const onStateChanged = (f: () => void) => listen("state-changed", f);
 export const onDpsChanged = (f: () => void) => listen("dps-changed", f);
 /** Only this window's notes: the app sends each to one overlay. */
 export const onOpenSettings = (f: (overlay: string) => void) => getCurrentWebviewWindow().listen<string>("open-settings", (e) => f(e.payload));
+export const onStartTour = (f: (tab: string) => void) => getCurrentWebviewWindow().listen<string>("start-tour", (e) => f(e.payload));
+export const onHelpTopic = (f: (topic: string) => void) => getCurrentWebviewWindow().listen<string>("help-topic", (e) => f(e.payload));
+export const onTourNote = (f: (note: string | null) => void) => getCurrentWebviewWindow().listen<string | null>("tour-note", (e) => f(e.payload));
 export const onToast = (f: (text: string) => void) => getCurrentWebviewWindow().listen<string>("toast", (e) => f(e.payload));
 export const onGearChanged = (f: () => void) => listen("gear-changed", f);
 export const onChecklistChanged = (f: () => void) => listen("checklist-changed", f);

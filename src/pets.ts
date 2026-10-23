@@ -4,6 +4,7 @@ import { Pace, Saved, SoulSeen, getPaces, getSaved, getSouls, onStateChanged } f
 import { GENUS, GENUS_MARK, PET_BY_ID, Pet, SOULS_PER_LEVEL, levelProgress, name, soulsToMax, t } from "./data";
 import { FARMING_MS, nextOnRoute, nextPet, paceText } from "./farm";
 import "./toast";
+import "./tourNote";
 import "./gear";
 import { applyLook } from "./look";
 

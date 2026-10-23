@@ -15,3 +15,8 @@ html, body { margin: 0; background: transparent; overflow: hidden; }
 .alert .when { flex: none; font-variant-numeric: tabular-nums; font-weight: 700; }
 @keyframes pop { from { transform: translateY(-8px); opacity: 0; } }
 :root.calm .alert { animation: none; }
+/* The panel's guided tour, pointing at this overlay. */
+.tour-note { position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 5; padding: 8px 10px; border-radius: 6px; background: var(--o-gold); color: var(--o-ink); border: 2px solid #fff; font-weight: 600; font-size: 12px; line-height: 1.35; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); animation: tour-blink 1.2s ease-in-out 3; pointer-events: none; }
+#alerts ~ .tour-note { top: 4px; bottom: auto; }
+@keyframes tour-blink { 50% { box-shadow: 0 0 0 4px rgba(255, 224, 140, 0.45); } }
+:root.calm .tour-note { animation: none; }

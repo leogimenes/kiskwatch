@@ -34,6 +34,20 @@ pub struct Settings {
     pub a11y: Accessibility,
     pub dps: DpsSettings,
     pub hotkeys: Hotkeys,
+    /// "stable" or "canary"; empty follows the build running (a canary build
+    /// stays on canaries).
+    pub update_channel: String,
+    pub onboarding: Onboarding,
+}
+
+/// The guided tour of each panel tab, shown the first time the tab opens.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Onboarding {
+    /// "Pular tudo": no tour opens by itself anymore.
+    pub off: bool,
+    /// The tabs whose tour was seen or skipped.
+    pub seen: Vec<String>,
 }
 
 /// The global keyboard shortcuts (see `hotkeys`); empty is off.
@@ -103,6 +117,8 @@ impl Default for Settings {
             a11y: Accessibility::default(),
             dps: DpsSettings::default(),
             hotkeys: Hotkeys::default(),
+            update_channel: String::new(),
+            onboarding: Onboarding::default(),
         }
     }
 }
@@ -183,6 +199,11 @@ pub struct Saved {
     pub references: Vec<Reference>,
     /// The daily and weekly checklist, per character.
     pub checklist: kiskwatch_core::checklist::Checklist,
+    /// Whether to share the codes Kiskwatch couldn't name, and which went.
+    pub sharing: crate::share::Sharing,
+    /// The DPS overlay was widened once to its new default width (see
+    /// `widen_dps`), so a size picked after that stays.
+    pub dps_widened: bool,
 }
 
 /// A character's build as it was when saved, to compare against later.

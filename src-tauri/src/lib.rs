@@ -8,6 +8,7 @@ mod hotkeys;
 mod log;
 mod pcap;
 mod profile;
+mod share;
 mod state;
 mod updater;
 
@@ -52,6 +53,9 @@ pub struct App {
     gear: Mutex<kiskwatch_core::gear::Lookups>,
     /// A newer release, and how installing it goes.
     update: Mutex<updater::Status>,
+    /// The overlay a step of the panel's guided tour shows, whatever the
+    /// settings say (see `tour_overlay`).
+    tour_overlay: Mutex<Option<String>>,
 }
 
 fn now_ms() -> i64 {
@@ -99,6 +103,7 @@ impl App {
             hotkey_error: Mutex::new(None),
             gear: Default::default(),
             update: Default::default(),
+            tour_overlay: Mutex::new(None),
         }
     }
 
@@ -276,7 +281,7 @@ fn place_reminder(app: &AppHandle) {
 /// How far below the top of the game's window the reminder sits, in pixels.
 const REMINDER_MARGIN: i32 = 12;
 
-fn save(app: &AppHandle, state: &App) {
+pub(crate) fn save(app: &AppHandle, state: &App) {
     let saved = state.saved.lock().unwrap();
     if let Err(e) = state::store(app, &saved) {
         log::line(&format!("não deu para salvar o estado: {e}"));
@@ -351,7 +356,9 @@ fn show_overlays(app: &AppHandle, s: &Settings) {
     let game_ok = state.game_running.load(Ordering::Relaxed) || !s.overlays_with_game;
     let focus_ok = state.game_focused.load(Ordering::Relaxed) || !s.overlays_with_focus;
     let reminding = state.reminder_until.load(Ordering::Relaxed) > now_ms();
-    let wanted = [(REMINDER, s.timer_overlay && reminding), ("pets", s.pet_overlay), ("dps", s.dps.overlay)].map(|(label, on)| (label, on && game_ok && focus_ok));
+    let tour = state.tour_overlay.lock().unwrap().clone();
+    let wanted = [(REMINDER, s.timer_overlay && reminding), ("pets", s.pet_overlay), ("dps", s.dps.overlay)]
+        .map(|(label, on)| (label, (on && game_ok && focus_ok) || tour.as_deref() == Some(label)));
     // On the main thread, after any change to the windows already asked for,
     // since Tauri hides them again on those (see `game::show_window`).
     let handle = app.clone();
@@ -380,6 +387,54 @@ fn open_settings(app: AppHandle, overlay: String) {
     let _ = app.emit_to("panel", "open-settings", overlay);
 }
 
+/// A step of the panel's guided tour about an overlay: it shows, with a note
+/// on it saying what it is. `None` ends that, back to what the settings say.
+#[tauri::command]
+fn tour_overlay(app: AppHandle, state: State<App>, overlay: Option<String>, note: Option<String>) {
+    let overlay = overlay.filter(|o| [REMINDER, "pets", "dps"].contains(&o.as_str()));
+    let before = std::mem::replace(&mut *state.tour_overlay.lock().unwrap(), overlay.clone());
+    if let Some(label) = before.filter(|b| Some(b) != overlay.as_ref()) {
+        let _ = app.emit_to(label.as_str(), "tour-note", None::<String>);
+    }
+    if let Some(label) = &overlay {
+        if label == REMINDER {
+            place_reminder(&app);
+        }
+        let _ = app.emit_to(label.as_str(), "tour-note", note);
+    }
+    show_overlays_now(&app);
+}
+
+/// The help window, on one topic (a panel tab or an overlay); one window,
+/// made the first time.
+#[tauri::command]
+async fn open_help(app: AppHandle, mut topic: String) -> Result<(), String> {
+    topic.retain(|c| c.is_ascii_alphanumeric() || c == '-');
+    if let Some(w) = app.get_webview_window(HELP) {
+        let _ = app.emit_to(HELP, "help-topic", &topic);
+        let _ = w.unminimize();
+        let _ = w.show();
+        let _ = w.set_focus();
+        return Ok(());
+    }
+    tauri::WebviewWindowBuilder::new(&app, HELP, tauri::WebviewUrl::App(format!("help.html#{topic}").into()))
+        .title("Kiskwatch ajuda")
+        .inner_size(560.0, 640.0)
+        .min_inner_size(380.0, 320.0)
+        .build()
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
+const HELP: &str = "help";
+
+/// The help window's "Ver o tour": the panel comes up and runs that tab's tour.
+#[tauri::command]
+fn open_tour(app: AppHandle, tab: String) {
+    show_panel(&app);
+    let _ = app.emit_to("panel", "start-tour", tab);
+}
+
 fn show_overlays_now(app: &AppHandle) {
     let settings = app.state::<App>().saved.lock().unwrap().settings.clone();
     show_overlays(app, &settings);
@@ -388,6 +443,27 @@ fn show_overlays_now(app: &AppHandle) {
 /// What is kept of each window between runs and new versions: where it is and
 /// its size. Not whether it shows, which the settings decide (`show_overlays`).
 const WINDOW_FLAGS: StateFlags = StateFlags::POSITION.union(StateFlags::SIZE).union(StateFlags::MAXIMIZED);
+
+/// The DPS overlay's default width (tauri.conf.json), wide enough for a name,
+/// its GS and CP, and the numbers on one line.
+const DPS_WIDTH: f64 = 460.0;
+
+/// Once: widen a DPS overlay kept narrower than `DPS_WIDTH` from before, when
+/// the default was 340 and the bars cut the names short. Its size is saved
+/// between runs, so the new default alone never reached it.
+fn widen_dps(app: &AppHandle, saved: &mut state::Saved) {
+    if saved.dps_widened {
+        return;
+    }
+    saved.dps_widened = true;
+    let Some(w) = app.get_webview_window("dps") else { return };
+    let (Ok(size), Ok(scale)) = (w.inner_size(), w.scale_factor()) else { return };
+    let size = size.to_logical::<f64>(scale);
+    if size.width < DPS_WIDTH {
+        let _ = w.set_size(tauri::LogicalSize::new(DPS_WIDTH, size.height));
+        log::line("overlay de DPS alargado para a nova largura padrão");
+    }
+}
 
 /// Bumped on every move or resize; a save waits for it to settle.
 static WINDOW_MOVES: AtomicU64 = AtomicU64::new(0);
@@ -1023,9 +1099,14 @@ pub fn run() {
         .setup(|app| {
             let mut saved = state::load(app.handle());
             saved.settings.hotkeys.migrate();
+            let widen = !saved.dps_widened;
+            widen_dps(app.handle(), &mut saved);
             let click_through = saved.settings.click_through;
             let keys = saved.settings.hotkeys.clone();
             app.manage(App::new(saved));
+            if widen {
+                save(app.handle(), &app.state::<App>());
+            }
             for label in OVERLAYS {
                 if let Some(w) = app.get_webview_window(label) {
                     let _ = w.set_ignore_cursor_events(click_through);
@@ -1054,7 +1135,7 @@ pub fn run() {
             log::line("pronto");
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, open_help, open_tour, share::share_status, share::share_mode, share::share_send])
         .build(tauri::generate_context!());
     let app = match app {
         Ok(app) => app,

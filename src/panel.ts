@@ -1,7 +1,7 @@
 // The panel: timers with their alarms, the pet collection and its map, settings.
 import {
   ALARM_LEADS, Accessibility, Hotkeys, Pace, Saved, Settings, SoulSeen, TimerRow, captureStatus, countdown, getPaces, getSaved, getSouls, getTimers,
-  hotkeysStatus, onOpenSettings, onStateChanged, openUrl, pauseHotkeys, setAlarm, setClickThrough, setHotkeys, setPet, setSettings,
+  hotkeysStatus, onOpenSettings, onStateChanged, openUrl, pauseHotkeys, setAlarm, setClickThrough, setHotkeys, setPet, setSettings, updateCheck,
 } from "./api";
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming, paceText } from "./farm";
@@ -13,7 +13,9 @@ import { renderChecklist } from "./checklist";
 import "./enchant";
 import "./update";
 import "./titlebar";
+import "./share";
 import { applyLook, chime } from "./look";
+import { initTour, tourSettings, tourTab } from "./tour";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -52,8 +54,12 @@ document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((b) =>
     document.querySelectorAll(".tabs button, .tab").forEach((x) => x.classList.remove("active"));
     b.classList.add("active");
     $(`#tab-${b.dataset.tab}`).classList.add("active");
+    tourTab(b.dataset.tab!);
   }),
 );
+
+// The guided tour keeps what was seen in the settings.
+initTour((change) => update((s) => change(s.onboarding)));
 
 // An overlay's gear: the settings tab, on that overlay's options, lit up for a moment.
 onOpenSettings((overlay) => {
@@ -644,6 +650,11 @@ check("#dps-overlay").addEventListener("change", (e) => update((s) => { s.dps.ov
 $<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button"; }));
 check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
 check("#overlays-with-focus").addEventListener("change", (e) => update((s) => { s.overlays_with_focus = (e.target as HTMLInputElement).checked; }));
+// A new channel looks for updates on it right away.
+$<HTMLSelectElement>("#update-channel").addEventListener("change", async (e) => {
+  await update((s) => { s.update_channel = (e.target as HTMLSelectElement).value as "stable" | "canary"; });
+  await updateCheck();
+});
 
 const A11Y: [string, keyof Accessibility, "check" | "number"][] = [
   ["#a-font", "font_scale", "number"],
@@ -782,6 +793,7 @@ async function refresh() {
   renderGroup(saved);
   renderChecklist();
   renderCapture();
+  tourSettings(saved.settings.onboarding);
 }
 
 onStateChanged(refresh);

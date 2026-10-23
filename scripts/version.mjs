@@ -4,6 +4,7 @@
 //   node scripts/version.mjs check               confere que todos os arquivos têm a mesma versão
 //   node scripts/version.mjs check-pr            no CI: só PR de release (release/vX.Y.Z) muda a versão, e para cima
 //   node scripts/version.mjs bump <patch|minor|major|X.Y.Z>   troca a versão em todos os arquivos
+//   node scripts/version.mjs canary <número> <commit>          versão canary: próximo patch + -canary.<número>.<hash curto>
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -72,6 +73,16 @@ function next(version, kind) {
   throw new Error(`use patch, minor, major ou uma versão X.Y.Z, não "${kind}"`);
 }
 
+// O número (o run do CI) ordena as canaries; o hash diz de qual commit veio. Um hash só de
+// dígitos começando com 0 não é identificador semver válido, então ganha um "g" na frente.
+function canaryVersion(base, run, sha) {
+  if (!/^[1-9]\d*$/.test(run ?? '')) throw new Error(`número da canary inválido: "${run}"`);
+  if (!/^[0-9a-f]{7,40}$/.test(sha ?? '')) throw new Error(`commit inválido: "${sha}"`);
+  let hash = sha.slice(0, 7);
+  if (/^0\d*$/.test(hash)) hash = `g${hash}`;
+  return `${next(base, 'patch')}-canary.${run}.${hash}`;
+}
+
 function bump(kind) {
   const from = current();
   const to = next(from, kind);
@@ -115,7 +126,8 @@ try {
   else if (cmd === 'check') console.log(`versão ${current()} em todos os arquivos`);
   else if (cmd === 'check-pr') console.log(checkPr());
   else if (cmd === 'bump') console.log(bump(arg));
-  else throw new Error('uso: node scripts/version.mjs <get|check|check-pr|bump patch|minor|major|X.Y.Z>');
+  else if (cmd === 'canary') console.log(bump(canaryVersion(current(), arg, process.argv[4])));
+  else throw new Error('uso: node scripts/version.mjs <get|check|check-pr|bump patch|minor|major|X.Y.Z|canary <número> <commit>>');
 } catch (e) {
   console.error(e.message);
   process.exit(1);

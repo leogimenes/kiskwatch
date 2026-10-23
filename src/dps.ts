@@ -3,6 +3,7 @@
 import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onGearChanged, onStateChanged, setSettings } from "./api";
 import { BARS, TARGETS, clock, loadGear, rowLine, rows } from "./dpsView";
 import "./toast";
+import "./tourNote";
 import "./gear";
 import { applyLook } from "./look";
 
