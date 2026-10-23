@@ -13,7 +13,7 @@ use tauri::{AppHandle, State};
 
 /// The Worker that turns a report into an issue; empty while it isn't up,
 /// and then nothing is offered.
-pub const URL: &str = "";
+pub const URL: &str = "https://kiskwatch-codigos.leogimenes1.workers.dev";
 
 /// Whether to send, as the player chose.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
