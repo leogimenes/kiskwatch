@@ -49,6 +49,7 @@ export interface Onboarding {
 export interface Hotkeys {
   dps: string;
   click_through: string;
+  dps_overlay: string;
 }
 
 export type DpsTarget = "all" | "mob" | "boss";

@@ -58,11 +58,13 @@ pub struct Hotkeys {
     pub dps: String,
     /// Turn letting clicks pass through the overlays on or off.
     pub click_through: String,
+    /// Show or hide the DPS overlay.
+    pub dps_overlay: String,
 }
 
 impl Default for Hotkeys {
     fn default() -> Self {
-        Self { dps: "Ctrl+Alt+D".into(), click_through: "Ctrl+Alt+X".into() }
+        Self { dps: "Ctrl+Alt+D".into(), click_through: "Ctrl+Alt+X".into(), dps_overlay: "Ctrl+Alt+O".into() }
     }
 }
 
@@ -71,7 +73,12 @@ impl Hotkeys {
     /// them, unless the user picked their own.
     pub fn migrate(&mut self) {
         if self.dps == "Ctrl+Shift+D" && self.click_through == "Ctrl+Shift+X" {
-            *self = Self::default();
+            *self = Self { dps_overlay: std::mem::take(&mut self.dps_overlay), ..Self::default() };
+        }
+        // A shortcut added later comes on with its default, which a key the
+        // user already picked for another one may hold: it gives way.
+        if [&self.dps, &self.click_through].contains(&&self.dps_overlay) {
+            self.dps_overlay.clear();
         }
     }
 }
