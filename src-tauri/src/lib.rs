@@ -624,6 +624,24 @@ fn on_hotkey(app: &AppHandle, action: hotkeys::Action) {
                 toast(app, &["dps", "pets"], "DPS: gravando");
             }
         }
+        hotkeys::Action::DpsOverlay => {
+            // The same setting as the panel's checkbox, so the rules on when
+            // the overlays show (game open, in front) still hold.
+            let on = {
+                let mut saved = state.saved.lock().unwrap();
+                saved.settings.dps.overlay = !saved.settings.dps.overlay;
+                saved.settings.dps.overlay
+            };
+            show_overlays_now(app);
+            save(app, &state);
+            let _ = app.emit("state-changed", ());
+            if on {
+                // It shows a moment from now, on the main thread.
+                let _ = app.emit_to("dps", "toast", "Overlay de DPS visível");
+            } else {
+                toast(app, &["pets"], "Overlay de DPS escondido");
+            }
+        }
     }
 }
 
