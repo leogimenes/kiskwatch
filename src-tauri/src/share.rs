@@ -19,7 +19,9 @@ pub const URL: &str = "https://kiskwatch-codigos.leogimenes1.workers.dev";
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Sharing {
-    /// "" before asking, "ask" each time, "always" on its own, "never".
+    /// "" before the consent term was answered, "always" once accepted,
+    /// "never" declined or taken back. ("ask", from the first canaries,
+    /// counts as unanswered.)
     pub mode: String,
     /// The codes already sent, as "npc:2001234", so each goes once.
     pub sent: BTreeSet<String>,
@@ -34,7 +36,8 @@ pub struct Status {
 }
 
 fn status(sharing: &Sharing) -> Status {
-    Status { mode: sharing.mode.clone(), sent: sharing.sent.clone(), available: !URL.is_empty() }
+    let mode = if sharing.mode == "ask" { String::new() } else { sharing.mode.clone() };
+    Status { mode, sent: sharing.sent.clone(), available: !URL.is_empty() }
 }
 
 #[tauri::command]
@@ -44,7 +47,7 @@ pub fn share_status(state: State<crate::App>) -> Status {
 
 #[tauri::command]
 pub fn share_mode(app: AppHandle, state: State<crate::App>, mode: String) -> Result<Status, String> {
-    if !["ask", "always", "never"].contains(&mode.as_str()) {
+    if !["always", "never"].contains(&mode.as_str()) {
         return Err(format!("modo desconhecido: {mode}"));
     }
     let st = {

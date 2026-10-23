@@ -255,15 +255,10 @@
 
         <div id="share-section" hidden>
           <h2>Ajudar a traduzir</h2>
-          <p class="hint">Monstros, skills e efeitos que o Kiskwatch ainda não sabe nomear aparecem como "Monstro 2001234" ou "Skill 12345". Com a sua permissão, o app envia só esses códigos (sem nomes de personagens, chat ou servidor) para que os nomes certos entrem numa próxima versão. Cada envio vira uma issue pública no GitHub do Kiskwatch.</p>
+          <p class="hint">Monstros, skills e efeitos que o Kiskwatch ainda não sabe nomear aparecem como "Monstro 2001234" ou "Skill 12345". Se você aceitar o termo, o app envia sozinho, depois de cada gravação de DPS, só esses códigos (sem nomes de personagens, chat ou servidor) para que os nomes certos entrem numa próxima versão.</p>
+          <label class="row"><input id="share-on" type="checkbox" /> Enviar os códigos sem nome depois de cada gravação</label>
           <div class="row">
-            <label>Enviar os códigos sem nome
-              <select id="share-mode">
-                <option value="ask">perguntando antes</option>
-                <option value="always">sozinho, depois de cada gravação</option>
-                <option value="never">nunca</option>
-              </select>
-            </label>
+            <button id="share-terms" type="button">Ler o termo</button>
             <button id="share-now" type="button">Ver e enviar agora</button>
           </div>
           <p id="share-text" class="hint"></p>

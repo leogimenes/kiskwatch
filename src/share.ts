@@ -1,14 +1,16 @@
 // Sharing the codes Kiskwatch couldn't name: monsters, their skills, player
 // skills and buffs/debuffs that show as "Monstro 2001234", "Skill 12345" or
-// "Efeito 678". With the player's word, a report with only those codes and
-// what helps tell them apart goes to a Worker that opens a GitHub issue; the
-// name tables in data/ are filled in from there. No names, chat or server.
-import { gameData, getSaved, onDpsChanged } from "./api";
+// "Efeito 678". The player reads a consent term once; once accepted, after
+// each DPS recording the new codes, and what helps tell them apart, go to a
+// Worker that opens a GitHub issue, and the name tables in data/ are filled
+// in from there. No names, chat or server. Settings take the consent back.
+import { gameData, getSaved, onDpsChanged, onStateChanged } from "./api";
 import { invoke } from "@tauri-apps/api/core";
 import { Skill } from "./buildData";
 import { Report, collect, summary } from "./shareReport";
 
-export type ShareMode = "" | "ask" | "always" | "never";
+/** "" before the term was answered; "always" accepted; "never" declined or taken back. */
+export type ShareMode = "" | "always" | "never";
 
 interface ShareStatus { mode: ShareMode; sent: string[]; available: boolean }
 
@@ -25,21 +27,24 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string,
 }
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
-const modeSelect = $<HTMLSelectElement>("#share-mode");
+const onBox = $<HTMLInputElement>("#share-on");
 const shareText = $("#share-text");
 const shareNow = $<HTMLButtonElement>("#share-now");
+const shareTerms = $<HTMLButtonElement>("#share-terms");
 const shareError = $("#share-error");
 
 let status: ShareStatus | null = null;
-/** Asked once per run: "Agora não" waits for the next start. */
-let askedThisRun = false;
 let lastFight = "";
+/** What the last send did, this run. */
+let lastSent = "";
 
 function render() {
   if (!status) return;
   $("#share-section").hidden = !status.available;
-  modeSelect.value = status.mode || "ask";
-  shareText.textContent = status.sent.length ? `${status.sent.length} código(s) já enviados.` : "Nada enviado ainda.";
+  onBox.checked = status.mode === "always";
+  shareNow.hidden = status.mode !== "always";
+  const total = status.sent.length ? `${status.sent.length} código(s) enviados até agora.` : "Nada enviado ainda.";
+  shareText.textContent = [lastSent, total].filter(Boolean).join(" ");
 }
 
 function fail(e: unknown) {
@@ -50,6 +55,7 @@ function fail(e: unknown) {
 async function send(report: Report, keys: string[]) {
   status = await shareSend(report, keys);
   shareError.hidden = true;
+  lastSent = `Último envio: ${summary(report)}, às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}.`;
   render();
 }
 
@@ -60,69 +66,103 @@ async function pending() {
   return collect(saved.fights, saved, new Set(status?.sent ?? []), known);
 }
 
-/** The dialog: what would go, a note, and how to go on. `byHand` is from the
- *  settings' button, which doesn't change the mode unless told. */
-function ask(report: Report, keys: string[], byHand: boolean) {
-  const note = el("textarea", { rows: 3, maxLength: 500, placeholder: "Ex.: o chefe de 5 mi de HP perto de Kibelisk 12 era o Fulano" });
-  const json = el("pre", { className: "share-json" }, JSON.stringify(report, null, 1));
-  const err = el("p", { className: "hk-error", role: "alert", hidden: true });
-  const button = (text: string, cls = "") => el("button", { type: "button", className: cls, textContent: text });
-  const always = button("Enviar sempre", "primary");
-  const once = button("Enviar só desta vez");
-  const later = button("Agora não");
-  const never = button("Nunca enviar");
+const TERM = [
+  "O Kiskwatch mostra como \"Monstro 2001234\", \"Skill 12345\" ou \"Efeito 678\" o que ele ainda não sabe nomear. Para pôr os nomes certos nas próximas versões, ele pode enviar esses códigos depois de cada gravação de DPS.",
+  "O que é enviado: os códigos de monstros, skills e efeitos sem nome; quantas vezes apareceram; o dano que causaram ou levaram; a classe que usou a skill; a versão do Kiskwatch e a região do jogo.",
+  "O que nunca é enviado: nomes de personagens (o seu ou de outros), chat, servidor, conta, endereço IP guardado, pacotes do jogo ou qualquer outra coisa da sua máquina.",
+  "Para onde vai: cada envio vira uma issue pública no GitHub do Kiskwatch (github.com/leogimenes/kiskwatch), que qualquer pessoa pode ler. Cada código vai uma vez só.",
+  "Você pode desligar quando quiser em Configurações > Ajudar a traduzir; a partir daí nada mais é enviado.",
+];
+
+/** The consent term: read once, accepted or not. `fromSettings` is the
+ *  settings' checkbox or "Ler o termo", where closing changes nothing. */
+function term(fromSettings: boolean) {
+  if (document.querySelector(".share-card")) return;
+  const accept = el("button", { type: "button", className: "primary", textContent: "Aceito enviar" });
+  const decline = el("button", { type: "button", textContent: status?.mode === "always" ? "Parar de enviar" : "Não, obrigado" });
   const box = el("dialog", { className: "skill-card share-card" },
     el("h3", {}, "Ajude a traduzir o Kiskwatch"),
-    el("p", {}, `O Kiskwatch encontrou ${summary(report)} sem nome nas suas gravações de DPS. Enviar esses códigos ajuda a pôr os nomes certos numa próxima versão.`),
-    el("p", { className: "hint" }, "Vão só os códigos, quantas vezes apareceram, o dano que causaram ou levaram, a classe que usou a skill, a versão do app e a região. Nunca vão nomes de personagens, chat, servidor nem pacotes do jogo. Cada envio vira uma issue pública no GitHub do Kiskwatch."),
-    el("details", {}, el("summary", {}, "Ver exatamente o que será enviado"), json),
+    ...TERM.map((p, i) => el("p", { className: i ? "hint" : "" }, p)),
+    el("div", { className: "row" }, accept, decline),
+  );
+  let answered = false;
+  const answer = async (mode: ShareMode) => {
+    answered = true;
+    status = await shareMode(mode);
+    render();
+    box.close();
+    if (mode === "always") check().catch(fail);
+  };
+  accept.addEventListener("click", () => answer("always"));
+  decline.addEventListener("click", () => answer("never"));
+  // Esc before the first answer asks again next time.
+  box.addEventListener("cancel", (e) => { if (!fromSettings) e.preventDefault(); });
+  box.addEventListener("close", () => { box.remove(); if (!answered) render(); });
+  document.body.append(box);
+  box.showModal();
+}
+
+/** "Ver e enviar agora": what would go, with a note, sent on the spot. */
+function preview(report: Report, keys: string[]) {
+  const note = el("textarea", { rows: 3, maxLength: 500, placeholder: "Ex.: o chefe de 5 mi de HP perto de Kibelisk 12 era o Fulano" });
+  const err = el("p", { className: "hk-error", role: "alert", hidden: true });
+  const go = el("button", { type: "button", className: "primary", textContent: "Enviar agora" });
+  const cancel = el("button", { type: "button", textContent: "Cancelar" });
+  const box = el("dialog", { className: "skill-card share-card" },
+    el("h3", {}, "Códigos sem nome"),
+    el("p", {}, `${summary(report)} ainda não foram enviados.`),
+    el("details", {}, el("summary", {}, "Ver exatamente o que será enviado"), el("pre", { className: "share-json" }, JSON.stringify(report, null, 1))),
     el("label", { className: "share-note" }, "Sabe o nome de algum? Escreva aqui (opcional)", note),
     err,
-    el("div", { className: "row" }, always, once, later, ...(byHand ? [] : [never])),
+    el("div", { className: "row" }, go, cancel),
   );
-  const go = async (mode: ShareMode | null) => {
-    for (const b of [always, once, later, never]) b.disabled = true;
+  go.addEventListener("click", async () => {
+    go.disabled = true;
     try {
-      if (mode) status = await shareMode(mode);
       await send({ ...report, note: note.value.trim() }, keys);
       box.close();
     } catch (e) {
       err.hidden = false;
       err.textContent = `Não foi possível enviar: ${e}`;
-      for (const b of [always, once, later, never]) b.disabled = false;
+      go.disabled = false;
     }
-  };
-  always.addEventListener("click", () => go("always"));
-  once.addEventListener("click", () => go(byHand ? null : "ask"));
-  later.addEventListener("click", () => box.close());
-  never.addEventListener("click", async () => { status = await shareMode("never"); render(); box.close(); });
+  });
+  cancel.addEventListener("click", () => box.close());
   box.addEventListener("close", () => box.remove());
   document.body.append(box);
   box.showModal();
 }
 
-/** After a recording is saved: send on its own, ask, or nothing. */
+/** After a recording is saved, with consent: the new codes go on their own. */
 async function check() {
-  if (!status?.available || status.mode === "never") return;
+  if (!status?.available || status.mode !== "always") return;
   const { report, keys } = await pending();
-  if (!keys.length) return;
-  if (status.mode === "always") return send(report, keys).catch(fail);
-  if (askedThisRun || document.querySelector("dialog[open]")) return;
-  askedThisRun = true;
-  ask(report, keys, false);
+  if (keys.length) await send(report, keys);
 }
 
-modeSelect.addEventListener("change", async () => {
-  status = await shareMode(modeSelect.value as ShareMode);
-  render();
+/** The term, the first time: once nothing else (the tour, a dialog) is up. */
+function offerTerm() {
+  if (!status?.available || status.mode !== "") return;
+  const busy = document.querySelector("dialog[open]") || document.querySelector(".tour-bubble:not([hidden])") || document.hidden;
+  if (busy) setTimeout(offerTerm, 3000);
+  else term(false);
+}
+
+onBox.addEventListener("change", async () => {
+  if (onBox.checked) term(true);
+  else {
+    status = await shareMode("never");
+    render();
+  }
 });
+shareTerms.addEventListener("click", () => term(true));
 shareNow.addEventListener("click", async () => {
   const { report, keys } = await pending();
   if (!keys.length) {
     shareText.textContent = "Nenhum código sem nome novo nas suas gravações.";
     return;
   }
-  ask(report, keys, true);
+  preview(report, keys);
 });
 
 let timer = 0;
@@ -132,14 +172,25 @@ onDpsChanged(() => {
     const id = (await getSaved()).fights[0]?.id ?? "";
     if (id && id !== lastFight) {
       lastFight = id;
-      check().catch(() => {});
+      check().catch(fail);
     }
   }, 5000);
 });
 
-shareStatus().then(async (s) => {
-  status = s;
+/** The panel can load before the app is ready to answer; the first state
+ *  change, or a retry, gets the status then. */
+async function start() {
+  if (status) return;
+  try {
+    status = await shareStatus();
+  } catch {
+    setTimeout(start, 2000);
+    return;
+  }
   render();
   lastFight = (await getSaved()).fights[0]?.id ?? "";
-  setTimeout(() => check().catch(() => {}), 30_000);
-});
+  setTimeout(offerTerm, 1500);
+}
+
+onStateChanged(start);
+start();
