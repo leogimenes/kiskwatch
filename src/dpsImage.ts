@@ -1,7 +1,7 @@
 // A recording drawn as a PNG to paste in Discord: the same rows as the DPS
 // tab, for the chosen target and bars, on a dark card that reads on its own.
 import { DpsBars, DpsTarget, Fight } from "./api";
-import { BARS, Row, TARGETS, clock, rows, short } from "./dpsView";
+import { BARS, Row, TARGETS, bossMs, clock, rows, secondsFor, short } from "./dpsView";
 
 const W = 640;
 const PAD = 20;
@@ -129,10 +129,11 @@ export async function fightImage(f: Fight, target: DpsTarget, bars: DpsBars): Pr
   g.fillText(fit(g, f.name, W - 2 * PAD), PAD, 34);
   const label = (options: [string, string][], v: string) => options.find(([k]) => k === v)?.[1] ?? v;
   const total = list.reduce((n, r) => n + r.total, 0);
-  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
+  const secs = secondsFor(f, target);
+  const boss = target === "boss" ? bossMs(f) : null;
   g.font = `13px ${FONT}`;
   g.fillStyle = MUTED;
-  g.fillText(fit(g, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${label(TARGETS, target)} · ${label(BARS, bars)} · ${short(total)} no grupo (${short(total / secs)}/s)`, W - 2 * PAD), PAD, 56);
+  g.fillText(fit(g, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)}${boss ? ` (${clock(boss)} no chefe)` : ""} · ${label(TARGETS, target)} · ${label(BARS, bars)} · ${short(total)} no grupo (${short(total / secs)}/s)`, W - 2 * PAD), PAD, 56);
 
   let y = HEAD;
   if (!list.length) {

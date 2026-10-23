@@ -3,7 +3,7 @@
 import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
-import { BARS, TARGETS, clock, loadGear, rowLine, rows, short } from "./dpsView";
+import { BARS, TARGETS, bossMs, clock, loadGear, rowLine, rows, short } from "./dpsView";
 import { timeline } from "./dpsTimeline";
 import { skillTable } from "./dpsSkills";
 import { castsSection } from "./dpsCasts";
@@ -106,6 +106,7 @@ function renderDetail() {
   const reveal = el("button", { type: "button", className: "link", textContent: note?.path ?? "" });
   reveal.addEventListener("click", () => { if (note?.path) revealItemInDir(note.path); });
   const list = rows(f, t, b);
+  const boss = t === "boss" ? bossMs(f) : null;
   loadGear(list).then((changed) => { if (changed) renderDetail(); });
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const shown = f.players.find((p) => p.id === who) ?? f.players.find((p) => p.local) ?? f.players[0];
@@ -119,7 +120,8 @@ function renderDetail() {
   box.replaceChildren(
     el("div", { className: "dps-title" }, name, copy, save, del),
     ...(note ? [el("p", { className: "hint dps-exported", role: "status" }, note.text, ...(note.path ? [" ", reveal] : []))] : []),
-    el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`),
+    el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`,
+      boss ? el("span", { title: "No filtro Boss, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`) : ""),
     el("div", { className: "dps-filters" },
       chips(TARGETS, t, (v) => { target = v; render(); }),
       chips(BARS, b, (v) => { bars = v; render(); })),
@@ -134,12 +136,16 @@ function renderDetail() {
   );
 }
 
+/** Open a recording from the boss history, on the Boss filter, so its
+ *  numbers are the ones the history shows. */
 function openFight(id: string) {
   picked = id;
   who = null;
   victim = null;
+  target = "boss";
   view = "fights";
   render();
+  $("#dps-detail").scrollIntoView({ block: "start" });
 }
 
 function renderView() {
