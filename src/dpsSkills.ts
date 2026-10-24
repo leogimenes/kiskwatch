@@ -4,6 +4,7 @@
 import { DpsTarget, Fight, FightPlayer, Saved, SkillStat, Tally, gameData } from "./api";
 import { Skill, iconUrl } from "./buildData";
 import { Target, bossOf, secondsFor, short } from "./dpsView";
+import { sharedName } from "./sharedNames";
 import "./dpsSkills.css";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -27,7 +28,7 @@ function loadSkills(redraw: () => void) {
 function fallback(id: number) {
   if (id >= 10_000_000 && id <= 19_999_999 && Math.floor(id / 10_000) % 100 === 0) return "Ataque básico";
   if (id >= 30_000_000 && id <= 30_999_999) return "Teostone";
-  return `Skill ${id}`;
+  return sharedName("skills", id) ?? `Skill ${id}`;
 }
 
 /** A skill's name and icon by its base code. */

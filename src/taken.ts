@@ -3,11 +3,12 @@
 import { Fight, FightPlayer, Taken } from "./api";
 import { Target, secondsFor, short } from "./dpsView";
 import namesJson from "../data/npc_names.json";
+import { sharedName } from "./sharedNames";
 
 const NAMES = namesJson as { npcs: Record<string, string>; skills: Record<string, string> };
 
-export const npcName = (code: number) => code ? NAMES.npcs[code] ?? `Monstro ${code}` : "Monstro desconhecido";
-export const skillName = (code: number) => NAMES.skills[code] ?? `Skill ${code}`;
+export const npcName = (code: number) => code ? NAMES.npcs[code] ?? sharedName("npcs", code) ?? `Monstro ${code}` : "Monstro desconhecido";
+export const skillName = (code: number) => NAMES.skills[code] ?? sharedName("npc_skills", code) ?? `Skill ${code}`;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = Object.assign(document.createElement(tag), props);

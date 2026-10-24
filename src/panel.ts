@@ -15,6 +15,7 @@ import "./enchant";
 import "./update";
 import "./titlebar";
 import "./share";
+import { reloadNames } from "./sharedNames";
 import { applyLook, chime } from "./look";
 import { initTour, tourSettings, tourTab } from "./tour";
 
@@ -981,7 +982,7 @@ function renderConfig(s: Settings) {
 
 // ---- Refresh ----
 async function refresh() {
-  [saved, timers, souls, paces] = await Promise.all([getSaved(), getTimers(), getSouls(), getPaces()]);
+  [saved, timers, souls, paces] = await Promise.all([getSaved(), getTimers(), getSouls(), getPaces(), reloadNames()]);
   const server = SERVERS.find((s) => s.id === saved!.settings.server_id);
   regionSel.value = String(server?.region ?? 4);
   fillServers(Number(regionSel.value), saved.settings.server_id);

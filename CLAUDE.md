@@ -51,4 +51,4 @@ Não crie tags nem releases à mão.
 
 ## Códigos sem nome
 
-Com a permissão do jogador, o app envia os códigos que não soube nomear (`src/shareReport.ts`, `src/share.ts`, `src-tauri/src/share.rs`) para o Worker em `worker/`, que abre issues com o label `codigos-desconhecidos`. `node scripts/codigos.mjs` junta essas issues e lista o que falta nomear em `data/`.
+Com a permissão do jogador, o app envia os códigos que não soube nomear (`src/shareReport.ts`, `src/share.ts`, `src-tauri/src/share.rs`) para o Worker em `worker/`, que guarda tudo num banco Cloudflare D1. O workflow **Códigos sem nome** atualiza todo dia a issue "Códigos sem nome pendentes" (`node scripts/codigos.mjs pendentes`). Para nomear, ponha os nomes em `data/shared_names.json` num PR: ao mesclar, o workflow manda para o Worker, e o app baixa a tabela (`/nomes`) a cada 6 horas e usa onde `data/` não tem nome (`src/sharedNames.ts`).

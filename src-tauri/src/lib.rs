@@ -1191,10 +1191,11 @@ pub fn run() {
             let handle = app.handle().clone();
             std::thread::spawn(move || dps_clock(handle));
             tauri::async_runtime::spawn(updater::watch(app.handle().clone()));
+            tauri::async_runtime::spawn(share::watch_names(app.handle().clone()));
             log::line("pronto");
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, reminder_fit, reminder_close, open_help, open_tour, share::share_status, share::share_mode, share::share_send])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, reminder_fit, reminder_close, open_help, open_tour, share::share_status, share::share_mode, share::share_send, share::shared_names])
         .build(tauri::generate_context!());
     let app = match app {
         Ok(app) => app,

@@ -5,6 +5,7 @@ import { Skill } from "./buildData";
 import namesJson from "../data/npc_names.json";
 import bossNamesJson from "../data/boss_names.json";
 import abnormalsJson from "../data/abnormals.json";
+import { sharedName } from "./sharedNames";
 
 const NAMES = namesJson as { npcs: Record<string, string>; skills: Record<string, string> };
 const BOSSES = bossNamesJson as Record<string, string>;
@@ -26,7 +27,7 @@ export interface Report {
 const unnamedOnPurpose = (id: number) =>
   (id >= 10_000_000 && id <= 19_999_999 && Math.floor(id / 10_000) % 100 === 0) || (id >= 30_000_000 && id <= 30_999_999);
 
-const npcKnown = (code: number) => !code || !!NAMES.npcs[code] || !!BOSSES[code];
+const npcKnown = (code: number) => !code || !!NAMES.npcs[code] || !!BOSSES[code] || !!sharedName("npcs", code);
 
 /** The unnamed codes in the saved recordings, less those already sent, and
  *  their keys ("npc:123"). Player skills count only once dbaion2's list is in. */
@@ -57,7 +58,7 @@ export function collect(fights: Fight[], saved: Saved, sent: Set<string>, known:
           if (!n.skills.includes(t.skill)) n.skills.push(t.skill);
           inFight.add(t.npc);
         }
-        if (!NAMES.skills[t.skill] && !sent.has(`npc_skill:${t.skill}`)) {
+        if (!NAMES.skills[t.skill] && !sharedName("npc_skills", t.skill) && !sent.has(`npc_skill:${t.skill}`)) {
           const s = npcSkills.get(t.skill) ?? { code: t.skill, npc: t.npc, hits: 0, avg: 0, max: 0, damage: 0 };
           s.hits += t.hits;
           s.damage += t.damage;
@@ -68,7 +69,7 @@ export function collect(fights: Fight[], saved: Saved, sent: Set<string>, known:
       }
       if (known) {
         for (const s of p.skills ?? []) {
-          if (mine.has(s.skill) || known.has(s.skill) || unnamedOnPurpose(s.skill) || sent.has(`skill:${s.skill}`)) continue;
+          if (mine.has(s.skill) || known.has(s.skill) || sharedName("skills", s.skill) || unnamedOnPurpose(s.skill) || sent.has(`skill:${s.skill}`)) continue;
           const k = skills.get(s.skill) ?? { code: s.skill, class: p.class, hits: 0 };
           k.hits += s.boss.hits + s.mob.hits;
           k.class ??= p.class;
@@ -77,7 +78,7 @@ export function collect(fights: Fight[], saved: Saved, sent: Set<string>, known:
       }
     }
     for (const u of f.effects?.list ?? []) {
-      if (ABNORMALS[u.abnormal]?.[0] || sent.has(`effect:${u.abnormal}`) || effects.has(u.abnormal)) continue;
+      if (ABNORMALS[u.abnormal]?.[0] || sharedName("effects", u.abnormal) || sent.has(`effect:${u.abnormal}`) || effects.has(u.abnormal)) continue;
       effects.set(u.abnormal, { code: u.abnormal, skill: u.skill });
     }
     for (const code of inFight) npcs.get(code)!.fights++;
