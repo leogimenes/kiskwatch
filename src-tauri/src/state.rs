@@ -48,6 +48,8 @@ pub struct Onboarding {
     pub off: bool,
     /// The tabs whose tour was seen or skipped.
     pub seen: Vec<String>,
+    /// The notice on the risks and on privacy was read (see `notice.ts`).
+    pub notice: bool,
 }
 
 /// The global keyboard shortcuts (see `hotkeys`); empty is off.
@@ -95,11 +97,16 @@ pub struct DpsSettings {
     pub target: String,
     /// The bars: "damage", "heal" or "both" (stacked).
     pub bars: String,
+    /// Look up the item level and combat power of the players on the bars
+    /// on the official site.
+    pub gear: bool,
+    /// The image of a recording names only you; the others are "Jogador 2"…
+    pub hide_names: bool,
 }
 
 impl Default for DpsSettings {
     fn default() -> Self {
-        Self { overlay: false, start: "hit".into(), target: "all".into(), bars: "damage".into() }
+        Self { overlay: false, start: "hit".into(), target: "all".into(), bars: "damage".into(), gear: true, hide_names: true }
     }
 }
 

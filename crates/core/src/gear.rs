@@ -7,8 +7,9 @@ use std::collections::HashMap;
 use serde::Serialize;
 use serde_json::Value;
 
-/// A profile found is read again after half an hour (gear changes).
-pub const FRESH_MS: i64 = 30 * 60_000;
+/// A profile found is read again after two hours: gear changes slowly, and
+/// the official site is asked as little as possible.
+pub const FRESH_MS: i64 = 2 * 60 * 60_000;
 /// A name not found (or the site down) is tried again after ten minutes.
 pub const RETRY_MS: i64 = 10 * 60_000;
 /// A lookup that never answered is given up after a minute.

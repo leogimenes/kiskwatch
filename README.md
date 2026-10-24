@@ -3,6 +3,8 @@
 Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e field bosses com avisos no topo da janela do jogo, coleção de pets com as almas que faltam e onde farmar, e (em breve) build e sugestões por IA.
 
 > Projeto de fã, sem afiliação com a NCSoft. GPL-3.0.
+>
+> **Use por sua conta e risco.** O Kiskwatch só lê uma cópia do tráfego do jogo: não altera nem envia pacotes, não lê a memória do jogo e não aperta teclas por você. Mesmo assim, os Termos de Serviço do AION 2 não autorizam programas de terceiros, e a NCSoft pode agir contra contas que os usam, até com banimento. Não há caso conhecido de banimento por ferramentas que só leem o tráfego, mas ninguém pode garantir. Veja também [o que sai do seu computador](src/help/privacidade.md).
 
 ## Estado atual
 
@@ -41,7 +43,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 - `src`: as telas (TypeScript + Vite).
 - `data`: dados do jogo (pets, drops, spawns, Kibelisks, agenda, servidores), gerados de A2Tools-Plugins.
 
-O app só **lê** uma cópia do tráfego de rede (como o A2Tools e a Questlog). Não lê nem altera a memória do jogo e não envia nada ao servidor.
+O app só **lê** uma cópia do tráfego de rede (como o A2Tools). Não lê nem altera a memória do jogo, não envia nada ao servidor do jogo e não automatiza nenhuma ação. O site oficial só é consultado quando o jogador pede (busca e perfil), para reler o perfil seguido com a aba Build aberta e, se ligado, para o nível e o poder dos jogadores nas barras do DPS, cada nome no máximo a cada 2 horas.
 
 ## Desenvolvimento
 

@@ -10,8 +10,12 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string,
   return e;
 }
 
-/** The profile is read again after this long, while the panel is open. */
+/** The profile is read again after this long, and only with the Build tab
+ *  on the screen: the official site is asked when the player looks, not in
+ *  the background. */
 const REFRESH_MS = 20 * 60_000;
+const onScreen = () => !document.hidden && !!document.querySelector("#tab-build.active");
+const stale = () => !!profile && Date.now() - profile.fetched_ms > REFRESH_MS && onScreen();
 
 const CATEGORY: Record<string, string> = { Active: "Ativas", Passive: "Passivas", Dp: "Stigmas", Stigma: "Stigmas" };
 const CATEGORY_ORDER = ["Active", "Passive", "Dp", "Stigma"];
@@ -377,8 +381,11 @@ export function renderBuild(saved: Saved) {
   if (profile && !game && !gameError) {
     loadGameData().then((g) => { game = g; render(); }).catch((e) => { gameError = String(e); render(); });
   }
-  if (profile && Date.now() - profile.fetched_ms > REFRESH_MS) load();
+  if (stale()) load();
   render();
 }
 
-setInterval(() => { if (profile && Date.now() - profile.fetched_ms > REFRESH_MS) load(); }, 60_000);
+setInterval(() => { if (stale()) load(); }, 60_000);
+// Opening the tab reads a stale profile right away (once the panel has
+// switched to it).
+document.querySelector('.tabs button[data-tab="build"]')?.addEventListener("click", () => setTimeout(() => { if (stale()) load(); }));

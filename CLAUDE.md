@@ -2,6 +2,19 @@
 
 Overlay e painel para AION 2 (Tauri 2 + Rust + TypeScript). Leo escreve em pt-BR; responda e escreva textos do app em pt-BR.
 
+## O que o app nunca faz
+
+O Kiskwatch ajuda o jogador a evoluir, sem automatizar o jogo. Os Termos de Serviço do AION 2 não autorizam programas de terceiros; a NCSoft pune bots, macros, injeção, alteração do cliente e de pacotes, e já ameaçou quem publica dados de outros jogadores sem consentimento. Para ficar do lado tolerado, nenhum PR pode:
+
+- enviar, alterar, injetar ou repetir pacotes, ou abrir conexão com o servidor do jogo;
+- ler ou escrever na memória do jogo, injetar DLL ou mexer nos arquivos do cliente;
+- apertar teclas, clicar ou automatizar qualquer ação no jogo (os atalhos globais só controlam o próprio app);
+- contornar criptografia, anti-cheat ou qualquer proteção técnica, mesmo que o tráfego passe a ser cifrado;
+- publicar ou enviar nomes, dano ou perfil de outros jogadores (rankings, uploads, links públicos); a imagem exportada esconde os nomes dos outros por padrão;
+- consultar o site oficial em lote ou em segundo plano além do que já existe (busca e perfil sob pedido, perfil seguido com a aba Build aberta, nível e poder nas barras com cache de 2 horas e opção de desligar).
+
+Qualquer dado novo que saia do computador do jogador entra em `src/help/privacidade.md`.
+
 ## Versionamento (semver)
 
 A versão segue [semver](https://semver.org/lang/pt-BR/): `MAJOR.MINOR.PATCH`, com tags `vX.Y.Z`.

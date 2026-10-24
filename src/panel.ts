@@ -17,7 +17,8 @@ import "./titlebar";
 import "./share";
 import { reloadNames } from "./sharedNames";
 import { applyLook, chime } from "./look";
-import { initTour, tourSettings, tourTab } from "./tour";
+import { activeTab, initTour, tourSettings, tourTab } from "./tour";
+import { noticeOnce } from "./notice";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -849,6 +850,7 @@ clickThrough.addEventListener("change", () => setClickThrough(clickThrough.check
 check("#timer-overlay").addEventListener("change", (e) => update((s) => { s.timer_overlay = (e.target as HTMLInputElement).checked; }));
 check("#pet-overlay").addEventListener("change", (e) => update((s) => { s.pet_overlay = (e.target as HTMLInputElement).checked; }));
 check("#dps-overlay").addEventListener("change", (e) => update((s) => { s.dps.overlay = (e.target as HTMLInputElement).checked; }));
+check("#dps-gear").addEventListener("change", (e) => update((s) => { s.dps.gear = (e.target as HTMLInputElement).checked; }));
 $<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button" | "dungeon"; }));
 check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
 check("#overlays-with-focus").addEventListener("change", (e) => update((s) => { s.overlays_with_focus = (e.target as HTMLInputElement).checked; }));
@@ -967,6 +969,7 @@ function renderConfig(s: Settings) {
   check("#overlays-with-focus").checked = s.overlays_with_focus;
   check("#dps-overlay").checked = s.dps.overlay;
   $<HTMLSelectElement>("#dps-start").value = s.dps.start;
+  check("#dps-gear").checked = s.dps.gear;
   renderHotkeys(s.hotkeys);
   for (const [id, key, kind] of A11Y) {
     const input = $<HTMLInputElement>(id);
@@ -995,6 +998,8 @@ async function refresh() {
   renderGroup(saved);
   renderChecklist();
   renderCapture();
+  // The notice first, the first time; the tour of the tab open after it.
+  noticeOnce(saved.settings.onboarding, () => tourTab(activeTab()), () => update((s) => { s.onboarding.notice = true; }));
   tourSettings(saved.settings.onboarding);
 }
 

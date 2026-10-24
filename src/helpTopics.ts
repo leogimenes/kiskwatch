@@ -6,7 +6,7 @@ const FILES = import.meta.glob<string>("./help/*.md", { query: "?raw", import: "
 export interface Topic { id: string; title: string; text: string }
 
 /** In the order of the panel's tabs. */
-const ORDER = ["timers", "pets", "build", "group", "dps", "checklist", "enchant", "config", "overlays"];
+const ORDER = ["timers", "pets", "build", "group", "dps", "checklist", "enchant", "config", "overlays", "privacidade"];
 
 export const TOPICS: Topic[] = ORDER.flatMap((id) => {
   const text = FILES[`./help/${id}.md`];

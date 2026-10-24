@@ -19,7 +19,7 @@ Escolha uma gravação na lista para ver:
 - o dano que cada jogador recebeu, por skill de monstro;
 - buffs e debuffs.
 
-Dá para renomear, apagar e **exportar a gravação como imagem** para colar no Discord.
+Dá para renomear, apagar e **exportar a gravação como imagem** para colar no Discord. Na imagem, só você aparece com o nome e os outros viram "Jogador 2", "Jogador 3"…; desmarque **Esconder os nomes dos outros na imagem** só se eles concordarem.
 
 ### Como o dano por segundo é calculado
 

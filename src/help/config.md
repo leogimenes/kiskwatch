@@ -35,3 +35,9 @@ O Kiskwatch procura versões novas sozinho e confere o instalador antes de insta
 ## Ajudar a traduzir
 
 Monstros, skills e efeitos que o Kiskwatch ainda não sabe nomear aparecem só com o código. Com a sua permissão, o app envia só esses códigos (sem nomes de personagens, chat ou servidor) para os nomes certos entrarem numa próxima versão. Escolha se ele pergunta antes, envia sozinho ou nunca envia.
+
+## Riscos e privacidade
+
+**Ler o aviso** mostra de novo o aviso da primeira vez: o Kiskwatch não é afiliado à NCSoft, só lê uma cópia do tráfego do jogo e nunca altera pacotes, lê a memória do jogo ou aperta teclas por você, mas os Termos de Serviço do AION 2 não autorizam programas de terceiros. **O que sai do seu computador** abre a ajuda de privacidade.
+
+Nas opções do DPS dá para desligar a busca do nível do item e do poder de combate dos jogadores no site oficial.
