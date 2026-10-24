@@ -187,6 +187,32 @@ pub struct Reader {
     lists: SkillLists,
     /// Entities a spawn or identity record confirmed: their ids may be small.
     known: HashSet<i32>,
+    /// The actor and skill of the bundle's compact record, for the summed
+    /// hit that may follow it in the same bundle.
+    compact: Option<(i32, i32)>,
+}
+
+/// The skill code of a hit that sums several of one cast: its real skill
+/// is in a compact record before it in the same bundle,
+/// `08 3B 38 00 00` (or `08 3D 38 00 00`), then `38 <actor> <u8> <skill>`,
+/// the skill four bytes or three (Daevalog documents both).
+const SUMMED_SKILL: i32 = 99_745_942;
+const COMPACT_MARKERS: [[u8; 5]; 2] = [[0x08, 0x3B, 0x38, 0x00, 0x00], [0x08, 0x3D, 0x38, 0x00, 0x00]];
+
+/// A player's skill or a theostone's: what a compact record can name.
+fn player_skill(code: i32) -> bool {
+    Class::of_skill(code).is_some() || (30_000_000..=30_999_999).contains(&code)
+}
+
+/// The actor and skill of a compact record in a packet, if it has one.
+fn compact_record(p: &[u8]) -> Option<(i32, i32)> {
+    let marker = p.windows(5).position(|w| COMPACT_MARKERS.iter().any(|m| w == m))? + 5;
+    let mut at = marker + p[marker..].iter().position(|&b| b == 0x38)? + 1;
+    let actor = varint(p, &mut at).filter(|&a| a >= 100)?;
+    let skill = p.get(at + 1..)?;
+    let four = u32_at(skill, 0).map(|c| c as i32);
+    let three = (skill.len() >= 3).then(|| i32::from(skill[0]) | i32::from(skill[1]) << 8 | i32::from(skill[2]) << 16);
+    four.into_iter().chain(three).find(|&c| player_skill(c)).map(|c| (actor, c))
 }
 
 /// The longest name field: 12 characters of up to 4 bytes.
@@ -237,7 +263,7 @@ fn spawn_id(id: i32) -> i32 {
 
 impl Reader {
     pub fn new(lists: SkillLists) -> Self {
-        Self { lists, known: HashSet::new() }
+        Self { lists, known: HashSet::new(), compact: None }
     }
 
     fn plausible(&self, id: i32) -> bool {
@@ -247,6 +273,9 @@ impl Reader {
     /// Everything a whole packet (length varint included) says.
     pub fn read(&mut self, packet: &[u8]) -> Vec<CombatEvent> {
         let mut out = Vec::new();
+        if let Some(found) = compact_record(packet) {
+            self.compact = Some(found);
+        }
         match opcode(packet) {
             Some((at, [0x04, 0x38])) => self.hits(packet, at, &mut out),
             Some((at, [0x05, 0x38])) => self.tick(packet, at, &mut out),
@@ -284,7 +313,7 @@ impl Reader {
         out
     }
 
-    fn hits(&self, p: &[u8], mut at: usize, out: &mut Vec<CombatEvent>) {
+    fn hits(&mut self, p: &[u8], mut at: usize, out: &mut Vec<CombatEvent>) {
         let mut first = true;
         while at < p.len() {
             if !first {
@@ -299,8 +328,13 @@ impl Reader {
         }
     }
 
+    /// A bundle opens or closes: a compact record counts only inside its own.
+    pub fn bundle_edge(&mut self) {
+        self.compact = None;
+    }
+
     /// One `04 38` hit; where the next one starts, if this one ends cleanly.
-    fn hit(&self, p: &[u8], mut at: usize, out: &mut Vec<CombatEvent>) -> Option<usize> {
+    fn hit(&mut self, p: &[u8], mut at: usize, out: &mut Vec<CombatEvent>) -> Option<usize> {
         let target = varint(p, &mut at).filter(|&t| self.plausible(t))?;
         let switch = varint(p, &mut at)?;
         let layout = switch & 0x0F;
@@ -318,7 +352,14 @@ impl Reader {
         if !(1..=299_999_999).contains(&skill) {
             return None;
         }
-        let skill = skill as i32;
+        let mut skill = skill as i32;
+        if skill == SUMMED_SKILL
+            && let Some((_, real)) = self.compact.filter(|&(by, _)| by == actor)
+        {
+            skill = real;
+            // Once: the context goes with it.
+            self.compact = None;
+        }
         at += 1;
         let hit_type = varint(p, &mut at)?;
         if layout < 4 {
@@ -683,6 +724,24 @@ mod tests {
         let npc = [&[0x41, 0x36][..], &var(9001), &[0x0C, 0, 0, 0, 0, 0x7B, 0x1F, 0x23, 0, 0x40, 0x02, 0x05], &[0x01], &var(0), &[0x01], &var(90_000), &var(90_000), &[0; 8]].concat();
         let events = Reader::default().read(&packet(&[&[0x10, 0x37][..], &npc].concat()));
         assert_eq!(events, vec![CombatEvent::Npc { id: 9001, code: 0x231F7B }, CombatEvent::Hp { id: 9001, hp: None, max: Some(90_000) }]);
+    }
+
+    #[test]
+    fn a_summed_hit_takes_the_skill_of_its_compact_record() {
+        let compact = |actor: u32| packet(&[&[0x7E, 0x7E, 0x08, 0x3B, 0x38, 0x00, 0x00, 0x38][..], &var(actor), &[0x05], &16_010_230u32.to_le_bytes(), &[0; 4]].concat());
+        let summed = |actor: u32| packet(&[&[0x04, 0x38][..], &hit(5000, actor, 99_745_942, 3000)].concat());
+        let mut r = Reader::default();
+        assert!(r.read(&compact(4715)).is_empty());
+        assert_eq!(r.read(&summed(4715)), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 16_010_230, value: 3000, dot: false, crit: false, marks: 0 }]);
+        let CombatEvent::Hit { skill, .. } = r.read(&summed(4715))[0] else { panic!() };
+        assert_eq!(skill, 99_745_942, "used once");
+        r.read(&compact(4716));
+        let CombatEvent::Hit { skill, .. } = r.read(&summed(4715))[0] else { panic!() };
+        assert_eq!(skill, 99_745_942, "another player's record");
+        r.read(&compact(4715));
+        r.bundle_edge();
+        let CombatEvent::Hit { skill, .. } = r.read(&summed(4715))[0] else { panic!() };
+        assert_eq!(skill, 99_745_942, "another bundle's record");
     }
 
     #[test]

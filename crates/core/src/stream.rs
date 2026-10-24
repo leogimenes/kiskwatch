@@ -100,9 +100,12 @@ fn read_frame(reader: &mut combat::Reader, zone: &mut ZoneTrace, kind: FrameKind
                 return;
             }
             let Some(inner) = framing::decompress_bundle(payload) else { return };
+            // A compact record names the summed hit of its own bundle only.
+            reader.bundle_edge();
             for frame in framing::walk_inner(&inner).frames {
                 read_frame(reader, zone, frame.kind, frame.bytes(&inner), frame.payload(&inner), depth + 1, now_ms, out);
             }
+            reader.bundle_edge();
         }
     }
 }
