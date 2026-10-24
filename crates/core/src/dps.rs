@@ -725,15 +725,15 @@ mod tests {
         const WHIRLWIND: i32 = 16_001_100;
         let tick = || CombatEvent::Hit { actor: SPIRIT, target: MOB, skill: WHIRLWIND, value: 400, dot: true, crit: false };
         let mut m = meter();
-        m.apply(CombatEvent::Summon { id: SPIRIT, owner: MATE }, 0, false, named);
+        m.apply(CombatEvent::Summon { id: SPIRIT, owner: MATE }, 0, Start::Button, named);
         m.start("luta".into(), 0);
-        m.apply(tick(), 100, false, named);
-        m.apply(CombatEvent::Unsummoned { id: SPIRIT }, 200, false, named);
-        m.apply(tick(), 300, false, named);
+        m.apply(tick(), 100, Start::Button, named);
+        m.apply(CombatEvent::Unsummoned { id: SPIRIT }, 200, Start::Button, named);
+        m.apply(tick(), 300, Start::Button, named);
         let f = m.current(1_000).unwrap();
         assert_eq!((f.players[0].id, f.players[0].mob_damage), (MATE, 400), "the tick after it left is out");
-        m.apply(hit(SPIRIT, MOB, WHIRLWIND, 50), 400, false, named);
-        m.apply(tick(), 500, false, named);
+        m.apply(hit(SPIRIT, MOB, WHIRLWIND, 50), 400, Start::Button, named);
+        m.apply(tick(), 500, Start::Button, named);
         assert_eq!(m.current(1_000).unwrap().players[0].mob_damage, 850, "back: it counts again");
     }
 
