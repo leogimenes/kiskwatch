@@ -233,6 +233,9 @@ pub struct Meter {
     classes: HashMap<i32, Class>,
     /// Summon → owner.
     owners: HashMap<i32, i32>,
+    /// Summons unsummoned: their damage over time no longer counts (the
+    /// game's own analyzer stops counting it too).
+    unsummoned: HashSet<i32>,
     /// Entities that spawned as NPCs or summons: never players.
     npcs: HashSet<i32>,
     /// NPC → its code.
@@ -308,6 +311,9 @@ impl Meter {
                 self.seen.insert(id, now);
             }
             CombatEvent::Npc { id, code } => {
+                // A new entity under the id: whatever had it before is gone.
+                self.owners.remove(&id);
+                self.unsummoned.remove(&id);
                 self.npcs.insert(id);
                 self.codes.insert(id, code);
                 if self.boss_codes.contains(&code) {
@@ -319,8 +325,19 @@ impl Meter {
             CombatEvent::Summon { id, owner } => {
                 self.npcs.insert(id);
                 self.owners.insert(id, owner);
+                self.unsummoned.remove(&id);
+            }
+            CombatEvent::Unsummoned { id } => {
+                if self.owners.contains_key(&id) {
+                    self.unsummoned.insert(id);
+                }
             }
             CombatEvent::Hit { actor, target, skill, value, dot, crit } => {
+                if dot && self.unsummoned.contains(&actor) {
+                    return false;
+                }
+                // A direct hit: the summon is back.
+                self.unsummoned.remove(&actor);
                 if let Some(c) = Class::of_skill(skill).filter(|_| !self.npcs.contains(&actor)) {
                     self.classes.insert(actor, c);
                 }
@@ -611,6 +628,24 @@ mod tests {
 
     fn named(n: Option<&str>) -> String {
         format!("{} luta", n.unwrap_or("?"))
+    }
+
+    #[test]
+    fn a_spirits_ticks_stop_counting_once_unsummoned() {
+        const SPIRIT: i32 = 9500;
+        const WHIRLWIND: i32 = 16_001_100;
+        let tick = || CombatEvent::Hit { actor: SPIRIT, target: MOB, skill: WHIRLWIND, value: 400, dot: true, crit: false };
+        let mut m = meter();
+        m.apply(CombatEvent::Summon { id: SPIRIT, owner: MATE }, 0, false, named);
+        m.start("luta".into(), 0);
+        m.apply(tick(), 100, false, named);
+        m.apply(CombatEvent::Unsummoned { id: SPIRIT }, 200, false, named);
+        m.apply(tick(), 300, false, named);
+        let f = m.current(1_000).unwrap();
+        assert_eq!((f.players[0].id, f.players[0].mob_damage), (MATE, 400), "the tick after it left is out");
+        m.apply(hit(SPIRIT, MOB, WHIRLWIND, 50), 400, false, named);
+        m.apply(tick(), 500, false, named);
+        assert_eq!(m.current(1_000).unwrap().players[0].mob_damage, 850, "back: it counts again");
     }
 
     #[test]

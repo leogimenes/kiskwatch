@@ -13,7 +13,13 @@
 //! 41 36  an NPC or a summon: <id> <mask u32> …, the NPC code (u24) before
 //!        00 40 02 or 00 00 02, and a summon's owner after its legion block
 //!        (40 36 before June 2026)
+//! 42 36  an entity leaving: <id> <varint> <flag>; 7 is a summon unsummoned
 //! ```
+//!
+//! An Elementalist's spirit and its master trade `04 38` records every second
+//! that are neither damage nor healing: 1699xxxx from the spirit to its
+//! master, 1677xxxx from the master to the spirit. They tie the spirit to its
+//! master even when its spawn went unseen (Daevalog documents the pair).
 //!
 //! Ids and values are varints unless marked; numbers are little-endian.
 
@@ -37,6 +43,8 @@ pub enum CombatEvent {
     Npc { id: i32, code: i32 },
     /// A summon, a spirit or a lingering spell, and the player it is from.
     Summon { id: i32, owner: i32 },
+    /// A summon unsummoned: its damage over time stops counting.
+    Unsummoned { id: i32 },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -165,6 +173,18 @@ fn opcode(packet: &[u8]) -> Option<(usize, [u8; 2])> {
     Some((at + 2, [*packet.get(at)?, *packet.get(at + 1)?]))
 }
 
+/// The `42 36` flag of a summon leaving the world.
+const UNSUMMONED: i32 = 7;
+
+/// `(spirit, master)` when a skill is one of the link records between them.
+fn spirit_link(skill: i32, actor: i32, target: i32) -> Option<(i32, i32)> {
+    match skill {
+        16_990_000..=16_999_999 => Some((actor, target)),
+        16_770_000..=16_779_999 => Some((target, actor)),
+        _ => None,
+    }
+}
+
 /// A summon's entity id as its spawn states a large one.
 fn spawn_id(id: i32) -> i32 {
     if id > 1_000_000 { (id & 0x3FFF) | 0x4000 } else { id }
@@ -185,6 +205,11 @@ impl Reader {
         match opcode(packet) {
             Some((at, [0x04, 0x38])) => self.hits(packet, at, &mut out),
             Some((at, [0x05, 0x38])) => self.tick(packet, at, &mut out),
+            Some((mut at, [0x42, 0x36])) => {
+                if let (Some(id), Some(_), Some(UNSUMMONED)) = (varint(packet, &mut at), varint(packet, &mut at), varint(packet, &mut at)) {
+                    out.push(CombatEvent::Unsummoned { id });
+                }
+            }
             _ => {}
         }
         // Identity and spawn records also sit inside other packets.
@@ -257,7 +282,9 @@ impl Reader {
         // A monster's skill (seven digits): damage a player took, not done;
         // the meter tells them apart by who the actor is.
         let npc = (1_000_000..=9_999_999).contains(&skill);
-        if npc {
+        if let Some((id, owner)) = spirit_link(skill, actor, target).filter(|(id, owner)| id != owner) {
+            out.push(CombatEvent::Summon { id, owner });
+        } else if npc {
             if actor != target && value > 0 {
                 out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit });
             }
@@ -268,7 +295,9 @@ impl Reader {
                 out.push(CombatEvent::Heal { actor, target, amount: value.into() });
             }
         }
-        if npc || !(layout == 4 || layout == 6) {
+        // The next hit of the packet (a monster's area attack hits several
+        // players in one) follows a tail of a known shape only.
+        if !(layout == 4 || layout == 6) {
             return None;
         }
         tail(p, at, layout, switch, value).or_else(|| (layout == 4).then(|| tail(p, at, 6, switch, value)).flatten())
@@ -517,6 +546,34 @@ mod tests {
         let body: Vec<u8> = (0..58).step_by(2).map(|i| u8::from_str_radix(&"D14B0600D5F3027E871800020202000243ED940901000000904EEA090100"[i..i + 2], 16).unwrap()).collect();
         let p = packet(&[&[0x04, 0x38][..], &body].concat());
         assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 47573, target: 9681, skill: 1_607_550, value: 1258, dot: false, crit: false }]);
+    }
+
+    #[test]
+    fn a_monsters_hits_on_several_players_are_all_read() {
+        let body = [&[0x04, 0x38][..], &hit(4715, 5000, 2_000_100, 99), &[0x01, 0x00], &hit(4716, 5000, 2_000_100, 98)].concat();
+        let events = Reader::default().read(&packet(&body));
+        assert_eq!(
+            events,
+            vec![
+                CombatEvent::Hit { actor: 5000, target: 4715, skill: 2_000_100, value: 99, dot: false, crit: false },
+                CombatEvent::Hit { actor: 5000, target: 4716, skill: 2_000_100, value: 98, dot: false, crit: false },
+            ]
+        );
+    }
+
+    #[test]
+    fn a_spirits_link_records_tie_it_to_its_master() {
+        let from_spirit = packet(&[&[0x04, 0x38][..], &hit(4715, 9100, 16_990_003, 1500)].concat());
+        assert_eq!(Reader::default().read(&from_spirit), vec![CombatEvent::Summon { id: 9100, owner: 4715 }]);
+        let to_spirit = packet(&[&[0x04, 0x38][..], &hit(9100, 4715, 16_770_001, 200)].concat());
+        assert_eq!(Reader::default().read(&to_spirit), vec![CombatEvent::Summon { id: 9100, owner: 4715 }]);
+    }
+
+    #[test]
+    fn reads_a_summon_leaving() {
+        let p = |flag: u32| packet(&[&[0x42, 0x36][..], &var(9100), &var(0), &var(flag)].concat());
+        assert_eq!(Reader::default().read(&p(7)), vec![CombatEvent::Unsummoned { id: 9100 }]);
+        assert!(Reader::default().read(&p(3)).is_empty(), "killed, not unsummoned");
     }
 
     #[test]

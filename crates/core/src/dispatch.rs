@@ -28,6 +28,15 @@ const QUIET_MS: i64 = 5_000;
 /// for each.
 const MAX_CANDIDATES: usize = 16;
 const MAX_PENDING_BYTES: usize = 4 * 1024 * 1024;
+/// A segment that arrives ahead of a missing one waits for it this long, or
+/// until this many bytes wait behind the gap. A segment lost on the network
+/// comes again well within that (the server resends it); one the capture
+/// missed never does, and the stream goes on without it.
+const GAP_WAIT_MS: i64 = 5_000;
+const GAP_WAIT_BYTES: usize = 256 * 1024;
+/// A segment this far from where the stream stands belongs to a new
+/// connection on the same ports, not to this one.
+const RESYNC_BYTES: u32 = 1 << 20;
 
 /// A TCP segment's payload, server to client or the other way round.
 #[derive(Debug, Clone)]
@@ -57,33 +66,90 @@ struct Flow {
     last_seen_ms: i64,
     /// The sequence number the next new byte will carry, once one is seen.
     next_seq: Option<u32>,
+    /// Segments that came ahead of a missing one, and since when.
+    ahead: Vec<(u32, Vec<u8>)>,
+    ahead_since_ms: i64,
     /// Bytes kept until the flow proves to be the game.
     pending: Vec<u8>,
     stream: Option<GameStream>,
 }
 
+/// How far `seq` lies past `from`, across the wrap at 2^32: negative for
+/// bytes already behind it.
+fn distance(from: u32, seq: u32) -> i32 {
+    seq.wrapping_sub(from) as i32
+}
+
 impl Flow {
-    /// The part of `seg` not already seen (a retransmission, or the same
-    /// segment captured twice), in order. A gap is let through: the framing
+    /// The bytes of `seg` not read yet, in the order the server sent them,
+    /// with any held segments it makes whole. A retransmission (or the same
+    /// segment captured twice) gives nothing; a segment past a gap is held
+    /// until the gap fills, or given up on (`GAP_WAIT_MS`), and the framing
     /// resynchronises on its own.
-    fn fresh<'a>(&mut self, seg: &'a Segment) -> &'a [u8] {
-        let len = seg.data.len() as u32;
-        let end = seg.seq.wrapping_add(len);
+    fn accept(&mut self, seg: &Segment, now_ms: i64) -> Vec<u8> {
+        if seg.data.is_empty() {
+            return Vec::new();
+        }
         let Some(next) = self.next_seq else {
-            self.next_seq = Some(end);
-            return &seg.data;
+            self.next_seq = Some(seg.seq.wrapping_add(seg.data.len() as u32));
+            return seg.data.clone();
         };
-        // How many of its bytes come before the next new one (wrapping).
-        let behind = next.wrapping_sub(seg.seq) as i32;
-        if behind <= 0 {
-            self.next_seq = Some(end);
-            return &seg.data;
+        let at = distance(next, seg.seq);
+        if at.unsigned_abs() > RESYNC_BYTES {
+            let mut out = self.give_up_gap();
+            out.extend_from_slice(&seg.data);
+            self.next_seq = Some(seg.seq.wrapping_add(seg.data.len() as u32));
+            return out;
         }
-        if behind as u32 >= len {
-            return &[];
+        if at > 0 {
+            if self.ahead.is_empty() {
+                self.ahead_since_ms = now_ms;
+            }
+            self.ahead.push((seg.seq, seg.data.clone()));
+            let waiting: usize = self.ahead.iter().map(|(_, d)| d.len()).sum();
+            if now_ms - self.ahead_since_ms >= GAP_WAIT_MS || waiting >= GAP_WAIT_BYTES {
+                return self.give_up_gap();
+            }
+            return Vec::new();
         }
-        self.next_seq = Some(end);
-        &seg.data[behind as usize..]
+        let mut out = Vec::new();
+        self.take(seg.seq, &seg.data, &mut out);
+        self.take_held(&mut out);
+        out
+    }
+
+    /// The part of a segment that starts at or before `next_seq` and is not
+    /// read yet.
+    fn take(&mut self, seq: u32, data: &[u8], out: &mut Vec<u8>) {
+        let Some(next) = self.next_seq else { return };
+        let skip = (-distance(next, seq)) as usize;
+        if skip < data.len() {
+            out.extend_from_slice(&data[skip..]);
+            self.next_seq = Some(seq.wrapping_add(data.len() as u32));
+        }
+    }
+
+    /// The held segments the stream has reached, in order.
+    fn take_held(&mut self, out: &mut Vec<u8>) {
+        while let Some(next) = self.next_seq {
+            let Some(i) = self.ahead.iter().position(|(seq, _)| distance(next, *seq) <= 0) else { break };
+            let (seq, data) = self.ahead.swap_remove(i);
+            self.take(seq, &data, out);
+        }
+    }
+
+    /// Go on past the gap: the held segments, in order, each gap skipped.
+    fn give_up_gap(&mut self) -> Vec<u8> {
+        let mut out = Vec::new();
+        while let Some(next) = self.next_seq {
+            let Some(first) = self.ahead.iter().map(|(seq, _)| *seq).min_by_key(|&seq| distance(next, seq)) else { break };
+            if distance(next, first) > 0 {
+                self.next_seq = Some(first);
+            }
+            self.take_held(&mut out);
+        }
+        self.ahead.clear();
+        out
     }
 }
 
@@ -119,7 +185,7 @@ impl Dispatcher {
         if self.active == Some(key) {
             let flow = self.flows.get_mut(&key).expect("the active flow is kept");
             flow.last_seen_ms = now_ms;
-            let data = flow.fresh(&seg).to_vec();
+            let data = flow.accept(&seg, now_ms);
             return flow.stream.get_or_insert_default().push(&data, now_ms);
         }
         // The other direction of the game's connection, or something else
@@ -140,9 +206,9 @@ impl Dispatcher {
         let flow = self.flows.get_mut(&key).unwrap();
         flow.last_seen_ms = now_ms;
         let signed = has_signature(&seg.data);
-        let data = flow.fresh(&seg);
+        let data = flow.accept(&seg, now_ms);
         if flow.pending.len() + data.len() <= MAX_PENDING_BYTES {
-            flow.pending.extend_from_slice(data);
+            flow.pending.extend_from_slice(&data);
         }
         if signed {
             if now_ms - flow.last_hit_ms > LOCK_WINDOW_MS {
@@ -251,6 +317,34 @@ mod tests {
         let seg = game.send(level_up(1016, 2));
         assert_eq!(d.offer(seg.clone(), 1_000).len(), 1);
         assert!(d.offer(seg, 1_001).is_empty(), "the same bytes again");
+    }
+
+    #[test]
+    fn segments_out_of_order_are_read_in_order() {
+        let mut d = Dispatcher::new();
+        let mut game = Conn::new(SERVER, 13328);
+        lock(&mut d, &mut game, 0);
+        let first = game.send(level_up(1016, 2));
+        let second = game.send(level_up(1017, 3));
+        assert!(d.offer(second.clone(), 1_000).is_empty(), "held until the one before it comes");
+        assert_eq!(
+            d.offer(first.clone(), 1_200),
+            vec![GameEvent::Pets(PetRecord::LevelUp { pet: 1016, level: 2 }), GameEvent::Pets(PetRecord::LevelUp { pet: 1017, level: 3 })]
+        );
+        assert!(d.offer(second, 1_300).is_empty(), "already read");
+        assert!(d.offer(first, 1_400).is_empty(), "already read");
+    }
+
+    #[test]
+    fn a_gap_that_never_fills_is_given_up() {
+        let mut d = Dispatcher::new();
+        let mut game = Conn::new(SERVER, 13328);
+        lock(&mut d, &mut game, 0);
+        game.send(level_up(1016, 2));
+        assert!(d.offer(game.send(level_up(1017, 3)), 1_000).is_empty());
+        let events = d.offer(game.send(level_up(1018, 4)), 1_000 + GAP_WAIT_MS);
+        assert_eq!(events, vec![GameEvent::Pets(PetRecord::LevelUp { pet: 1017, level: 3 }), GameEvent::Pets(PetRecord::LevelUp { pet: 1018, level: 4 })]);
+        assert_eq!(d.offer(game.send(level_up(1019, 5)), 6_100).len(), 1, "read as it comes again");
     }
 
     #[test]
