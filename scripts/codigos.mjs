@@ -1,116 +1,122 @@
-// Junta os relatórios de códigos sem nome (issues com o label
-// codigos-desconhecidos, abertas pelo Worker em worker/) e lista o que ainda
-// falta nomear nas tabelas de data/, do código visto em mais relatórios para
-// o menos visto, com o contexto que ajuda a achar o nome e as notas dos
-// jogadores.
+// Os códigos sem nome que os jogadores compartilharam (guardados no banco D1
+// do Worker em worker/) e os nomes achados para eles.
 //
-//   node scripts/codigos.mjs                 relatórios das issues abertas
-//   node scripts/codigos.mjs --todas         inclui as issues fechadas
-//   node scripts/codigos.mjs --json          a mesma lista em JSON
+//   node scripts/codigos.mjs pendentes            o que falta nomear, do mais visto ao menos visto
+//   node scripts/codigos.mjs pendentes --json     o mesmo em JSON
+//   node scripts/codigos.mjs pendentes --issue    atualiza a issue "Códigos sem nome pendentes" (CI)
+//   node scripts/codigos.mjs publicar             manda data/shared_names.json para o Worker
 //
-// GITHUB_TOKEN no ambiente é opcional (sem ele, 60 pedidos por hora).
+// Precisa de KISKWATCH_ADMIN_TOKEN (o ADMIN_TOKEN do Worker); sem ele, avisa e
+// sai sem erro. --issue usa GITHUB_TOKEN e GITHUB_REPOSITORY, que o Actions dá.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const REPO = 'leogimenes/kiskwatch';
-const LABEL = 'codigos-desconhecidos';
-const args = process.argv.slice(2);
+const [command, ...args] = process.argv.slice(2);
+const ISSUE_TITLE = 'Códigos sem nome pendentes';
 
-const data = (f) => JSON.parse(readFileSync(join(root, 'data', f), 'utf8'));
-const names = data('npc_names.json');
-const bosses = data('boss_names.json');
-const abnormals = data('abnormals.json');
+const read = (f) => readFileSync(join(root, f), 'utf8');
+const data = (f) => JSON.parse(read(join('data', f)));
+/** O endereço do Worker é o mesmo que o app usa. */
+const URL = /pub const URL: &str = "([^"]*)"/.exec(read('src-tauri/src/share.rs'))?.[1];
 
-async function issues() {
-  const out = [];
-  const headers = { accept: 'application/vnd.github+json', 'user-agent': 'kiskwatch-codigos' };
-  if (process.env.GITHUB_TOKEN) headers.authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-  for (let page = 1; ; page++) {
-    const state = args.includes('--todas') ? 'all' : 'open';
-    const res = await fetch(`https://api.github.com/repos/${REPO}/issues?labels=${LABEL}&state=${state}&per_page=100&page=${page}`, { headers });
-    if (!res.ok) throw new Error(`GitHub respondeu ${res.status}: ${await res.text()}`);
-    const list = await res.json();
-    out.push(...list.filter((i) => !i.pull_request));
-    if (list.length < 100) return out;
+/** Tipo no banco ↔ lista em data/shared_names.json. */
+const KINDS = { npc: 'npcs', npc_skill: 'npc_skills', skill: 'skills', effect: 'effects' };
+const LABELS = { npc: 'Monstros', npc_skill: 'Skills de monstro', skill: 'Skills de jogador', effect: 'Efeitos' };
+
+function token() {
+  const t = process.env.KISKWATCH_ADMIN_TOKEN;
+  if (!t || !URL) {
+    console.log('Sem KISKWATCH_ADMIN_TOKEN (ou sem URL em share.rs): nada a fazer.');
+    process.exit(0);
   }
+  return t;
 }
 
-/** O JSON e a nota de uma issue, ou null se ela não for um relatório. */
-export function parse(body) {
-  const json = /### Dados\n\n```json\n([\s\S]*?)\n```/.exec(body ?? '');
-  if (!json) return null;
-  try {
-    const report = JSON.parse(json[1]);
-    const note = /~~~text\n([\s\S]*?)\n~~~/.exec(body)?.[1] ?? '';
-    return { ...report, note };
-  } catch {
-    return null;
-  }
+async function worker(path, init = {}) {
+  const res = await fetch(`${URL}${path}`, { ...init, headers: { authorization: `Bearer ${token()}`, 'content-type': 'application/json', ...init.headers } });
+  if (!res.ok) throw new Error(`o Worker respondeu ${res.status}: ${await res.text()}`);
+  return res;
 }
 
-/** Soma os relatórios por código, sem os que data/ já nomeia. */
-export function merge(reports) {
-  const kinds = { npcs: new Map(), npc_skills: new Map(), skills: new Map(), effects: new Map() };
-  const named = {
-    npcs: (c) => names.npcs[c] || bosses[c],
-    npc_skills: (c) => names.skills[c],
-    skills: () => false,
-    effects: (c) => abnormals[c]?.[0],
-  };
-  const notes = [];
-  for (const { report, app, region, note, issue } of reports) {
-    if (note.trim()) notes.push({ issue, app, region, note: note.trim() });
-    for (const kind of Object.keys(kinds)) {
-      for (const item of report?.[kind] ?? []) {
-        if (named[kind](item.code)) continue;
-        const m = kinds[kind].get(item.code) ?? { code: item.code, reports: 0, issues: [], regions: new Set(), seen: [] };
-        m.reports++;
-        m.issues.push(issue);
-        m.regions.add(region);
-        m.seen.push(item);
-        kinds[kind].set(item.code, m);
-      }
-    }
-  }
-  const sorted = Object.fromEntries(Object.entries(kinds).map(([k, m]) => [k, [...m.values()].sort((a, b) => b.reports - a.reports)]));
-  return { ...sorted, notes };
+/** Já nomeado em data/ (o Worker só sabe dos nomes que recebeu). */
+export function named(kind, code) {
+  const npcs = data('npc_names.json');
+  const shared = data('shared_names.json');
+  if (shared[KINDS[kind]]?.[code]) return true;
+  if (kind === 'npc') return !!(npcs.npcs[code] || data('boss_names.json')[code]);
+  if (kind === 'npc_skill') return !!npcs.skills[code];
+  if (kind === 'effect') return !!data('abnormals.json')[code]?.[0];
+  return false;
 }
 
-const max = (list, key) => Math.max(0, ...list.map((x) => x[key] ?? 0));
-const sum = (list, key) => list.reduce((n, x) => n + (x[key] ?? 0), 0);
 const uniq = (list) => [...new Set(list)].filter((x) => x !== null && x !== undefined);
-const refs = (m) => m.issues.slice(0, 5).map((i) => `#${i}`).join(' ');
+const max = (list, key) => Math.max(0, ...list.map((x) => x[key] ?? 0));
+const day = (ms) => new Date(ms).toISOString().slice(0, 10);
 
-function markdown(all) {
+/** O contexto que ajuda a achar o nome, por tipo. */
+function context(c) {
+  const s = c.seen;
+  if (c.kind === 'npc') return `${s.some((x) => x.boss) ? 'chefe · ' : ''}maior dano do grupo ${max(s, 'max_group_damage')} · skills ${uniq(s.flatMap((x) => x.skills)).slice(0, 6).join(' ')}`;
+  if (c.kind === 'npc_skill') return `monstro ${uniq(s.map((x) => x.npc)).join(' ')} · média ${max(s, 'avg')} · maior ${max(s, 'max')}`;
+  if (c.kind === 'skill') return `classe ${uniq(s.map((x) => x.class)).join(' ') || '?'}`;
+  return `skill que aplicou ${uniq(s.map((x) => x.skill)).join(' ') || '?'}`;
+}
+
+export function markdown({ codes, notes }) {
   const out = [];
-  const table = (title, head, rows) => {
-    if (!rows.length) return;
-    out.push(`## ${title} (${rows.length})`, '', `| ${head.join(' | ')} |`, `|${head.map(() => '---').join('|')}|`, ...rows.map((r) => `| ${r.join(' | ')} |`), '');
-  };
-  table('Monstros', ['Código', 'Relatórios', 'Chefe', 'Maior dano do grupo', 'Skills que usou', 'Issues'],
-    all.npcs.map((m) => [m.code, m.reports, m.seen.some((x) => x.boss) ? 'sim' : '', max(m.seen, 'max_group_damage'), uniq(m.seen.flatMap((x) => x.skills)).slice(0, 8).join(' '), refs(m)]));
-  table('Skills de monstro', ['Código', 'Relatórios', 'Monstro', 'Golpes', 'Média', 'Maior', 'Issues'],
-    all.npc_skills.map((m) => [m.code, m.reports, uniq(m.seen.map((x) => x.npc)).join(' '), sum(m.seen, 'hits'), max(m.seen, 'avg'), max(m.seen, 'max'), refs(m)]));
-  table('Skills de jogador', ['Código', 'Relatórios', 'Classe', 'Golpes', 'Issues'],
-    all.skills.map((m) => [m.code, m.reports, uniq(m.seen.map((x) => x.class)).join(' '), sum(m.seen, 'hits'), refs(m)]));
-  table('Efeitos', ['Código', 'Relatórios', 'Skill que aplicou', 'Issues'],
-    all.effects.map((m) => [m.code, m.reports, uniq(m.seen.map((x) => x.skill)).join(' '), refs(m)]));
-  if (all.notes.length) {
-    out.push('## Notas dos jogadores', '');
-    for (const n of all.notes) out.push(`- #${n.issue} (v${n.app}, região ${n.region}): ${n.note.replace(/\s+/g, ' ')}`);
+  for (const kind of Object.keys(KINDS)) {
+    const list = codes.filter((c) => c.kind === kind);
+    if (!list.length) continue;
+    out.push(`## ${LABELS[kind]} (${list.length})`, '', '| Código | Relatórios | Regiões | Visto | Contexto |', '|---|---|---|---|---|');
+    for (const c of list.slice(0, 150)) out.push(`| ${c.code} | ${c.reports} | ${c.regions.join(' ')} | ${day(c.first)} a ${day(c.last)} | ${context(c)} |`);
+    out.push('');
   }
-  return out.join('\n') || 'Nenhum código sem nome nos relatórios.';
+  if (notes.length) {
+    out.push('## Notas dos jogadores', '', '~~~text');
+    for (const n of notes.slice(0, 100)) out.push(`${day(n.at)} v${n.app} região ${n.region}: ${n.note.replace(/\s+/g, ' ').replaceAll('~~~', '~ ~ ~')}`);
+    out.push('~~~', '');
+  }
+  return out.join('\n') || 'Nenhum código sem nome pendente.';
+}
+
+async function issue(body) {
+  const repo = process.env.GITHUB_REPOSITORY;
+  const gh = (path, init = {}) => fetch(`https://api.github.com/repos/${repo}${path}`, {
+    ...init,
+    headers: { authorization: `Bearer ${process.env.GITHUB_TOKEN}`, accept: 'application/vnd.github+json', 'user-agent': 'kiskwatch-codigos', ...init.headers },
+  });
+  const found = (await (await gh(`/issues?state=open&labels=codigos-desconhecidos&per_page=50`)).json()).find((i) => i.title === ISSUE_TITLE);
+  const text = `${body}\n\n---\nAtualizada todo dia pelo workflow **Códigos sem nome**. Para nomear: adicione os nomes em \`data/shared_names.json\` num PR; ao mesclar, eles vão para o Worker e chegam aos apps em algumas horas.`;
+  const res = found
+    ? await gh(`/issues/${found.number}`, { method: 'PATCH', body: JSON.stringify({ body: text }) })
+    : await gh('/issues', { method: 'POST', body: JSON.stringify({ title: ISSUE_TITLE, body: text, labels: ['codigos-desconhecidos'] }) });
+  if (!res.ok) throw new Error(`GitHub respondeu ${res.status}: ${await res.text()}`);
+  console.log(`Issue ${found ? 'atualizada' : 'criada'}: ${(await res.json()).html_url}`);
+}
+
+async function pendentes() {
+  const all = await (await worker('/pendentes')).json();
+  const left = { ...all, codes: all.codes.filter((c) => !named(c.kind, c.code)) };
+  if (args.includes('--json')) console.log(JSON.stringify(left, null, 1));
+  else if (args.includes('--issue')) await issue(markdown(left));
+  else console.log(markdown(left));
+}
+
+async function publicar() {
+  const shared = data('shared_names.json');
+  const list = Object.entries(KINDS).flatMap(([kind, key]) =>
+    Object.entries(shared[key] ?? {}).map(([code, name]) => ({ kind, code: Number(code), name, source: 'data/shared_names.json' })));
+  await worker('/nomes', { method: 'PUT', body: JSON.stringify(list) });
+  console.log(`${list.length} nome(s) publicados no Worker.`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const reports = (await issues()).map((i) => ({ ...parse(i.body), issue: i.number })).filter((r) => r.report);
-  const all = merge(reports);
-  if (args.includes('--json')) {
-    console.log(JSON.stringify(all, (k, v) => (v instanceof Set ? [...v] : v), 1));
-  } else {
-    console.log(`${reports.length} relatório(s).\n`);
-    console.log(markdown(all));
+  if (command === 'pendentes') await pendentes();
+  else if (command === 'publicar') await publicar();
+  else {
+    console.error('use: node scripts/codigos.mjs pendentes [--json|--issue] | publicar');
+    process.exit(1);
   }
 }

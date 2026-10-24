@@ -1,6 +1,7 @@
 // The DPS tab's buffs and debuffs: for one player, or the main target, how
 // long each one stayed on over the recording.
 import abnormalsJson from "../data/abnormals.json";
+import { sharedName } from "./sharedNames";
 import { Fight, Uptime } from "./api";
 import { iconUrl } from "./buildData";
 import { clock, seconds } from "./dpsView";
@@ -32,7 +33,7 @@ function icon(u: Uptime) {
 function line(u: Uptime, f: Fight, from: string | null) {
   const share = Math.min(1, u.uptime_ms / 1000 / seconds(f));
   const pct = Math.round(share * 100);
-  const name = ABNORMALS[u.abnormal]?.[0] || `Efeito ${u.abnormal}`;
+  const name = ABNORMALS[u.abnormal]?.[0] || sharedName("effects", u.abnormal) || `Efeito ${u.abnormal}`;
   const fill = el("span", "fx-fill");
   fill.style.width = `${share * 100}%`;
   const extra = [u.applied ? `${u.applied}×` : "", u.stacks > 1 ? `até ${u.stacks} acúmulos` : ""].filter(Boolean).join(" · ");

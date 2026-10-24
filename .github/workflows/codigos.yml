@@ -1,0 +1,46 @@
+# Os códigos sem nome que os jogadores compartilham (worker/, banco D1):
+# todo dia, a lista do que falta nomear vai para a issue "Códigos sem nome
+# pendentes"; quando data/shared_names.json muda na main, os nomes vão para o
+# Worker, e os apps baixam em algumas horas. Precisa do secret
+# KISKWATCH_ADMIN_TOKEN (o mesmo ADMIN_TOKEN do Worker); sem ele, não faz nada.
+name: Códigos sem nome
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [data/shared_names.json]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  nomes:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/codigos.mjs publicar
+        env:
+          KISKWATCH_ADMIN_TOKEN: ${{ secrets.KISKWATCH_ADMIN_TOKEN }}
+
+  pendentes:
+    needs: [nomes]
+    # `nomes` não roda no agendamento; aqui roda mesmo assim.
+    if: ${{ always() && github.event_name != 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/codigos.mjs pendentes --issue
+        env:
+          KISKWATCH_ADMIN_TOKEN: ${{ secrets.KISKWATCH_ADMIN_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}

@@ -5,9 +5,10 @@ import { Attempt, Comparison, bossHistory, dpsCompare } from "./api";
 import { GameData, iconUrl, loadGameData } from "./buildData";
 import { clock, short } from "./dpsView";
 import bossNames from "../data/boss_names.json";
+import { sharedName } from "./sharedNames";
 
 const NAMES = bossNames as Record<string, string>;
-export const bossName = (code: number) => NAMES[code] ?? `Chefe ${code}`;
+export const bossName = (code: number) => NAMES[code] ?? sharedName("npcs", code) ?? `Chefe ${code}`;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = Object.assign(document.createElement(tag), props);

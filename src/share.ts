@@ -2,8 +2,8 @@
 // skills and buffs/debuffs that show as "Monstro 2001234", "Skill 12345" or
 // "Efeito 678". The player reads a consent term once; once accepted, after
 // each DPS recording the new codes, and what helps tell them apart, go to a
-// Worker that opens a GitHub issue, and the name tables in data/ are filled
-// in from there. No names, chat or server. Settings take the consent back.
+// Worker that keeps them in a database; the names found come back through
+// sharedNames.ts. No names, chat or server. Settings take the consent back.
 import { gameData, getSaved, onDpsChanged, onStateChanged } from "./api";
 import { invoke } from "@tauri-apps/api/core";
 import { Skill } from "./buildData";
@@ -70,7 +70,7 @@ const TERM = [
   "O Kiskwatch mostra como \"Monstro 2001234\", \"Skill 12345\" ou \"Efeito 678\" o que ele ainda não sabe nomear. Para pôr os nomes certos nas próximas versões, ele pode enviar esses códigos depois de cada gravação de DPS.",
   "O que é enviado: os códigos de monstros, skills e efeitos sem nome; quantas vezes apareceram; o dano que causaram ou levaram; a classe que usou a skill; a versão do Kiskwatch e a região do jogo.",
   "O que nunca é enviado: nomes de personagens (o seu ou de outros), chat, servidor, conta, endereço IP guardado, pacotes do jogo ou qualquer outra coisa da sua máquina.",
-  "Para onde vai: cada envio vira uma issue pública no GitHub do Kiskwatch (github.com/leogimenes/kiskwatch), que qualquer pessoa pode ler. Cada código vai uma vez só.",
+  "Para onde vai: um banco de dados do Kiskwatch, sem acesso público. A lista dos códigos que ainda faltam nomear, somada de todos os jogadores e sem dizer quem enviou o quê, é publicada no GitHub do Kiskwatch. Cada código vai uma vez só, e os nomes achados chegam ao app sozinhos.",
   "Você pode desligar quando quiser em Configurações > Ajudar a traduzir; a partir daí nada mais é enviado.",
 ];
 
@@ -112,7 +112,7 @@ function preview(report: Report, keys: string[]) {
     el("h3", {}, "Códigos sem nome"),
     el("p", {}, `${summary(report)} ainda não foram enviados.`),
     el("details", {}, el("summary", {}, "Ver exatamente o que será enviado"), el("pre", { className: "share-json" }, JSON.stringify(report, null, 1))),
-    el("label", { className: "share-note" }, "Sabe o nome de algum? Escreva aqui (opcional)", note),
+    el("label", { className: "share-note" }, "Sabe o nome de algum? Escreva aqui (opcional; a nota aparece na lista pública, sem o seu nome)", note),
     err,
     el("div", { className: "row" }, go, cancel),
   );
