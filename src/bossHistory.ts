@@ -92,10 +92,21 @@ function comparison(c: Comparison, pick: (fightId: string) => void) {
       el("tbody", {}, ...rows)) : el("p", { className: "hint" }, "Sem dano seu no chefe para comparar por skill."));
 }
 
+/** The last comparison of each recording, so a redraw starts full instead of
+ *  empty: the box sits at the bottom of the page, and an empty one shortens
+ *  it, pulling the scroll up until the answer arrives. */
+const compared = new Map<string, Comparison | null>();
+
 /** A box that fills with the recording against your best one, or stays empty. */
 export function compareBox(fightId: string, pick: (fightId: string) => void) {
   const box = el("div");
+  const last = compared.get(fightId);
+  if (last) box.replaceChildren(comparison(last, pick));
   skillsReady ??= loadGameData().then((g) => { game = g; }, () => {});
-  Promise.all([dpsCompare(fightId), skillsReady]).then(([c]) => { if (c) box.replaceChildren(comparison(c, pick)); });
+  Promise.all([dpsCompare(fightId), skillsReady]).then(([c]) => {
+    compared.set(fightId, c);
+    if (c) box.replaceChildren(comparison(c, pick));
+    else box.replaceChildren();
+  });
   return box;
 }
