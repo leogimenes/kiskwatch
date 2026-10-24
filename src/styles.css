@@ -98,6 +98,15 @@ main { flex: 1; min-height: 0; overflow: auto; padding: 16px; }
 #map .labels .kib-label { fill: var(--gold); }
 #map .labels .chosen { font-weight: 700; }
 #map .empty { fill: var(--muted); }
+#map .zone { fill-opacity: 0.1; }
+#map .zone-edge { fill: none; stroke-opacity: 0.45; stroke-linejoin: round; }
+#map .zone-labels text { fill: var(--muted); paint-order: stroke; stroke: var(--bg); stroke-linejoin: round; pointer-events: none; }
+#map .kib.align { cursor: pointer; stroke: var(--bg); }
+#map .kib.align.done { fill: var(--accent); }
+#map .kib.align.chosen { stroke: #fff; }
+.print-step { margin: 0 0 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; background: rgba(255, 224, 140, 0.1); border: 1px solid var(--gold); display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.print-step[hidden] { display: none; }
+#print-op { width: 80px; vertical-align: middle; }
 .map-info { margin-top: 8px; font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
 .map-info:empty { display: none; }
 .map-info .info-head { display: flex; align-items: center; color: var(--text); font-size: 14px; }

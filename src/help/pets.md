@@ -16,6 +16,18 @@ Cada ponto é onde nasce um monstro que dropa almas de um pet da lista; quanto m
 - Role para dar zoom e arraste para mover.
 - Clique num ponto, ou no nome de um pet na lista, para ver os detalhes.
 
+As áreas coloridas são um esboço das **zonas**, feito a partir de onde nascem os monstros (o Kiskwatch só conhece um ponto por monstro, então as bordas são aproximadas). Desmarque **Zonas** para escondê-las.
+
+### Print do mapa como fundo
+
+O Kiskwatch não traz a arte do mapa, porque ela é do jogo. Mas você pode usar o seu próprio print:
+
+1. No jogo, abra o mapa da região e tire um print (a tecla Print Screen ou a ferramenta de captura do Windows).
+2. Clique em **Print do mapa…** e escolha a imagem.
+3. Clique num Kibelisk (quadrado) no esquema e depois no lugar onde ele aparece no print. Repita com mais dois, bem espalhados.
+
+O print fica só no seu PC, um por mapa. **Fundo** muda a transparência, **Alinhar** refaz o alinhamento e **Tirar print** apaga.
+
 ## Rota de farm
 
 **Calcular** monta a ordem com menos caminhada para farmar os pets da lista no mapa escolhido, usando os Kibelisks quando compensa. O overlay de pets mostra o próximo pet da rota.
