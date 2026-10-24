@@ -43,6 +43,8 @@ export interface Onboarding {
   off: boolean;
   /** Tabs whose tour was seen or skipped. */
   seen: string[];
+  /** The notice on the risks and on privacy was read. */
+  notice: boolean;
 }
 
 /** Global keyboard shortcuts, as "Ctrl+Alt+D"; empty is off. */
@@ -62,6 +64,10 @@ export interface DpsSettings {
   start: "hit" | "button" | "dungeon";
   target: DpsTarget;
   bars: DpsBars;
+  /** Look up item level and combat power of the players on the official site. */
+  gear: boolean;
+  /** The image of a recording names only you; the others are "Jogador 2"… */
+  hide_names: boolean;
 }
 
 export type ClassName = "Gladiator" | "Templar" | "Assassin" | "Ranger" | "Sorcerer" | "Elementalist" | "Cleric" | "Chanter";

@@ -104,7 +104,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string,
   return e;
 }
 
-const activeTab = () => $<HTMLButtonElement>(".tabs button.active")?.dataset.tab ?? "timers";
+export const activeTab = () => $<HTMLButtonElement>(".tabs button.active")?.dataset.tab ?? "timers";
 
 // ---- The tour ----
 const shade = el("div", { className: "tour-shade", hidden: true });

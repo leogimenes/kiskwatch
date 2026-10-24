@@ -243,6 +243,7 @@ h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .dps-list button.active { border-color: var(--accent); }
 .dps-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dps-title { display: flex; gap: 8px; flex-wrap: wrap; }
+.dps-hide { display: inline-flex; align-items: center; gap: 4px; }
 .dps-exported { margin: 6px 0 0; }
 .dps-exported .link { padding: 0; border: 0; color: var(--accent); text-decoration: underline; word-break: break-all; text-align: left; }
 .dps-rename { flex: 1; font: inherit; font-size: 1.1em; font-weight: 600; }

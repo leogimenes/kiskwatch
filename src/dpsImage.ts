@@ -48,7 +48,7 @@ function rounded(g: CanvasRenderingContext2D, x: number, y: number, w: number, h
   g.roundRect(x, y, w, h, r);
 }
 
-async function drawRow(g: CanvasRenderingContext2D, r: Row, y: number, bars: DpsBars, top: number) {
+async function drawRow(g: CanvasRenderingContext2D, r: Row, name: string, y: number, bars: DpsBars, top: number) {
   const x = PAD, w = W - 2 * PAD, h = ROW - 6;
   rounded(g, x, y, w, h, 6);
   g.save();
@@ -88,7 +88,7 @@ async function drawRow(g: CanvasRenderingContext2D, r: Row, y: number, bars: Dps
   g.textAlign = "left";
   g.font = `600 15px ${FONT}`;
   g.fillStyle = r.color;
-  g.fillText(fit(g, r.player.name, w - 60 - numsWidth), x + 40, y + 15);
+  g.fillText(fit(g, name, w - 60 - numsWidth), x + 40, y + 15);
 
   const tx = x + 12, ty = y + h - 9, tw = w - 22, th = 5;
   const width = (n: number) => (top ? (tw * n) / top : 0);
@@ -109,8 +109,10 @@ async function drawRow(g: CanvasRenderingContext2D, r: Row, y: number, bars: Dps
   g.restore();
 }
 
-/** The recording as a PNG. */
-export async function fightImage(f: Fight, target: Target, bars: DpsBars): Promise<Blob> {
+/** The recording as a PNG. With `hideNames`, only you keep your name: the
+ *  others are "Jogador 2", "Jogador 3"… in the order of the bars, so an image
+ *  passed around names no one who didn't agree to it. */
+export async function fightImage(f: Fight, target: Target, bars: DpsBars, hideNames: boolean): Promise<Blob> {
   const list = rows(f, target, bars);
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   const h = HEAD + Math.max(1, list.length) * ROW + FOOT;
@@ -140,8 +142,10 @@ export async function fightImage(f: Fight, target: Target, bars: DpsBars): Promi
   if (!list.length) {
     g.fillText("Nada para este alvo.", PAD, y + 20);
   }
+  let other = 1;
   for (const r of list) {
-    await drawRow(g, r, y, bars, top);
+    const name = hideNames && !r.player.local ? `Jogador ${++other}` : r.player.name;
+    await drawRow(g, r, name, y, bars, top);
     y += ROW;
   }
 

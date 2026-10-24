@@ -112,7 +112,7 @@ function preview(report: Report, keys: string[]) {
     el("h3", {}, "Códigos sem nome"),
     el("p", {}, `${summary(report)} ainda não foram enviados.`),
     el("details", {}, el("summary", {}, "Ver exatamente o que será enviado"), el("pre", { className: "share-json" }, JSON.stringify(report, null, 1))),
-    el("label", { className: "share-note" }, "Sabe o nome de algum? Escreva aqui (opcional; a nota aparece na lista pública, sem o seu nome)", note),
+    el("label", { className: "share-note" }, "Sabe o nome de algum? Escreva aqui (opcional). A nota aparece na lista pública, sem dizer quem enviou: não escreva seu nome, contato ou dados da sua conta.", note),
     err,
     el("div", { className: "row" }, go, cancel),
   );

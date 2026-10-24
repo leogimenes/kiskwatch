@@ -1,7 +1,7 @@
 // The panel's DPS tab: the recording under way, and every saved one, to look
 // at by target and kind of bar, rename or delete; or the recordings by boss,
 // each one opening right under its boss with the Boss filter on.
-import { DpsBars, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir } from "./api";
+import { DpsBars, Fight, Saved, dpsClear, dpsDelete, dpsLive, dpsRename, dpsSaveImage, dpsStart, dpsStop, onDpsChanged, onGearChanged, revealItemInDir, setSettings } from "./api";
 import { effectsSection } from "./dpsEffects";
 import { fightImage } from "./dpsImage";
 import { BARS, TARGETS, Target, bossTime, clock, combatSeconds, fightBosses, loadGear, rowLine, rows, short } from "./dpsView";
@@ -96,20 +96,25 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
   copy.addEventListener("click", async () => {
     try {
       // The promise goes straight in so the copy still counts as the click's.
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": fightImage(f, t, b) })]);
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": fightImage(f, t, b, hide.checked) })]);
       said("Imagem copiada. Cole no Discord com Ctrl+V.");
     } catch {
       try {
-        said("Não deu para copiar; a imagem foi salva em", await dpsSaveImage(f.name, await fightImage(f, t, b)));
+        said("Não deu para copiar; a imagem foi salva em", await dpsSaveImage(f.name, await fightImage(f, t, b, hide.checked)));
       } catch (e) {
         said(`Não deu para copiar nem salvar a imagem: ${e}`);
       }
     }
   });
+  // Off by choice only: the image names no one else unless asked to.
+  const settings = saved.settings;
+  const hide = el("input", { type: "checkbox", checked: settings.dps.hide_names });
+  hide.addEventListener("change", () => setSettings({ ...settings, dps: { ...settings.dps, hide_names: hide.checked } }));
+  const hideLabel = el("label", { className: "dps-hide", title: "Na imagem, só você aparece com o nome; os outros viram Jogador 2, Jogador 3… Mostre o nome de alguém só com o consentimento da pessoa." }, hide, " Esconder os nomes dos outros na imagem");
   const save = el("button", { type: "button", textContent: "Salvar PNG", title: "Salva a imagem em Imagens\\Kiskwatch" });
   save.addEventListener("click", async () => {
     try {
-      said("Imagem salva em", await dpsSaveImage(f.name, await fightImage(f, t, b)));
+      said("Imagem salva em", await dpsSaveImage(f.name, await fightImage(f, t, b, hide.checked)));
     } catch (e) {
       said(`Não deu para salvar a imagem: ${e}`);
     }
@@ -132,7 +137,7 @@ function renderDetail(box = $("#dps-detail"), id = picked, underBoss = false) {
   const elsewhere = el("button", { type: "button", textContent: "Abrir em Gravações", title: "Abre esta gravação na lista de gravações, com o filtro Boss" });
   elsewhere.addEventListener("click", () => openFight(f.id));
   box.replaceChildren(
-    el("div", { className: "dps-title" }, name, copy, save, del, ...(underBoss ? [elsewhere] : [])),
+    el("div", { className: "dps-title" }, name, copy, save, hideLabel, del, ...(underBoss ? [elsewhere] : [])),
     ...(note ? [el("p", { className: "hint dps-exported", role: "status" }, note.text, ...(note.path ? [" ", reveal] : []))] : []),
     el("p", { className: "hint" }, `${when(f.started_ms)} · ${clock(f.ended_ms - f.started_ms)} · ${f.players.length} jogador(es)`,
       boss ? el("span", { title: "Nos filtros de chefe, o dano por segundo conta do primeiro ao último golpe de qualquer jogador no chefe, como em Por chefe" }, ` · ${clock(boss)} no chefe (base do /s)`)

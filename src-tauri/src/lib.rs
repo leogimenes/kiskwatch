@@ -799,14 +799,15 @@ async fn inspect_profile(server_id: u32, character_id: String) -> Result<profile
 
 /// Item level and combat power of these players, as far as known; the ones
 /// not known yet are looked up on the official site, and `gear-changed` says
-/// when an answer changes what a bar shows.
+/// when an answer changes what a bar shows. Nothing when turned off in the
+/// settings.
 #[tauri::command]
 fn player_gear(app: AppHandle, state: State<App>, names: Vec<String>) -> Vec<kiskwatch_core::gear::Gear> {
-    let (region, server) = {
+    let (region, server, on) = {
         let s = &state.saved.lock().unwrap().settings;
-        (s.region(), s.server_id)
+        (s.region(), s.server_id, s.dps.gear)
     };
-    if profile::shard(region).is_none() {
+    if !on || profile::shard(region).is_none() {
         return Vec::new();
     }
     let (known, start) = state.gear.lock().unwrap().ask(&names, now_ms());
