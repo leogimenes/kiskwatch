@@ -1,7 +1,7 @@
 // A recording drawn as a PNG to paste in Discord: the same rows as the DPS
 // tab, for the chosen target and bars, on a dark card that reads on its own.
 import { DpsBars, Fight } from "./api";
-import { BARS, Row, TARGETS, Target, bossTime, clock, rows, secondsFor, short } from "./dpsView";
+import { BARS, OUT_OF_RANGE, Row, TARGETS, Target, bossTime, clock, rows, secondsFor, short } from "./dpsView";
 import { bossName } from "./bossHistory";
 
 const W = 640;
@@ -144,7 +144,7 @@ export async function fightImage(f: Fight, target: Target, bars: DpsBars, hideNa
   }
   let other = 1;
   for (const r of list) {
-    const name = hideNames && !r.player.local ? `Jogador ${++other}` : r.player.name;
+    const name = hideNames && !r.player.local && r.player.id !== OUT_OF_RANGE ? `Jogador ${++other}` : r.player.name;
     await drawRow(g, r, name, y, bars, top);
     y += ROW;
   }

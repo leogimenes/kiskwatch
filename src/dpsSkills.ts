@@ -1,5 +1,6 @@
 // The DPS tab's skill table: one player's damage by skill, with hits, the
-// biggest hit, the average and criticals. Names and icons come from the
+// biggest hit, the average, criticals, how the hits landed (from behind,
+// double, perfect, blocked) and the attempts that did nothing. Names and icons come from the
 // profile (in Portuguese) where it has the skill, else from dbaion2.
 import { DpsTarget, Fight, FightPlayer, Saved, SkillStat, Tally, gameData } from "./api";
 import { Skill, iconUrl } from "./buildData";
@@ -42,10 +43,21 @@ export function skillLook(id: number, saved: Saved | null): { name: string; icon
 export function tally(s: SkillStat, target: DpsTarget): Tally {
   if (target === "boss") return s.boss;
   if (target === "mob") return s.mob;
-  return { damage: s.boss.damage + s.mob.damage, hits: s.boss.hits + s.mob.hits, crits: s.boss.crits + s.mob.crits, max_hit: Math.max(s.boss.max_hit, s.mob.max_hit) };
+  const sum = (k: "back" | "double" | "perfect" | "blocked" | "missed" | "resisted") => (s.boss[k] ?? 0) + (s.mob[k] ?? 0);
+  return {
+    damage: s.boss.damage + s.mob.damage, hits: s.boss.hits + s.mob.hits, crits: s.boss.crits + s.mob.crits, max_hit: Math.max(s.boss.max_hit, s.mob.max_hit),
+    back: sum("back"), double: sum("double"), perfect: sum("perfect"), blocked: sum("blocked"), missed: sum("missed"), resisted: sum("resisted"),
+  };
 }
 
 const percent = (n: number) => `${Math.round(n * 100)}%`;
+
+/** The attempts that did nothing, over all of them. */
+function missCell(t: Tally, dot: boolean) {
+  const missed = t.missed ?? 0, resisted = t.resisted ?? 0;
+  if (dot) return el("td", { className: "num" }, "—");
+  return el("td", { className: "num", title: `${missed} erro(s), ${resisted} resistido(s)` }, percent(t.hits + missed + resisted ? (missed + resisted) / (t.hits + missed + resisted) : 0));
+}
 
 /** The table of a player's skills on a target, biggest first. */
 export function skillTable(f: Fight, p: FightPlayer, target: Target, saved: Saved | null, redraw: () => void) {
@@ -63,7 +75,9 @@ export function skillTable(f: Fight, p: FightPlayer, target: Target, saved: Save
   const th = (text: string, title = "") => el("th", { title }, text);
   return el("section", { className: "dps-skills" }, head,
     el("table", { className: "list" },
-      el("thead", {}, el("tr", {}, th("Skill"), th("Dano"), th("DPS"), th("Golpes", "Golpes que acertaram (ticks, no dano contínuo)"), th("Maior"), th("Média"), th("Crítico", "Golpes críticos sobre o total"))),
+      el("thead", {}, el("tr", {}, th("Skill"), th("Dano"), th("DPS"), th("Golpes", "Golpes que acertaram (ticks, no dano contínuo)"), th("Maior"), th("Média"), th("Crítico", "Golpes críticos sobre o total"),
+        th("Costas", "Golpes pelas costas sobre o total"), th("Duplo", "Golpes duplos sobre o total"), th("Perfeito", "Golpes perfeitos sobre o total"),
+        th("Bloqueado", "Golpes que o alvo aparou ou bloqueou (parte do dano tirada) sobre o total"), th("Errou", "Tentativas que erraram ou foram resistidas, sobre todas as tentativas"))),
       el("tbody", {}, ...list.map(({ s, t }) => {
         const look = skillLook(s.skill, saved);
         const bar = el("span", { className: "dps-skill-bar" });
@@ -77,6 +91,8 @@ export function skillTable(f: Fight, p: FightPlayer, target: Target, saved: Save
           el("td", { className: "num" }, t.hits.toLocaleString("pt-BR")),
           el("td", { className: "num" }, short(t.max_hit)),
           el("td", { className: "num" }, short(t.hits ? t.damage / t.hits : 0)),
-          el("td", { className: "num" }, s.dot ? "—" : percent(t.hits ? t.crits / t.hits : 0)));
+          el("td", { className: "num" }, s.dot ? "—" : percent(t.hits ? t.crits / t.hits : 0)),
+          ...[t.back, t.double, t.perfect, t.blocked].map((n) => el("td", { className: "num" }, s.dot ? "—" : percent(t.hits ? (n ?? 0) / t.hits : 0))),
+          missCell(t, s.dot));
       }))));
 }

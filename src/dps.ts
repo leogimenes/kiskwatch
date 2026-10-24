@@ -1,7 +1,7 @@
 // The DPS overlay: the recording under way (or the last one), up to six
 // players, with a button to start and stop and a name to change.
 import { DpsBars, DpsTarget, Fight, Saved, dpsClear, dpsLive, dpsRename, dpsStart, dpsStop, getSaved, onDpsChanged, onGearChanged, onStateChanged, setSettings } from "./api";
-import { BARS, TARGETS, clock, loadGear, rowLine, rows } from "./dpsView";
+import { BARS, TARGETS, bossName, bossNow, clock, loadGear, rowLine, rows } from "./dpsView";
 import "./toast";
 import "./tourNote";
 import "./gear";
@@ -51,11 +51,37 @@ function render() {
   if (document.activeElement !== name) name.value = fight?.name ?? "";
   chips($("#dps-target"), TARGETS, s.target, (target) => pickSetting({ target }));
   chips($("#dps-bars"), BARS, s.bars, (bars) => pickSetting({ bars }));
+  renderBoss(fight);
   const list = fight ? rows(fight, s.target, s.bars, SHOWN) : [];
   const top = list.reduce((n, r) => Math.max(n, r.total), 0);
   $("#dps-rows").replaceChildren(...(list.length ? list.map((r) => rowLine(r, s.bars, top))
     : [Object.assign(document.createElement("li"), { className: "empty", textContent: live ? "Ninguém causou dano ainda." : "Nenhuma gravação ainda." })]));
   loadGear(list).then((changed) => { if (changed) render(); });
+}
+
+/** The boss being fought: its HP, and the time left to its enrage. */
+function renderBoss(fight: Fight | null) {
+  const box = $("#dps-boss");
+  const b = fight && bossNow(fight);
+  box.hidden = !b;
+  if (!b) return;
+  const left = b.hp! / Math.max(1, b.max_hp!);
+  const fill = document.createElement("span");
+  fill.className = "dps-hp-fill";
+  fill.style.width = `${Math.min(100, left * 100)}%`;
+  const label = document.createElement("span");
+  label.className = "dps-hp-label";
+  label.textContent = `${bossName(b.code)} · ${(left * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+  const parts: Node[] = [fill, label];
+  if (b.in_combat && b.enrage_ms) {
+    const rage = document.createElement("span");
+    const ms = b.enrage_ms - Date.now();
+    rage.className = `dps-enrage${ms < 60_000 ? " soon" : ""}`;
+    rage.textContent = ms > 0 ? `Fúria em ${clock(ms)}` : "Fúria!";
+    rage.title = "Quando o chefe entra em fúria, pelo relógio do servidor";
+    parts.push(rage);
+  }
+  box.replaceChildren(...parts);
 }
 
 async function poll() {

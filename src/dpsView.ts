@@ -1,6 +1,11 @@
 // What the DPS overlay and the panel's DPS tab draw from a recording: the
 // rows for the chosen target and bars, with each class's shield and color.
-import { ClassName, DpsBars, DpsTarget, Fight, FightPlayer, Gear, playerGear } from "./api";
+import { ClassName, DpsBars, DpsTarget, Fight, FightBoss, FightPlayer, Gear, playerGear } from "./api";
+import bossNames from "../data/boss_names.json";
+import { sharedName } from "./sharedNames";
+
+const BOSS_NAMES = bossNames as Record<string, string>;
+export const bossName = (code: number) => BOSS_NAMES[code] ?? sharedName("npcs", code) ?? `Chefe ${code}`;
 
 export const CLASS: Record<ClassName, { name: string; color: string }> = {
   Gladiator: { name: "Gladiador", color: "#e0823d" },
@@ -27,6 +32,8 @@ export interface Row {
   /** Per second in combat (on the bosses, for Boss); see `secondsFor`. */
   rate: number;
   share: number;
+  /** The part of the boss's HP it took, on boss filters when the game said the HP. */
+  hp?: number;
   color: string;
 }
 
@@ -97,6 +104,27 @@ export function secondsFor(f: Fight, target: Target) {
   return boss ? boss / 1000 : combatSeconds(f);
 }
 
+/** The bosses a filter is about: all of them for Boss, one for one boss. */
+const bossesFor = (f: Fight, target: Target) =>
+  (f.bosses ?? []).filter((b) => typeof target === "number" ? b.code === target : target === "boss");
+
+/** The damage on the filter's bosses that came from players out of range:
+ *  HP the game says they lost that no hit seen here explains. */
+export const unseenOn = (f: Fight, target: Target) => bossesFor(f, target).reduce((n, b) => n + (b.unseen ?? 0), 0);
+
+/** The filter's bosses' most HP, when the game said it. */
+export const maxHpOn = (f: Fight, target: Target) => bossesFor(f, target).reduce((n, b) => n + (b.max_hp ?? 0), 0);
+
+/** The boss to show the HP of: the one in combat, else the last one hit,
+ *  when its HP is known. */
+export function bossNow(f: Fight): FightBoss | null {
+  const known = (f.bosses ?? []).filter((b) => (b.max_hp ?? 0) > 0 && b.hp != null);
+  return known.find((b) => b.in_combat) ?? known.sort((a, b) => b.last_ms - a.last_ms)[0] ?? null;
+}
+
+/** The stand-in row for the damage of players out of range. */
+export const OUT_OF_RANGE = -1;
+
 /** A player's damage on a target. */
 export function damageOn(f: Fight, p: FightPlayer, target: Target) {
   if (typeof target === "number") return bossOf(f, target)?.players?.find((x) => x.id === p.id)?.damage ?? 0;
@@ -107,14 +135,25 @@ export function damageOn(f: Fight, p: FightPlayer, target: Target) {
  *  your own row stays in even when it would be cut. */
 export function rows(f: Fight, target: Target, bars: DpsBars, limit = Infinity): Row[] {
   const secs = secondsFor(f, target);
-  const all = f.players.map((p) => {
+  const maxHp = bars === "heal" ? 0 : maxHpOn(f, target);
+  let all: Row[] = f.players.map((p) => {
     const damage = damageOn(f, p, target);
     const heal = p.heal;
     const total = bars === "damage" ? damage : bars === "heal" ? heal : damage + heal;
     return { player: p, damage, heal, total, rate: total / secs, share: 0, color: p.class ? CLASS[p.class].color : UNKNOWN_COLOR };
-  }).filter((r) => r.total > 0).sort((a, b) => b.total - a.total);
+  });
+  // On bosses, the HP they lost that nobody here was seen taking.
+  const unseen = bars === "heal" ? 0 : unseenOn(f, target);
+  if (unseen > 0) {
+    const player: FightPlayer = { id: OUT_OF_RANGE, name: "Fora de alcance", class: null, local: false, boss_damage: unseen, mob_damage: 0, heal: 0, timeline: [], idle: [], idle_ms: 0, skills: [], taken: [] };
+    all.push({ player, damage: unseen, heal: 0, total: unseen, rate: unseen / secs, share: 0, color: UNKNOWN_COLOR });
+  }
+  all = all.filter((r) => r.total > 0).sort((a, b) => b.total - a.total);
   const sum = all.reduce((n, r) => n + r.total, 0);
-  for (const r of all) r.share = sum ? r.total / sum : 0;
+  for (const r of all) {
+    r.share = sum ? r.total / sum : 0;
+    if (maxHp) r.hp = r.damage / maxHp;
+  }
   if (all.length <= limit) return all;
   const shown = all.slice(0, limit);
   const me = all.find((r) => r.player.local);
@@ -160,7 +199,7 @@ const gear = new Map<string, Gear>();
 /** Ask for the gear of the players on these rows. True when it changed what
  *  a bar shows, to draw them again. */
 export async function loadGear(list: Row[]): Promise<boolean> {
-  const names = list.map((r) => r.player.name);
+  const names = list.filter((r) => r.player.id !== OUT_OF_RANGE).map((r) => r.player.name);
   if (!names.length) return false;
   let changed = false;
   for (const g of await playerGear(names).catch(() => [] as Gear[])) {
@@ -200,12 +239,18 @@ export function rowLine(r: Row, bars: DpsBars, top: number) {
     track.append(f);
   }
   const unit = bars === "heal" ? "/s cura" : "/s";
-  const line = el("li", `dps-row${r.player.local ? " me" : ""}`,
+  const away = r.player.id === OUT_OF_RANGE;
+  const deaths = r.player.deaths ?? 0;
+  const died = deaths ? el("span", "dps-deaths", `☠${deaths > 1 ? deaths : ""}`) : "";
+  if (died) died.title = `Morreu ${deaths} vez(es)`;
+  const line = el("li", `dps-row${r.player.local ? " me" : ""}${away ? " away" : ""}`,
     shield(r.player),
-    el("span", "dps-who", el("span", "dps-name", r.player.name), gearTag(r.player.name)),
+    el("span", "dps-who", el("span", "dps-name", r.player.name), died, away ? "" : gearTag(r.player.name)),
     el("span", "dps-num", `${short(r.total)} · ${short(r.rate)}${unit} · ${Math.round(r.share * 100)}%`),
     track);
   line.style.setProperty("--class", r.color);
-  line.title = `${r.player.name}: ${short(r.damage)} de dano, ${short(r.heal)} de cura`;
+  const hp = r.hp != null ? ` · ${Math.round(r.hp * 100)}% do HP do chefe` : "";
+  line.title = away ? `Dano no chefe de jogadores longe de você: o HP que ele perdeu sem golpe visto aqui (cada jogo só recebe os golpes de quem está perto)${hp}`
+    : `${r.player.name}: ${short(r.damage)} de dano, ${short(r.heal)} de cura${hp}`;
   return line;
 }

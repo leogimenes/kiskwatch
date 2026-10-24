@@ -85,15 +85,24 @@ export interface FightPlayer {
   casts?: SkillCasts[];
   /** What monsters did to this player, most damage first. */
   taken: Taken[];
+  /** Times their HP fell to 0 (you, your party and players near you); missing in older recordings. */
+  deaths?: number;
 }
 
 /** The damage a player took from one monster's skill; `npc` is 0 when its spawn was missed. */
 export interface Taken {
   npc: number; boss: boolean; skill: number; damage: number; hits: number; max_hit: number;
+  /** Its attempts that missed or were resisted; missing in older recordings. */
+  misses?: number;
 }
 
 /** Hits and their damage. */
-export interface Tally { damage: number; hits: number; crits: number; max_hit: number }
+export interface Tally {
+  damage: number; hits: number; crits: number; max_hit: number;
+  /** From behind, double, perfect, parried or blocked, and the attempts that
+   *  missed or were resisted; missing in older recordings. */
+  back?: number; double?: number; perfect?: number; blocked?: number; missed?: number; resisted?: number;
+}
 
 /** One skill's damage in a recording (its base code: no specializations),
  *  on bosses and on everything else; `dot` is its damage-over-time ticks. */
@@ -126,6 +135,13 @@ export interface FightBoss {
   code: number; first_ms: number; last_ms: number; damage: number; my_damage: number; my_skills: SkillDamage[];
   /** Each player's damage on it, most first (missing in recordings from before). */
   players?: BossPlayer[];
+  /** Its most HP (0 while unknown) and its HP at the last reading. */
+  max_hp?: number; hp?: number | null;
+  /** HP it lost over the recording, and the part no hit seen here explains:
+   *  players out of range. */
+  hp_lost?: number; unseen?: number;
+  /** In combat by the server, and its enrage deadline (unix ms). */
+  in_combat?: boolean; enrage_ms?: number | null;
 }
 
 /** A player's damage on one boss; the skills' hits are under `boss`. */
