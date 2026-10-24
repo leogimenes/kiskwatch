@@ -14,7 +14,20 @@
 //!        00 40 02 or 00 00 02, and a summon's owner after its legion block
 //!        (40 36 before June 2026)
 //! 42 36  an entity leaving: <id> <varint> <flag>; 7 is a summon unsummoned
+//! 00 8D  an entity's HP: <id> <groups u8>, then per group bit (01: four-byte
+//!        values, 02: eight-byte) <n u8> and n × <kind u8> <value>; the
+//!        current HP is the eight-byte kind 0
+//! 1B 92  a party member's HP, at any distance: <id> <hp> <max hp> …
+//! 21 8D  into or out of combat: <id> 00 01 / 00 00, or 01 01 <u64 ms> into
+//!        combat with the boss's enrage deadline (unix ms)
 //! ```
+//!
+//! A hit's switch says its layout (low nibble): 0 and 2 carry no value (a
+//! miss, hit type 1, or a resist, hit type 6), 4 to 7 one; 6 and 7 carry a
+//! plotter after the hit type: <flags u8> <hp> <angle u8>, the flags how it
+//! was taken (01 shield block, 02 parry, 04 perfect, 08 double, 10 iron wall,
+//! 20 regeneration, 40 perfect block) and the angle where from (01 back, 02
+//! front). A spawn has its HP, `01 <hp> <max hp>`, after the NPC code.
 //!
 //! An Elementalist's spirit and its master trade `04 38` records every second
 //! that are neither damage nor healing: 1699xxxx from the spirit to its
@@ -33,7 +46,14 @@ use crate::varint::read_varint;
 pub enum CombatEvent {
     /// A hit, or a healing spell landing on a player (the `04 38` record is
     /// the same: the meter tells them apart by who the target is).
-    Hit { actor: i32, target: i32, skill: i32, value: i64, dot: bool, crit: bool },
+    Hit { actor: i32, target: i32, skill: i32, value: i64, dot: bool, crit: bool, marks: u16 },
+    /// A miss or a resist: no damage.
+    NoDamage { actor: i32, target: i32, skill: i32, resist: bool },
+    /// An entity's HP now, and its most when the record says.
+    Hp { id: i32, hp: Option<i64>, max: Option<i64> },
+    /// An entity going into combat (a boss with a timed enrage gets the
+    /// deadline, unix ms) or out of it.
+    Combat { id: i32, on: bool, enrage_ms: Option<i64> },
     /// A healing tick, or a player healing themselves.
     Heal { actor: i32, target: i32, amount: i64 },
     /// You: your entity, name and class.
@@ -91,6 +111,31 @@ impl Class {
             33..=36 => Class::Chanter,
             _ => return None,
         })
+    }
+}
+
+/// How a hit landed (`CombatEvent::Hit::marks`).
+pub mod mark {
+    pub const BACK: u16 = 1;
+    pub const FRONT: u16 = 1 << 1;
+    pub const SHIELD_BLOCK: u16 = 1 << 2;
+    pub const PARRY: u16 = 1 << 3;
+    pub const PERFECT: u16 = 1 << 4;
+    pub const DOUBLE: u16 = 1 << 5;
+    pub const IRON_WALL: u16 = 1 << 6;
+    pub const REGENERATION: u16 = 1 << 7;
+    pub const PERFECT_BLOCK: u16 = 1 << 8;
+
+    /// From a plotter's flags and angle bytes.
+    pub fn of(flags: u8, angle: u8) -> u16 {
+        let taken = [SHIELD_BLOCK, PARRY, PERFECT, DOUBLE, IRON_WALL, REGENERATION, PERFECT_BLOCK];
+        let mut marks = taken.iter().enumerate().filter(|(i, _)| flags & (1 << i) != 0).fold(0, |m, (_, b)| m | b);
+        match angle {
+            0x01 => marks |= BACK,
+            0x02 => marks |= FRONT,
+            _ => {}
+        }
+        marks
     }
 }
 
@@ -205,6 +250,28 @@ impl Reader {
         match opcode(packet) {
             Some((at, [0x04, 0x38])) => self.hits(packet, at, &mut out),
             Some((at, [0x05, 0x38])) => self.tick(packet, at, &mut out),
+            Some((at, [0x00, 0x8D])) => out.extend(hp_record(packet, at)),
+            Some((mut at, [0x1B, 0x92])) => {
+                if let (Some(id), Some(hp), Some(max)) = (varint(packet, &mut at), varint(packet, &mut at), varint(packet, &mut at))
+                    && ENTITY_IDS.contains(&id)
+                    && (1..=50_000_000).contains(&max)
+                    && (0..=max).contains(&hp)
+                {
+                    out.push(CombatEvent::Hp { id, hp: Some(hp.into()), max: Some(max.into()) });
+                }
+            }
+            Some((mut at, [0x21, 0x8D])) => {
+                if let Some(id) = varint(packet, &mut at).filter(|id| ENTITY_IDS.contains(id)) {
+                    match &packet[at..] {
+                        [0, on @ (0 | 1)] => out.push(CombatEvent::Combat { id, on: *on == 1, enrage_ms: None }),
+                        [1, 1, deadline @ ..] if deadline.len() == 8 => {
+                            let deadline = i64::from_le_bytes(deadline.try_into().expect("8 bytes"));
+                            out.push(CombatEvent::Combat { id, on: true, enrage_ms: Some(deadline) });
+                        }
+                        _ => {}
+                    }
+                }
+            }
             Some((mut at, [0x42, 0x36])) => {
                 if let (Some(id), Some(_), Some(UNSUMMONED)) = (varint(packet, &mut at), varint(packet, &mut at), varint(packet, &mut at)) {
                     out.push(CombatEvent::Unsummoned { id });
@@ -237,8 +304,7 @@ impl Reader {
         let target = varint(p, &mut at).filter(|&t| self.plausible(t))?;
         let switch = varint(p, &mut at)?;
         let layout = switch & 0x0F;
-        if !(4..=7).contains(&layout) {
-            // 0 and 2: a miss or a resist, with nothing after.
+        if !matches!(layout, 0 | 2 | 4..=7) {
             return None;
         }
         varint(p, &mut at)?;
@@ -254,7 +320,21 @@ impl Reader {
         }
         let skill = skill as i32;
         at += 1;
-        let crit = varint(p, &mut at)? == 3;
+        let hit_type = varint(p, &mut at)?;
+        if layout < 4 {
+            // A miss or a resist, with nothing after.
+            let resist = match hit_type {
+                1 => false,
+                6 => true,
+                _ => return None,
+            };
+            if actor != target && !self.lists.resource.contains(&skill) && spirit_link(skill, actor, target).is_none() {
+                out.push(CombatEvent::NoDamage { actor, target, skill, resist });
+            }
+            return None;
+        }
+        let crit = hit_type == 3;
+        let mut marks = 0;
         // The layout's fixed bytes; layouts 6 and 7 carry a plotter whose
         // HP field is a varint the fixed count takes as one byte.
         let mut skip = match layout {
@@ -266,6 +346,7 @@ impl Reader {
         if layout & 0x02 != 0 {
             let mut hp = at + 1;
             varint(p, &mut hp)?;
+            marks = mark::of(p[at], p.get(hp).copied().unwrap_or(0));
             skip += hp - at - 2;
         }
         at += skip;
@@ -286,11 +367,11 @@ impl Reader {
             out.push(CombatEvent::Summon { id, owner });
         } else if npc {
             if actor != target && value > 0 {
-                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit });
+                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit, marks });
             }
         } else if !self.lists.resource.contains(&skill) {
             if actor != target {
-                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit });
+                out.push(CombatEvent::Hit { actor, target, skill, value: value.into(), dot: false, crit, marks });
             } else if value > 1 {
                 out.push(CombatEvent::Heal { actor, target, amount: value.into() });
             }
@@ -324,7 +405,7 @@ impl Reader {
         if heal {
             out.push(CombatEvent::Heal { actor, target, amount: amount.into() });
         } else if actor != target && self.lists.dots.contains(&skill) {
-            out.push(CombatEvent::Hit { actor, target, skill, value: amount.into(), dot: true, crit: false });
+            out.push(CombatEvent::Hit { actor, target, skill, value: amount.into(), dot: true, crit: false, marks: 0 });
         }
     }
 
@@ -399,6 +480,9 @@ impl Reader {
             let c = at + k;
             let code = p[c - 3] as i32 | (p[c - 2] as i32) << 8 | (p[c - 1] as i32) << 16;
             events.push(CombatEvent::Npc { id, code });
+            if let Some(max) = spawn_hp(p, c + 3) {
+                events.push(CombatEvent::Hp { id, hp: None, max: Some(max) });
+            }
         }
         // A summon (kind 5F) with a parent key: its owner, in the block
         // <owner u32> <legion u32> <00 00> <server u16> <len u8> <legion name>
@@ -412,6 +496,51 @@ impl Reader {
         }
         (!events.is_empty()).then_some((at, events))
     }
+}
+
+/// Entity ids the HP and combat records are believed for.
+const ENTITY_IDS: std::ops::RangeInclusive<i32> = 100..=9_999_999;
+
+/// A `00 8D` record's current HP, from after its opcode.
+fn hp_record(p: &[u8], mut at: usize) -> Option<CombatEvent> {
+    let id = varint(p, &mut at).filter(|id| ENTITY_IDS.contains(id))?;
+    let groups = *p.get(at)?;
+    if groups == 0 || groups > 3 {
+        return None;
+    }
+    at += 1;
+    let mut hp = None;
+    for (bit, width) in [(0x01, 4usize), (0x02, 8usize)] {
+        if groups & bit == 0 {
+            continue;
+        }
+        let n = *p.get(at)? as usize;
+        at += 1;
+        for _ in 0..n {
+            let kind = *p.get(at)?;
+            let value = p.get(at + 1..at + 1 + width)?;
+            if width == 8 && kind == 0 {
+                let v = u64::from_le_bytes(value.try_into().ok()?);
+                hp = Some(i64::try_from(v).ok().filter(|&v| v <= i64::from(i32::MAX))?);
+            }
+            at += 1 + width;
+        }
+    }
+    hp.map(|hp| CombatEvent::Hp { id, hp: Some(hp), max: None })
+}
+
+/// A spawn's max HP: the first `01 <hp> <max hp>` within 64 bytes of `from`
+/// that reads as a live entity's (0 < hp <= max, both within 31 bits).
+fn spawn_hp(p: &[u8], from: usize) -> Option<i64> {
+    let stop = p.len().saturating_sub(2).min(from + 64);
+    (from..stop).filter(|&h| p[h] == 0x01).find_map(|h| {
+        let now = read_varint(p, h + 1);
+        if now.length <= 0 || now.value <= 0 {
+            return None;
+        }
+        let max = read_varint(p, h + 1 + now.length as usize);
+        (max.length > 0 && max.value >= now.value).then_some(i64::from(max.value))
+    })
 }
 
 /// The owner block of a summon's spawn at `at`.
@@ -506,7 +635,7 @@ mod tests {
     #[test]
     fn reads_a_hit() {
         let p = packet(&[&[0x04, 0x38][..], &hit(5000, 4715, 17_010_000, 1234)].concat());
-        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false, crit: false }]);
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false, crit: false, marks: 0 }]);
     }
 
     #[test]
@@ -516,7 +645,44 @@ mod tests {
         let at = var(5000).len() + 2 + var(4715).len() + 4 + 1;
         body[at] = 3;
         let p = packet(&[&[0x04, 0x38][..], &body].concat());
-        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false, crit: true }]);
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 1234, dot: false, crit: true, marks: 0 }]);
+    }
+
+    #[test]
+    fn a_hit_from_behind_and_doubled() {
+        // Layout 6: <flags 08 double> <hp 00> <angle 01 back> after the hit type.
+        let body = [var(5000), var(0x06), var(0), var(4715), 17_010_000u32.to_le_bytes().to_vec(), vec![0], var(2), vec![0x08, 0x00, 0x01], vec![0; 7], var(0), var(18000), var(900), var(1)].concat();
+        let events = Reader::default().read(&packet(&[&[0x04, 0x38][..], &body].concat()));
+        assert_eq!(events, vec![CombatEvent::Hit { actor: 4715, target: 5000, skill: 17_010_000, value: 900, dot: false, crit: false, marks: mark::DOUBLE | mark::BACK }]);
+    }
+
+    #[test]
+    fn misses_and_resists_carry_no_value() {
+        let miss = |switch: u32, hit_type: u32| packet(&[&[0x04, 0x38][..], &var(5000), &var(switch), &var(0), &var(4715), &17_010_000u32.to_le_bytes(), &[0], &var(hit_type)].concat());
+        assert_eq!(Reader::default().read(&miss(0, 1)), vec![CombatEvent::NoDamage { actor: 4715, target: 5000, skill: 17_010_000, resist: false }]);
+        assert_eq!(Reader::default().read(&miss(2, 6)), vec![CombatEvent::NoDamage { actor: 4715, target: 5000, skill: 17_010_000, resist: true }]);
+        assert!(Reader::default().read(&miss(0, 2)).is_empty(), "no value, but no miss either");
+    }
+
+    #[test]
+    fn reads_hp_and_combat_records() {
+        let hp = packet(&[&[0x00, 0x8D][..], &var(47573), &[0x02, 1, 0], &123_456u64.to_le_bytes()].concat());
+        assert_eq!(Reader::default().read(&hp), vec![CombatEvent::Hp { id: 47573, hp: Some(123_456), max: None }]);
+        let party = packet(&[&[0x1B, 0x92][..], &var(4715), &var(0), &var(8000), &[0; 20]].concat());
+        assert_eq!(Reader::default().read(&party), vec![CombatEvent::Hp { id: 4715, hp: Some(0), max: Some(8000) }]);
+        let into = packet(&[&[0x21, 0x8D][..], &var(47573), &[0, 1]].concat());
+        assert_eq!(Reader::default().read(&into), vec![CombatEvent::Combat { id: 47573, on: true, enrage_ms: None }]);
+        let enrage = packet(&[&[0x21, 0x8D][..], &var(47573), &[1, 1], &1_792_000_000_000i64.to_le_bytes()].concat());
+        assert_eq!(Reader::default().read(&enrage), vec![CombatEvent::Combat { id: 47573, on: true, enrage_ms: Some(1_792_000_000_000) }]);
+        let out = packet(&[&[0x21, 0x8D][..], &var(47573), &[0, 0]].concat());
+        assert_eq!(Reader::default().read(&out), vec![CombatEvent::Combat { id: 47573, on: false, enrage_ms: None }]);
+    }
+
+    #[test]
+    fn a_spawn_gives_its_max_hp() {
+        let npc = [&[0x41, 0x36][..], &var(9001), &[0x0C, 0, 0, 0, 0, 0x7B, 0x1F, 0x23, 0, 0x40, 0x02, 0x05], &[0x01], &var(0), &[0x01], &var(90_000), &var(90_000), &[0; 8]].concat();
+        let events = Reader::default().read(&packet(&[&[0x10, 0x37][..], &npc].concat()));
+        assert_eq!(events, vec![CombatEvent::Npc { id: 9001, code: 0x231F7B }, CombatEvent::Hp { id: 9001, hp: None, max: Some(90_000) }]);
     }
 
     #[test]
@@ -530,22 +696,23 @@ mod tests {
         let body = [&[0x04, 0x38][..], &hit(5000, 4715, 17_010_000, 10), &[0x01, 0x00], &hit(5001, 4715, 17_010_000, 20)].concat();
         let events = Reader::default().read(&packet(&body));
         assert_eq!(events.len(), 2);
-        assert_eq!(events[1], CombatEvent::Hit { actor: 4715, target: 5001, skill: 17_010_000, value: 20, dot: false, crit: false });
+        assert_eq!(events[1], CombatEvent::Hit { actor: 4715, target: 5001, skill: 17_010_000, value: 20, dot: false, crit: false, marks: 0 });
     }
 
     #[test]
     fn a_monster_hitting_you_comes_with_its_skill() {
         let p = packet(&[&[0x04, 0x38][..], &hit(4715, 5000, 2_000_100, 99)].concat());
-        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 5000, target: 4715, skill: 2_000_100, value: 99, dot: false, crit: false }]);
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 5000, target: 4715, skill: 2_000_100, value: 99, dot: false, crit: false, marks: 0 }]);
     }
 
     /// Gatekeeper Pinopi (entity 47573) hitting a player (9681) for 1,258
-    /// with its skill 1607550, as A2Tools recorded it on 2026-10-15.
+    /// with its skill 1607550, as A2Tools recorded it on 2026-10-15: from
+    /// the front, and parried (its plotter is `02 00 02`).
     #[test]
     fn reads_a_bosss_hit_on_a_player() {
         let body: Vec<u8> = (0..58).step_by(2).map(|i| u8::from_str_radix(&"D14B0600D5F3027E871800020202000243ED940901000000904EEA090100"[i..i + 2], 16).unwrap()).collect();
         let p = packet(&[&[0x04, 0x38][..], &body].concat());
-        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 47573, target: 9681, skill: 1_607_550, value: 1258, dot: false, crit: false }]);
+        assert_eq!(Reader::default().read(&p), vec![CombatEvent::Hit { actor: 47573, target: 9681, skill: 1_607_550, value: 1258, dot: false, crit: false, marks: mark::PARRY | mark::FRONT }]);
     }
 
     #[test]
@@ -555,8 +722,8 @@ mod tests {
         assert_eq!(
             events,
             vec![
-                CombatEvent::Hit { actor: 5000, target: 4715, skill: 2_000_100, value: 99, dot: false, crit: false },
-                CombatEvent::Hit { actor: 5000, target: 4716, skill: 2_000_100, value: 98, dot: false, crit: false },
+                CombatEvent::Hit { actor: 5000, target: 4715, skill: 2_000_100, value: 99, dot: false, crit: false, marks: 0 },
+                CombatEvent::Hit { actor: 5000, target: 4716, skill: 2_000_100, value: 98, dot: false, crit: false, marks: 0 },
             ]
         );
     }
@@ -587,7 +754,7 @@ mod tests {
         let tick = |effect: u8, skill: u32| packet(&[&[0x05, 0x38][..], &var(4800), &[effect], &var(4715), &var(0), &(skill * 100).to_le_bytes(), &var(300)].concat());
         let mut r = Reader::new(SkillLists { dots: [17_030_000].into(), resource: HashSet::new() });
         assert_eq!(r.read(&tick(0x0B, 17_040_000)), vec![CombatEvent::Heal { actor: 4715, target: 4800, amount: 300 }]);
-        assert_eq!(r.read(&tick(0x02, 17_030_000)), vec![CombatEvent::Hit { actor: 4715, target: 4800, skill: 17_030_000, value: 300, dot: true, crit: false }]);
+        assert_eq!(r.read(&tick(0x02, 17_030_000)), vec![CombatEvent::Hit { actor: 4715, target: 4800, skill: 17_030_000, value: 300, dot: true, crit: false, marks: 0 }]);
         assert!(r.read(&tick(0x02, 17_050_000)).is_empty(), "not a damage-over-time skill");
     }
 

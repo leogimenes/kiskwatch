@@ -19,7 +19,7 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 
 use crate::casts::{Casts, SkillCasts};
-use crate::combat::{Class, CombatEvent, base_skill};
+use crate::combat::{Class, CombatEvent, base_skill, mark};
 use crate::effects::{EffectRecord, Effects, Uptime};
 use crate::zone::Zone;
 
@@ -29,6 +29,10 @@ pub const IDLE_END_MS: i64 = 30_000;
 pub const NAME_MAX: usize = 50;
 /// This long or more without one of your own hits is time stood still.
 pub const IDLE_GAP_MS: i64 = 3_000;
+/// A boss's time runs from the server putting it into combat when that came
+/// at most this long before the first hit (a tank's pull), and to the server
+/// taking it out when that came at most this long after the last.
+pub const COMBAT_SLACK_MS: i64 = 10_000;
 
 /// When a recording starts by itself (the setting).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -84,6 +88,19 @@ pub struct FightBoss {
     pub my_skills: Vec<SkillDamage>,
     /// Each player's damage on it, most first (none in recordings from before).
     pub players: Vec<BossPlayer>,
+    /// Its most HP, 0 while the game hasn't said.
+    pub max_hp: i64,
+    /// Its HP at the last reading.
+    pub hp: Option<i64>,
+    /// The HP it lost over the recording, by the game's readings, and the
+    /// part of it nobody's hits here explain: damage by players out of
+    /// range (each client only gets the hits of players near it).
+    pub hp_lost: i64,
+    pub unseen: i64,
+    /// The server says it's in combat; with a timed enrage, its deadline
+    /// (unix ms).
+    pub in_combat: bool,
+    pub enrage_ms: Option<i64>,
 }
 
 /// A player's damage on one boss, summons included.
@@ -139,6 +156,9 @@ pub struct FightPlayer {
     pub casts: Vec<SkillCasts>,
     /// What monsters did to this player, most damage first.
     pub taken: Vec<Taken>,
+    /// Times their HP fell to 0 (only players whose HP the game sends: you,
+    /// your party, and players near you).
+    pub deaths: u32,
 }
 
 /// One skill's damage in a recording: on bosses and on everything else.
@@ -161,14 +181,36 @@ pub struct Tally {
     pub hits: u32,
     pub crits: u32,
     pub max_hit: i64,
+    /// Hits from behind, double (the game's "Hard Hit") and perfect.
+    pub back: u32,
+    pub double: u32,
+    pub perfect: u32,
+    /// Hits the target parried or blocked (part of the damage taken off).
+    pub blocked: u32,
+    /// Attempts that did nothing: missed, or resisted.
+    pub missed: u32,
+    pub resisted: u32,
 }
 
 impl Tally {
-    fn add(&mut self, value: i64, crit: bool) {
+    fn add(&mut self, value: i64, crit: bool, marks: u16) {
+        let has = |m: u16| u32::from(marks & m != 0);
         self.damage += value;
         self.hits += 1;
         self.crits += u32::from(crit);
         self.max_hit = self.max_hit.max(value);
+        self.back += has(mark::BACK);
+        self.double += has(mark::DOUBLE);
+        self.perfect += has(mark::PERFECT);
+        self.blocked += has(mark::PARRY | mark::SHIELD_BLOCK | mark::PERFECT_BLOCK);
+    }
+
+    fn missed(&mut self, resist: bool) {
+        if resist {
+            self.resisted += 1;
+        } else {
+            self.missed += 1;
+        }
     }
 
     fn merge(&mut self, other: &Tally) {
@@ -176,6 +218,12 @@ impl Tally {
         self.hits += other.hits;
         self.crits += other.crits;
         self.max_hit = self.max_hit.max(other.max_hit);
+        self.back += other.back;
+        self.double += other.double;
+        self.perfect += other.perfect;
+        self.blocked += other.blocked;
+        self.missed += other.missed;
+        self.resisted += other.resisted;
     }
 }
 
@@ -196,6 +244,28 @@ pub struct Taken {
     pub damage: i64,
     pub hits: u32,
     pub max_hit: i64,
+    /// Its attempts that missed or were resisted.
+    pub misses: u32,
+}
+
+/// One boss entity's HP over a recording.
+#[derive(Debug, Clone, Copy)]
+struct BossHp {
+    code: i32,
+    /// Its HP when the recording first hit it; unknown until a reading.
+    start: Option<i64>,
+    now: Option<i64>,
+    /// The damage the recording saw on it.
+    seen: i64,
+}
+
+/// What the server said of a boss's combat over a recording.
+#[derive(Debug, Clone, Copy, Default)]
+struct ServerCombat {
+    on_ms: Option<i64>,
+    off_ms: Option<i64>,
+    in_combat: bool,
+    enrage_ms: Option<i64>,
 }
 
 #[derive(Debug, Clone)]
@@ -214,10 +284,16 @@ struct Recording {
     per_second: HashMap<(i32, i64), i64>,
     /// When each actor hit or cast a healing spell, oldest first.
     acted: HashMap<i32, Vec<i64>>,
-    /// By (player hit, NPC code, skill): damage, hits, the biggest.
-    taken: HashMap<(i32, i32, i32), (i64, u32, i64)>,
+    /// By (player hit, NPC code, skill); `npc` left 0.
+    taken: HashMap<(i32, i32, i32), Taken>,
     /// By boss code.
     bosses: HashMap<i32, BossTally>,
+    /// By boss entity.
+    boss_hp: HashMap<i32, BossHp>,
+    /// By boss code.
+    combat: HashMap<i32, ServerCombat>,
+    /// By player.
+    deaths: HashMap<i32, u32>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -276,6 +352,9 @@ pub struct Meter {
     /// Summons unsummoned: their damage over time no longer counts (the
     /// game's own analyzer stops counting it too).
     unsummoned: HashSet<i32>,
+    /// Each entity's HP at the last reading, and its most.
+    hp: HashMap<i32, i64>,
+    max_hp: HashMap<i32, i64>,
     /// Entities that spawned as NPCs or summons: never players.
     npcs: HashSet<i32>,
     /// NPC → its code.
@@ -356,6 +435,8 @@ impl Meter {
                 // A new entity under the id: whatever had it before is gone.
                 self.owners.remove(&id);
                 self.unsummoned.remove(&id);
+                self.hp.remove(&id);
+                self.max_hp.remove(&id);
                 self.npcs.insert(id);
                 self.codes.insert(id, code);
                 if self.boss_codes.contains(&code) {
@@ -374,7 +455,38 @@ impl Meter {
                     self.unsummoned.insert(id);
                 }
             }
-            CombatEvent::Hit { actor, target, skill, value, dot, crit } => {
+            CombatEvent::Hp { id, hp, max } => self.hp_reading(id, hp, max),
+            CombatEvent::Combat { id, on, enrage_ms } => {
+                if let (Some(&code), Some(rec)) = (self.bosses.get(&id), &mut self.rec) {
+                    let c = rec.combat.entry(code).or_default();
+                    c.in_combat = on;
+                    if on {
+                        c.on_ms = Some(now);
+                        c.off_ms = None;
+                        c.enrage_ms = enrage_ms.or(c.enrage_ms);
+                    } else {
+                        c.off_ms = Some(now);
+                        c.enrage_ms = None;
+                    }
+                }
+            }
+            CombatEvent::NoDamage { actor, target, skill, resist } => {
+                let who = self.owner(actor);
+                let boss = self.bosses.get(&target).copied();
+                let player = self.is_player(who);
+                let on_player = self.is_player(self.owner(target));
+                let Some(rec) = &mut self.rec else { return false };
+                if player && !on_player {
+                    rec.skills.entry((boss.is_some(), actor, base_skill(skill), false)).or_default().missed(resist);
+                    if let Some(t) = boss.and_then(|code| rec.bosses.get_mut(&code)) {
+                        t.skills.entry((actor, base_skill(skill), false)).or_default().missed(resist);
+                    }
+                } else if !player && on_player {
+                    let code = self.codes.get(&actor).copied().unwrap_or(0);
+                    rec.taken.entry((target, code, skill)).or_default().misses += 1;
+                }
+            }
+            CombatEvent::Hit { actor, target, skill, value, dot, crit, marks } => {
                 if dot && self.unsummoned.contains(&actor) {
                     return false;
                 }
@@ -394,9 +506,9 @@ impl Meter {
                     {
                         let code = self.codes.get(&actor).copied().unwrap_or(0);
                         let t = rec.taken.entry((target, code, skill)).or_default();
-                        t.0 += value;
-                        t.1 += 1;
-                        t.2 = t.2.max(value);
+                        t.damage += value;
+                        t.hits += 1;
+                        t.max_hit = t.max_hit.max(value);
                     }
                     return false;
                 }
@@ -428,7 +540,7 @@ impl Meter {
                     // Boss or not as it was when hit: the game hands a dead
                     // boss's entity to the next NPC that spawns.
                     *rec.damage.entry((target, actor, boss.is_some())).or_default() += value;
-                    rec.skills.entry((boss.is_some(), actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
+                    rec.skills.entry((boss.is_some(), actor, base_skill(skill), dot)).or_default().add(value, crit && !dot, marks);
                     rec.casts.hit(actor, skill, dot, now, rec.started_ms);
                     let second = (now - rec.started_ms).max(0) / 1000;
                     *rec.per_second.entry((actor, second)).or_default() += value;
@@ -437,10 +549,13 @@ impl Meter {
                     }
                     rec.last_gain_ms = now;
                     if let Some(code) = boss {
+                        let known = self.hp.get(&target).or(self.max_hp.get(&target)).copied();
+                        let hp = rec.boss_hp.entry(target).or_insert(BossHp { code, start: known, now: known, seen: 0 });
+                        hp.seen += value;
                         let t = rec.bosses.entry(code).or_insert_with(|| BossTally { first_ms: now, ..Default::default() });
                         t.last_ms = now;
                         t.damage += value;
-                        t.skills.entry((actor, base_skill(skill), dot)).or_default().add(value, crit && !dot);
+                        t.skills.entry((actor, base_skill(skill), dot)).or_default().add(value, crit && !dot, marks);
                         if mine {
                             t.my_damage += value;
                             let s = t.my_skills.entry(base_skill(skill)).or_default();
@@ -459,6 +574,31 @@ impl Meter {
             }
         }
         started
+    }
+
+    /// An HP reading: a boss's for the recording, a player's falling to 0 a
+    /// death.
+    fn hp_reading(&mut self, id: i32, hp: Option<i64>, max: Option<i64>) {
+        if let Some(max) = max.filter(|&m| m > 0) {
+            self.max_hp.insert(id, max);
+        }
+        let Some(hp) = hp else { return };
+        let was = self.hp.insert(id, hp);
+        if let Some(max) = self.max_hp.get_mut(&id) {
+            *max = (*max).max(hp);
+        } else {
+            self.max_hp.insert(id, hp);
+        }
+        let player = self.is_player(id);
+        let Some(rec) = &mut self.rec else { return };
+        if player && hp == 0 && was.is_some_and(|w| w > 0) {
+            *rec.deaths.entry(id).or_default() += 1;
+        }
+        if let Some(b) = rec.boss_hp.get_mut(&id) {
+            // First reading after the first hit: it was this much more.
+            b.start.get_or_insert(hp + b.seen);
+            b.now = Some(hp);
+        }
     }
 
     /// You came into the open world or a dungeon. By dungeon, the recording
@@ -498,7 +638,7 @@ impl Meter {
 
     fn begin(&mut self, name: String, auto: bool, now: i64) {
         self.effects.start(now);
-        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new(), taken: HashMap::new(), bosses: HashMap::new() });
+        self.rec = Some(Recording { name: clip_name(&name), auto, started_ms: now, last_gain_ms: now, damage: HashMap::new(), skills: HashMap::new(), heal: HashMap::new(), casts: Casts::default(), per_second: HashMap::new(), acted: HashMap::new(), taken: HashMap::new(), bosses: HashMap::new(), boss_hp: HashMap::new(), combat: HashMap::new(), deaths: HashMap::new() });
     }
 
     /// Start recording by hand.
@@ -627,9 +767,14 @@ impl Meter {
             }
         }
         // After the timelines: a player who only took damage has none.
-        for (&(target, npc, skill), &(damage, hits, max_hit)) in &rec.taken {
+        for (&(target, npc, skill), t) in &rec.taken {
             if let Some(p) = self.row(&mut players, target) {
-                p.taken.push(Taken { npc, boss: self.boss_codes.contains(&npc), skill, damage, hits, max_hit });
+                p.taken.push(Taken { npc, boss: self.boss_codes.contains(&npc), skill, ..t.clone() });
+            }
+        }
+        for (&id, &n) in &rec.deaths {
+            if let Some(p) = self.row(&mut players, id) {
+                p.deaths = n;
             }
         }
         let mut players: Vec<FightPlayer> = players.into_values().collect();
@@ -662,7 +807,33 @@ impl Meter {
                     p.skills.sort_by_key(|s| (std::cmp::Reverse(s.boss.damage), s.skill, s.dot));
                 }
                 players.sort_by_key(|p| (std::cmp::Reverse(p.damage), p.id));
-                FightBoss { code, first_ms: t.first_ms, last_ms: t.last_ms, damage: t.damage, my_damage: t.my_damage, my_skills, players }
+                let mut boss = FightBoss { code, first_ms: t.first_ms, last_ms: t.last_ms, damage: t.damage, my_damage: t.my_damage, my_skills, players, ..Default::default() };
+                if let Some(c) = rec.combat.get(&code) {
+                    if let Some(on) = c.on_ms.filter(|&on| on <= t.first_ms && t.first_ms - on <= COMBAT_SLACK_MS) {
+                        boss.first_ms = on;
+                    }
+                    if let Some(off) = c.off_ms.filter(|&off| off >= t.last_ms && off - t.last_ms <= COMBAT_SLACK_MS) {
+                        boss.last_ms = off;
+                    }
+                    boss.in_combat = c.in_combat;
+                    boss.enrage_ms = c.enrage_ms;
+                }
+                let mut now_known = true;
+                let mut now_sum = 0;
+                for (&id, b) in rec.boss_hp.iter().filter(|(_, b)| b.code == code) {
+                    boss.max_hp += self.max_hp.get(&id).copied().unwrap_or(0);
+                    match b.now {
+                        Some(hp) => now_sum += hp,
+                        None => now_known = false,
+                    }
+                    if let (Some(start), Some(hp)) = (b.start, b.now) {
+                        let lost = (start - hp).max(0);
+                        boss.hp_lost += lost;
+                        boss.unseen += (lost - b.seen).max(0);
+                    }
+                }
+                boss.hp = now_known.then_some(now_sum);
+                boss
             })
             .collect();
         bosses.sort_by_key(|b| (std::cmp::Reverse(b.damage), b.code));
@@ -712,7 +883,7 @@ mod tests {
     }
 
     fn hit(actor: i32, target: i32, skill: i32, value: i64) -> CombatEvent {
-        CombatEvent::Hit { actor, target, skill, value, dot: false, crit: false }
+        CombatEvent::Hit { actor, target, skill, value, dot: false, crit: false, marks: 0 }
     }
 
     fn named(n: Option<&str>) -> String {
@@ -723,7 +894,7 @@ mod tests {
     fn a_spirits_ticks_stop_counting_once_unsummoned() {
         const SPIRIT: i32 = 9500;
         const WHIRLWIND: i32 = 16_001_100;
-        let tick = || CombatEvent::Hit { actor: SPIRIT, target: MOB, skill: WHIRLWIND, value: 400, dot: true, crit: false };
+        let tick = || CombatEvent::Hit { actor: SPIRIT, target: MOB, skill: WHIRLWIND, value: 400, dot: true, crit: false, marks: 0 };
         let mut m = meter();
         m.apply(CombatEvent::Summon { id: SPIRIT, owner: MATE }, 0, Start::Button, named);
         m.start("luta".into(), 0);
@@ -735,6 +906,64 @@ mod tests {
         m.apply(hit(SPIRIT, MOB, WHIRLWIND, 50), 400, Start::Button, named);
         m.apply(tick(), 500, Start::Button, named);
         assert_eq!(m.current(1_000).unwrap().players[0].mob_damage, 850, "back: it counts again");
+    }
+
+    #[test]
+    fn a_boss_hp_tells_the_damage_nobody_here_saw() {
+        let mut m = meter();
+        m.apply(CombatEvent::Hp { id: BOSS, hp: None, max: Some(10_000) }, 0, Start::Button, named);
+        m.start("luta".into(), 0);
+        m.apply(CombatEvent::Combat { id: BOSS, on: true, enrage_ms: Some(600_000) }, 1_000, Start::Button, named);
+        m.apply(hit(ME, BOSS, CLERIC, 1_000), 4_000, Start::Button, named);
+        // Someone out of range took another 3,000.
+        m.apply(CombatEvent::Hp { id: BOSS, hp: Some(6_000), max: None }, 4_100, Start::Button, named);
+        m.apply(hit(ME, BOSS, CLERIC, 500), 9_000, Start::Button, named);
+        m.apply(CombatEvent::Hp { id: BOSS, hp: Some(5_500), max: None }, 9_100, Start::Button, named);
+        let b = &m.current(10_000).unwrap().bosses[0];
+        assert_eq!((b.max_hp, b.hp, b.hp_lost, b.unseen), (10_000, Some(5_500), 4_500, 3_000));
+        assert_eq!((b.first_ms, b.last_ms, b.in_combat, b.enrage_ms), (1_000, 9_000, true, Some(600_000)), "from the pull");
+        m.apply(CombatEvent::Combat { id: BOSS, on: false, enrage_ms: None }, 12_000, Start::Button, named);
+        let b = &m.current(13_000).unwrap().bosses[0];
+        assert_eq!((b.last_ms, b.in_combat, b.enrage_ms), (12_000, false, None));
+    }
+
+    #[test]
+    fn a_boss_hp_unknown_at_the_first_hit_counts_from_the_first_reading() {
+        let mut m = meter();
+        m.start("luta".into(), 0);
+        m.apply(hit(ME, BOSS, CLERIC, 1_000), 1_000, Start::Button, named);
+        m.apply(CombatEvent::Hp { id: BOSS, hp: Some(9_000), max: None }, 1_100, Start::Button, named);
+        let b = &m.current(2_000).unwrap().bosses[0];
+        assert_eq!((b.hp_lost, b.unseen), (1_000, 0));
+    }
+
+    #[test]
+    fn a_players_hp_falling_to_zero_is_a_death() {
+        let mut m = meter();
+        m.start("luta".into(), 0);
+        m.apply(hit(ME, MOB, CLERIC, 10), 0, Start::Button, named);
+        for (t, hp) in [(1, 500), (2, 0), (3, 0), (4, 800), (5, 0)] {
+            m.apply(CombatEvent::Hp { id: MATE, hp: Some(hp), max: None }, t, Start::Button, named);
+        }
+        m.apply(CombatEvent::Hp { id: ME, hp: Some(0), max: Some(900) }, 6, Start::Button, named);
+        let f = m.current(10).unwrap();
+        let deaths = |id| f.players.iter().find(|p| p.id == id).map(|p| p.deaths);
+        assert_eq!((deaths(MATE), deaths(ME)), (Some(2), Some(0)), "yours unknown before: no death");
+    }
+
+    #[test]
+    fn how_hits_landed_and_misses_add_up_by_skill() {
+        let mut m = meter();
+        m.start("luta".into(), 0);
+        m.apply(CombatEvent::Hit { actor: ME, target: MOB, skill: CLERIC, value: 100, dot: false, crit: false, marks: mark::BACK | mark::DOUBLE }, 1, Start::Button, named);
+        m.apply(CombatEvent::Hit { actor: ME, target: MOB, skill: CLERIC, value: 100, dot: false, crit: false, marks: mark::PARRY | mark::PERFECT }, 2, Start::Button, named);
+        m.apply(CombatEvent::NoDamage { actor: ME, target: MOB, skill: CLERIC, resist: false }, 3, Start::Button, named);
+        m.apply(CombatEvent::NoDamage { actor: ME, target: MOB, skill: CLERIC, resist: true }, 4, Start::Button, named);
+        m.apply(CombatEvent::NoDamage { actor: MOB, target: ME, skill: 2_000_100, resist: false }, 5, Start::Button, named);
+        let f = m.current(10).unwrap();
+        let t = f.players[0].skills[0].mob;
+        assert_eq!((t.hits, t.back, t.double, t.perfect, t.blocked, t.missed, t.resisted), (2, 1, 1, 1, 1, 1, 1));
+        assert_eq!(f.players[0].taken[0].misses, 1, "the monster's miss on you");
     }
 
     #[test]
@@ -788,7 +1017,7 @@ mod tests {
         assert_eq!(b.my_skills, vec![SkillDamage { skill: CLERIC, damage: 100, hits: 2 }]);
         let players: Vec<_> = b.players.iter().map(|p| (p.id, p.damage, p.skills.len())).collect();
         assert_eq!(players, [(MATE, 200, 1), (ME, 100, 1)]);
-        assert_eq!(b.players[1].skills[0].boss, Tally { damage: 100, hits: 2, crits: 0, max_hit: 70 });
+        assert_eq!(b.players[1].skills[0].boss, Tally { damage: 100, hits: 2, crits: 0, max_hit: 70, ..Default::default() });
     }
 
     #[test]
@@ -946,7 +1175,7 @@ mod tests {
             (hit(ME, BOSS, CLERIC, 10), 1_000),
             // A heal on a mate is a use too.
             (hit(ME, MATE, CLERIC, 10), 9_000),
-            (CombatEvent::Hit { actor: ME, target: MOB, skill: 17_030_000, value: 5, dot: true, crit: false }, 9_000),
+            (CombatEvent::Hit { actor: ME, target: MOB, skill: 17_030_000, value: 5, dot: true, crit: false, marks: 0 }, 9_000),
             (hit(MATE, BOSS, GLADIATOR, 10), 2_000),
         ] {
             m.apply(e, now, Start::Button, named);
@@ -961,12 +1190,12 @@ mod tests {
     fn hits_add_up_by_skill() {
         let mut m = meter();
         m.start("x".into(), 0);
-        let crit = |actor, target, skill, value| CombatEvent::Hit { actor, target, skill, value, dot: false, crit: true };
+        let crit = |actor, target, skill, value| CombatEvent::Hit { actor, target, skill, value, dot: false, crit: true, marks: 0 };
         for e in [
             hit(ME, MOB, 17_010_230, 100),
             crit(ME, BOSS, 17_010_000, 300),
             hit(ME, BOSS, 17_020_000, 50),
-            CombatEvent::Hit { actor: ME, target: BOSS, skill: 17_010_000, value: 20, dot: true, crit: false },
+            CombatEvent::Hit { actor: ME, target: BOSS, skill: 17_010_000, value: 20, dot: true, crit: false, marks: 0 },
         ] {
             m.apply(e, 0, Start::Button, named);
         }
@@ -974,8 +1203,8 @@ mod tests {
         let s = &f.players[0].skills;
         assert_eq!(s.len(), 3);
         assert_eq!((s[0].skill, s[0].dot), (17_010_000, false), "both versions of the skill, biggest first");
-        assert_eq!(s[0].mob, Tally { damage: 100, hits: 1, crits: 0, max_hit: 100 });
-        assert_eq!(s[0].boss, Tally { damage: 300, hits: 1, crits: 1, max_hit: 300 });
+        assert_eq!(s[0].mob, Tally { damage: 100, hits: 1, crits: 0, max_hit: 100, ..Default::default() });
+        assert_eq!(s[0].boss, Tally { damage: 300, hits: 1, crits: 1, max_hit: 300, ..Default::default() });
         assert_eq!((s[1].skill, s[1].damage()), (17_020_000, 50));
         assert_eq!((s[2].skill, s[2].dot, s[2].boss.hits), (17_010_000, true, 1));
     }
@@ -988,7 +1217,7 @@ mod tests {
         m.apply(hit(555, MOB, 16_990_001, 90), 0, Start::Button, named);
         m.apply(hit(555, MOB, 16_990_001, 60), 0, Start::Button, named);
         let f = m.current(1_000).unwrap();
-        assert_eq!(f.players[0].skills, vec![SkillStat { skill: 16_990_000, dot: false, mob: Tally { damage: 150, hits: 2, crits: 0, max_hit: 90 }, ..Default::default() }]);
+        assert_eq!(f.players[0].skills, vec![SkillStat { skill: 16_990_000, dot: false, mob: Tally { damage: 150, hits: 2, crits: 0, max_hit: 90, ..Default::default() }, ..Default::default() }]);
     }
 
     #[test]
@@ -1043,7 +1272,7 @@ mod tests {
     }
 
     fn dot(actor: i32, target: i32, value: i64) -> CombatEvent {
-        CombatEvent::Hit { actor, target, skill: CLERIC, value, dot: true, crit: false }
+        CombatEvent::Hit { actor, target, skill: CLERIC, value, dot: true, crit: false, marks: 0 }
     }
 
     #[test]

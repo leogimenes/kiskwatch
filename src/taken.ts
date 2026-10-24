@@ -51,7 +51,7 @@ export function takenSection(f: Fight, target: Target, victim: number | null, pi
   box.append(
     el("p", { className: "hint" }, `${short(sum)} de dano em ${hits} golpe(s) · ${short(sum / secs)}/s`),
     el("table", { className: "taken-table" },
-      el("thead", {}, el("tr", {}, ...["Skill", "Monstro", "Dano", "%", "Golpes", "Média", "Maior"].map((h) => el("th", { scope: "col", textContent: h })))),
+      el("thead", {}, el("tr", {}, ...["Skill", "Monstro", "Dano", "%", "Golpes", "Média", "Maior", "Errou"].map((h) => el("th", { scope: "col", textContent: h })))),
       el("tbody", {}, ...list.map((t) => row(t, sum, list)))),
   );
   return box;
@@ -72,5 +72,6 @@ function row(t: Taken, sum: number, list: Taken[]) {
     el("td", { className: "num" }, `${Math.round(share * 100)}%`),
     el("td", { className: "num" }, String(t.hits)),
     el("td", { className: "num" }, short(t.damage / Math.max(1, t.hits))),
-    el("td", { className: "num" }, short(t.max_hit)));
+    el("td", { className: "num" }, short(t.max_hit)),
+    el("td", { className: "num", title: "Golpes do monstro que erraram ou que este jogador resistiu" }, String(t.misses ?? 0)));
 }
