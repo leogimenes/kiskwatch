@@ -16,7 +16,7 @@ Os últimos 5 pets de que você farmou alma (o mais recente no topo), o próximo
 
 ## Lembrete dos timers
 
-Aparece no topo da janela do AION 2 quando toca um aviso que você marcou na aba **Timers**, e some sozinho.
+Aparece no topo da janela do AION 2 quando toca um aviso que você marcou na aba **Timers**, e some sozinho, ou antes, no **×**.
 
 ## Mover e redimensionar
 

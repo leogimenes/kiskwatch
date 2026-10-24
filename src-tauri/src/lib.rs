@@ -22,7 +22,7 @@ use kiskwatch_core::dps::{Fight, Meter};
 use kiskwatch_core::schedule::{self, Event};
 use kiskwatch_core::pets::{self, Pace, PetRecord};
 use kiskwatch_core::stream::GameEvent;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
@@ -272,19 +272,59 @@ fn remind(app: &AppHandle) {
 fn place_reminder(app: &AppHandle) {
     let Some(w) = app.get_webview_window(REMINDER) else { return };
     let Ok(size) = w.outer_size() else { return };
+    place_reminder_sized(app, &w, size.width);
+}
+
+/// `place_reminder`, for a window this wide (in pixels) or about to be.
+fn place_reminder_sized(app: &AppHandle, w: &tauri::WebviewWindow, width_px: u32) {
     let hwnd = app.state::<App>().game_window.load(Ordering::Relaxed);
     let area = (hwnd != 0).then(|| game::client_area(hwnd)).flatten().or_else(|| {
         let m = w.current_monitor().ok().flatten().or_else(|| w.primary_monitor().ok().flatten())?;
         Some((m.position().x, m.position().y, m.size().width))
     });
     if let Some((left, top, width)) = area {
-        let x = left + (i64::from(width) - i64::from(size.width)).max(0) as i32 / 2;
+        let x = left + (i64::from(width) - i64::from(width_px)).max(0) as i32 / 2;
         let _ = w.set_position(tauri::PhysicalPosition::new(x, top + REMINDER_MARGIN));
     }
 }
 
 /// How far below the top of the game's window the reminder sits, in pixels.
 const REMINDER_MARGIN: i32 = 12;
+
+/// The reminder's whole size (tauri.conf.json), in logical pixels: room for
+/// the tour's note.
+const REMINDER_SIZE: (f64, f64) = (480.0, 140.0);
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+struct ReminderSize {
+    width: f64,
+    height: f64,
+}
+
+/// The reminder as big as what it shows (`None`: its whole size), so it takes
+/// no clicks off the game around it, and back at the top middle.
+#[tauri::command]
+fn reminder_fit(app: AppHandle, size: Option<ReminderSize>) {
+    let Some(w) = app.get_webview_window(REMINDER) else { return };
+    let (width, height) = size
+        .filter(|s| s.width.is_finite() && s.height.is_finite())
+        // Up to twice the whole size: the look's zoom makes it bigger.
+        .map(|s| (s.width.clamp(40.0, 2.0 * REMINDER_SIZE.0), s.height.clamp(20.0, 2.0 * REMINDER_SIZE.1)))
+        .unwrap_or(REMINDER_SIZE);
+    let scale = w.scale_factor().unwrap_or(1.0);
+    let px = tauri::PhysicalSize::new((width * scale).round() as u32, (height * scale).round() as u32);
+    let _ = w.set_size(px);
+    place_reminder_sized(&app, &w, px.width);
+    // Changing the window hides it (see `show_overlays`).
+    show_overlays_now(&app);
+}
+
+/// The ×, on the last reminder showing: it goes before its time.
+#[tauri::command]
+fn reminder_close(app: AppHandle, state: State<App>) {
+    state.reminder_until.store(0, Ordering::Relaxed);
+    show_overlays_now(&app);
+}
 
 pub(crate) fn save(app: &AppHandle, state: &App) {
     let saved = state.saved.lock().unwrap();
@@ -1135,10 +1175,6 @@ pub fn run() {
                     let _ = w.set_ignore_cursor_events(click_through);
                 }
             }
-            // Nothing to click or move on the reminder: clicks go to the game.
-            if let Some(w) = app.get_webview_window(REMINDER) {
-                let _ = w.set_ignore_cursor_events(true);
-            }
             show_overlays_now(app.handle());
             let handle = app.handle().clone();
             std::thread::spawn(move || watch_game(handle));
@@ -1158,7 +1194,7 @@ pub fn run() {
             log::line("pronto");
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, open_help, open_tour, share::share_status, share::share_mode, share::share_send])
+        .invoke_handler(tauri::generate_handler![get_timers, get_saved, set_settings, set_alarm, set_pet, set_click_through, set_hotkeys, pause_hotkeys, hotkeys_status, get_souls, get_paces, capture_status, game_running, search_characters, load_profile, clear_profile, move_preset, forget_preset, game_data, dps_live, dps_start, dps_stop, dps_clear, dps_rename, dps_delete, boss_history, dps_compare, dps_save_image, nearby_players, find_player, inspect_profile, player_gear, save_reference, rename_reference, delete_reference, get_checklist, checklist_mark, checklist_edit, update_status, update_check, update_install, open_settings, tour_overlay, reminder_fit, reminder_close, open_help, open_tour, share::share_status, share::share_mode, share::share_send])
         .build(tauri::generate_context!());
     let app = match app {
         Ok(app) => app,

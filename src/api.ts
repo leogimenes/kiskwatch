@@ -322,6 +322,10 @@ export const openHelp = (topic: string) => invoke<void>("open_help", { topic });
 export const openTour = (tab: string) => invoke<void>("open_tour", { tab });
 /** A tour step about an overlay shows it with a note; null puts it back as the settings say. */
 export const tourOverlay = (overlay: TourOverlay | null, note: string | null = null) => invoke<void>("tour_overlay", { overlay, note });
+/** Size the reminder to what it shows (`null`: its whole default size). */
+export const reminderFit = (size: { width: number; height: number } | null) => invoke<void>("reminder_fit", { size });
+/** The reminder's ×, on the last one: it goes. */
+export const reminderClose = () => invoke<void>("reminder_close");
 export type TourOverlay = "overlay" | "pets" | "dps";
 export const setSettings = (settings: Settings) => invoke("set_settings", { settings });
 export const setAlarm = (id: string, leads: number[]) => invoke("set_alarm", { id, leads });
