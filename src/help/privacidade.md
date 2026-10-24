@@ -19,6 +19,19 @@ Para apagar tudo, desinstale o Kiskwatch e apague essas pastas.
 - **Servidor do Kiskwatch (Cloudflare)**: a tabela de nomes achados é baixada a cada 6 horas. Os códigos sem nome só vão se você aceitar o termo em Configurações > Ajudar a traduzir: códigos de monstros, skills e efeitos, contagens, a classe que usou a skill, a versão do app e a região. Nunca vão nomes de personagens, chat, servidor, conta ou pacotes, e o endereço IP não é guardado. A nota opcional aparece na lista pública: não escreva nela seu nome, contato ou dados da sua conta.
 - **Links** (como o mapa do Aion 2 Timers) só abrem no navegador quando você clica.
 
+## Cada pedido, um por um
+
+Todo pedido se identifica como "Kiskwatch (github.com/leogimenes/kiskwatch)" e leva o seu endereço IP, como qualquer acesso à internet. Fora isso, vai só o que está abaixo.
+
+- **api-search.plaync.com**, quando você busca um nome (Build e Grupo): o nome digitado, a região e o servidor.
+- **aion2.plaync.com**, quando você abre um perfil, para reler o seguido (a cada 20 min, com a aba Build aberta) e, se ligado, para o nível e o poder nas barras do DPS: o código do personagem, a região e o servidor; para as barras, o nome que o jogo mostrou.
+- **dbaion2.ru**, uma vez por semana: nada, só baixa a lista.
+- **github.com**, a cada 6 horas e ao instalar uma versão: nada, só baixa o `latest.json` e o instalador.
+- **Servidor do Kiskwatch, tabela de nomes**, a cada 6 horas: nada, só baixa a tabela.
+- **Servidor do Kiskwatch, envio de códigos**, depois de cada gravação e só com o termo aceito: códigos, contagens, classe, versão do app, região e a nota opcional.
+
+Os pacotes do jogo, o registro de erros e as gravações nunca saem do seu computador.
+
 ## Os outros jogadores
 
 O dano e o nome de quem luta perto de você aparecem no overlay e nas gravações. Use isso para melhorar o seu jogo e o do seu grupo, e não publique o nome ou os números de ninguém sem o consentimento da pessoa.
