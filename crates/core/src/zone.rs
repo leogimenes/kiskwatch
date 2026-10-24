@@ -1,5 +1,15 @@
-//! A diagnostic, for now: how to tell when you go into a dungeon and out.
+//! Where you are: in the open world (on which map) or in a dungeon. And,
+//! for the log, what the game sends around a loading screen.
 //!
+//! Two tries (2026-10-23) showed how it goes. Going into a dungeon or out,
+//! the game switches connections and names you again (`33 36`). In the open
+//! world it says the map, as `21 36 <u32> <map u32>` before naming you and
+//! `02 40 <map u32> 00 00 00 01` right after (1010 is Verteron); also on a
+//! teleport within it, which names you again on the same connection. In a
+//! dungeon neither comes. So: the map after you are named is the open
+//! world; you named with no map within `MAP_WAIT_MS` is a dungeon.
+//!
+//! The diagnostic that found this stays, for the next places to learn:
 //! The game says who you are (`33 36`) on entering the world, and perhaps on
 //! every loading screen, a dungeon's included. Each time it does, the log
 //! gets your entity, the packets of the seconds around it (each kind once,
@@ -16,6 +26,8 @@
 
 use std::collections::VecDeque;
 
+use serde::Serialize;
+
 use crate::combat::CombatEvent;
 use crate::varint::read_varint;
 
@@ -31,6 +43,28 @@ const HEAD: usize = 32;
 /// Records that seem to carry the map: logged whole (up to `WHOLE` bytes).
 const MAP_RECORDS: [[u8; 2]; 3] = [[0x21, 0x36], [0x01, 0x40], [0x02, 0x40]];
 const WHOLE: usize = 96;
+/// After you are named, the map comes within this, or it's a dungeon.
+const MAP_WAIT_MS: i64 = 5_000;
+
+/// Where you are.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub enum Zone {
+    /// The open world, on a map (the same ids as the field bosses' maps).
+    Field { map: u32 },
+    /// A dungeon, or any place that came without a map.
+    Instance,
+}
+
+/// The map in a `21 36` or `02 40` record (a whole packet), if it's one.
+fn map_of(bytes: &[u8], opcode: [u8; 2], at: usize) -> Option<u32> {
+    let skip = match opcode {
+        [0x21, 0x36] => 6,
+        [0x02, 0x40] => 2,
+        _ => return None,
+    };
+    let b: [u8; 4] = bytes.get(at + skip..at + skip + 4)?.try_into().ok()?;
+    Some(u32::from_le_bytes(b)).filter(|&m| (1..1_000_000).contains(&m))
+}
 
 #[derive(Debug, Clone)]
 struct Seen {
@@ -48,6 +82,9 @@ pub struct ZoneTrace {
     after: Vec<Seen>,
     npcs: Vec<i32>,
     lines: Vec<String>,
+    /// When you were last named, while the map hasn't come yet.
+    named_at: Option<i64>,
+    zones: Vec<Zone>,
 }
 
 fn hex(b: &[u8]) -> String {
@@ -74,6 +111,11 @@ impl ZoneTrace {
         let n = read_varint(bytes, 0);
         let Ok(at) = usize::try_from(n.length) else { return };
         let Some(opcode) = bytes.get(at..at + 2) else { return };
+        if let Some(map) = map_of(bytes, [opcode[0], opcode[1]], at) {
+            self.found(Zone::Field { map });
+        } else if self.named_at.is_some_and(|t| now - t > MAP_WAIT_MS) {
+            self.found(Zone::Instance);
+        }
         let seen = Seen { at: now, opcode: [opcode[0], opcode[1]], len: bytes.len(), head: bytes[..bytes.len().min(HEAD)].to_vec() };
         if MAP_RECORDS.contains(&seen.opcode) {
             self.lines.push(format!("zona: registro {:02x} {:02x} ({} bytes): {}", seen.opcode[0], seen.opcode[1], bytes.len(), hex(&bytes[..bytes.len().min(WHOLE)])));
@@ -97,12 +139,29 @@ impl ZoneTrace {
                 self.lines.extend(summary(&before));
                 self.me = Some(*id);
                 self.since_ms = Some(now);
+                self.named_at = Some(now);
             }
             CombatEvent::Npc { code, .. } if self.since_ms.is_some_and(|t| now - t <= NPC_MS) && self.npcs.len() < MAX_NPCS && !self.npcs.contains(code) => {
                 self.npcs.push(*code);
             }
             _ => {}
         }
+    }
+
+    fn found(&mut self, zone: Zone) {
+        self.named_at = None;
+        if self.zones.last() != Some(&zone) {
+            self.lines.push(match zone {
+                Zone::Field { map } => format!("zona: área aberta, mapa {map}"),
+                Zone::Instance => "zona: dungeon (sem mapa depois de entrar)".into(),
+            });
+        }
+        self.zones.push(zone);
+    }
+
+    /// The places found since the last call, oldest first.
+    pub fn take_zones(&mut self) -> Vec<Zone> {
+        std::mem::take(&mut self.zones)
     }
 
     /// What's ready for the log.
@@ -147,17 +206,40 @@ mod tests {
         t.event(&CombatEvent::Npc { id: 2, code: 500 }, 12_000);
         t.event(&CombatEvent::Npc { id: 3, code: 600 }, 13_000);
         t.packet(&[4, 0x04, 0x38, 0], 16_000);
-        assert_eq!(t.take_lines(), ["zona: pacotes nos 5 s depois:", "  04 38 ×1 (4 bytes): 04 04 38 00"]);
+        assert_eq!(t.take_lines(), ["zona: pacotes nos 5 s depois:", "  04 38 ×1 (4 bytes): 04 04 38 00", "zona: dungeon (sem mapa depois de entrar)"]);
         t.packet(&[4, 0x04, 0x38, 0], 26_000);
         assert_eq!(t.take_lines(), ["zona: NPCs logo depois: 500 600"]);
         t.event(&me(11), 30_000);
         assert_eq!(t.take_lines()[0], "zona: você é a entidade 11 (antes 10)");
     }
 
+    fn packet(op: [u8; 2], rest: &[u8]) -> Vec<u8> {
+        [&[(rest.len() + 3) as u8], &op[..], rest].concat()
+    }
+
+    #[test]
+    fn the_map_after_you_are_named_is_the_open_world_none_a_dungeon() {
+        let mut t = ZoneTrace::default();
+        // Verteron: the map before you are named and after.
+        t.packet(&packet([0x21, 0x36], &[1, 0, 0, 0, 0xf2, 3, 0, 0, 9, 9]), 0);
+        t.event(&me(10), 1_000);
+        t.packet(&packet([0x02, 0x40], &[0xf2, 3, 0, 0, 0, 0, 0, 1]), 1_100);
+        t.packet(&packet([0x00, 0x36], &[0; 8]), 9_000);
+        assert_eq!(t.take_zones(), [Zone::Field { map: 1010 }, Zone::Field { map: 1010 }]);
+        // A dungeon: named, then no map.
+        t.event(&me(683), 20_000);
+        t.packet(&packet([0x00, 0x36], &[0; 8]), 24_000);
+        assert!(t.take_zones().is_empty(), "still waiting for the map");
+        t.packet(&packet([0x00, 0x36], &[0; 8]), 25_100);
+        t.packet(&packet([0x00, 0x36], &[0; 8]), 40_000);
+        assert_eq!(t.take_zones(), [Zone::Instance]);
+        assert!(t.take_lines().iter().any(|l| l == "zona: dungeon (sem mapa depois de entrar)"));
+    }
+
     #[test]
     fn map_records_go_whole() {
         let mut t = ZoneTrace::default();
         t.packet(&[0x0b, 0x21, 0x36, 1, 0, 0, 0, 0xf2, 3, 0, 0], 0);
-        assert_eq!(t.take_lines(), ["zona: registro 21 36 (11 bytes): 0b 21 36 01 00 00 00 f2 03 00 00"]);
+        assert_eq!(t.take_lines(), ["zona: área aberta, mapa 1010", "zona: registro 21 36 (11 bytes): 0b 21 36 01 00 00 00 f2 03 00 00"]);
     }
 }

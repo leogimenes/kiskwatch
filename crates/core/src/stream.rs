@@ -11,7 +11,7 @@ use crate::combat::{self, CombatEvent};
 use crate::effects::{self, EffectRecord};
 use crate::framing::{self, FrameKind, MAX_BUNDLE_DEPTH};
 use crate::pets::{self, PetRecord};
-use crate::zone::ZoneTrace;
+use crate::zone::{Zone, ZoneTrace};
 
 /// Bytes kept waiting for the rest of a packet before giving up on them.
 const MAX_BUFFER_BYTES: usize = 2 * 1024 * 1024;
@@ -25,6 +25,8 @@ pub enum GameEvent {
     Effect(EffectRecord),
     /// A line for the log (the dungeon diagnostic, `zone`).
     Log(String),
+    /// You came into the open world or a dungeon (see `zone`).
+    Zone(Zone),
 }
 
 /// Decode one whole packet (length varint included).
@@ -65,6 +67,7 @@ impl GameStream {
             read_frame(&mut self.combat, &mut self.zone, frame.kind, frame.bytes(&self.buffer), frame.payload(&self.buffer), 1, now_ms, &mut events);
         }
         self.buffer.drain(..walked.consumed);
+        events.extend(self.zone.take_zones().into_iter().map(GameEvent::Zone));
         events.extend(self.zone.take_lines().into_iter().map(GameEvent::Log));
         events
     }

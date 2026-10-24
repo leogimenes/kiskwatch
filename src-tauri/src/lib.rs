@@ -18,7 +18,7 @@ use std::time::Duration;
 
 use kiskwatch_core::checklist::{Character, Checklist, Resets, Task};
 use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
-use kiskwatch_core::dps::{Fight, Meter};
+use kiskwatch_core::dps::{Fight, Meter, Start};
 use kiskwatch_core::schedule::{self, Event};
 use kiskwatch_core::pets::{self, Pace, PetRecord};
 use kiskwatch_core::stream::GameEvent;
@@ -179,7 +179,7 @@ impl App {
                 saved.pet_queue.entry(server).or_default().apply(&record, &collection);
             }
             // The meter's (see `read_capture`).
-            GameEvent::Combat(_) | GameEvent::Effect(_) => return false,
+            GameEvent::Combat(_) | GameEvent::Effect(_) | GameEvent::Zone(_) => return false,
             // The dungeon diagnostic: straight to the log.
             GameEvent::Log(line) => {
                 log::line(&line);
@@ -1076,17 +1076,27 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
             }
             changed
         };
-        let (combat, events): (Vec<_>, Vec<_>) = events.into_iter().partition(|e| matches!(e, GameEvent::Combat(_) | GameEvent::Effect(_)));
+        let (combat, events): (Vec<_>, Vec<_>) = events.into_iter().partition(|e| matches!(e, GameEvent::Combat(_) | GameEvent::Effect(_) | GameEvent::Zone(_)));
         if !combat.is_empty() {
-            let auto = state.saved.lock().unwrap().settings.dps.start == "hit";
-            let mut meter = state.meter.lock().unwrap();
+            let start = Start::from_setting(&state.saved.lock().unwrap().settings.dps.start);
+            let mut ended = Vec::new();
             let mut started = false;
-            for e in combat {
-                match e {
-                    GameEvent::Combat(e) => started |= meter.apply(e, now, auto, |me| fight_name(&state, me)),
-                    GameEvent::Effect(e) => meter.apply_effect(e, now),
-                    _ => {}
+            {
+                let mut meter = state.meter.lock().unwrap();
+                for e in combat {
+                    match e {
+                        GameEvent::Combat(e) => started |= meter.apply(e, now, start, |me| fight_name(&state, me)),
+                        GameEvent::Effect(e) => meter.apply_effect(e, now),
+                        GameEvent::Zone(z) => {
+                            ended.extend(meter.enter(z, now, start, |me| fight_name(&state, me)));
+                            started |= meter.recording();
+                        }
+                        _ => {}
+                    }
                 }
+            }
+            for fight in ended {
+                keep_fight(&app, &state, fight);
             }
             if started {
                 let _ = app.emit("dps-changed", ());

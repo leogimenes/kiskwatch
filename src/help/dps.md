@@ -4,7 +4,8 @@ O medidor de dano e cura: grava as lutas e mostra quanto cada jogador causou.
 
 ## Gravação
 
-- Por padrão, a gravação **começa sozinha no seu primeiro golpe** e termina depois de 30 segundos sem dano. Em **Configurações** dá para mudar para começar só pelo botão.
+- Por padrão, a gravação **começa sozinha no seu primeiro golpe** e termina depois de 30 segundos sem dano. Em **Configurações** dá para mudar para começar só pelo botão, ou **por dungeon**.
+- **Por dungeon**: cada dungeon vira uma gravação só, da entrada até a saída, com todos os pulls e chefes (o tempo parado entre eles não conta no /s). Fora das dungeons, a gravação só começa num golpe em chefe, como os world bosses. O app reconhece a dungeon pela troca de servidor ao entrar e sair.
 - **Gravar agora** e **Parar** funcionam aqui, no overlay de DPS ou pelo atalho de teclado (Ctrl+Alt+D por padrão).
 - **Limpar** zera a gravação em andamento, sem salvar, e tira a última da tela do overlay.
 

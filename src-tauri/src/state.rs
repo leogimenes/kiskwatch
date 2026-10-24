@@ -88,7 +88,8 @@ impl Hotkeys {
 #[serde(default)]
 pub struct DpsSettings {
     pub overlay: bool,
-    /// "hit": start recording on your first hit; "button": only by hand.
+    /// "hit": start recording on your first hit; "button": only by hand;
+    /// "dungeon": each dungeon whole, and in the open world on a boss hit.
     pub start: String,
     /// Damage counted: "all", "mob" or "boss".
     pub target: String,

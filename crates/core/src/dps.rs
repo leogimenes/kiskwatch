@@ -6,7 +6,9 @@
 //! damage each player took from monsters, by monster and skill.
 //!
 //! A recording starts on the local player's first hit (or by hand) and ends by
-//! hand, or, when it started by itself, after a while without damage.
+//! hand, or, when it started by itself, after a while without damage. By
+//! dungeon, a recording runs from going into a dungeon to coming out, and
+//! in the open world starts only on a hit on a boss.
 //!
 //! Each player's row also has the fight's timeline: damage second by second,
 //! and the stretches the player stood without hitting (their own hits and
@@ -19,6 +21,7 @@ use serde::{Deserialize, Serialize};
 use crate::casts::{Casts, SkillCasts};
 use crate::combat::{Class, CombatEvent, base_skill};
 use crate::effects::{EffectRecord, Effects, Uptime};
+use crate::zone::Zone;
 
 /// An automatic recording ends after this long without new damage.
 pub const IDLE_END_MS: i64 = 30_000;
@@ -26,6 +29,29 @@ pub const IDLE_END_MS: i64 = 30_000;
 pub const NAME_MAX: usize = 50;
 /// This long or more without one of your own hits is time stood still.
 pub const IDLE_GAP_MS: i64 = 3_000;
+
+/// When a recording starts by itself (the setting).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Start {
+    /// On your first hit.
+    Hit,
+    /// Only by hand.
+    Button,
+    /// Each dungeon whole, from going in to coming out; in the open world,
+    /// on your first hit on a boss.
+    Dungeon,
+}
+
+impl Start {
+    /// From the setting: "hit", "button" or "dungeon".
+    pub fn from_setting(s: &str) -> Self {
+        match s {
+            "button" => Start::Button,
+            "dungeon" => Start::Dungeon,
+            _ => Start::Hit,
+        }
+    }
+}
 
 /// A recording, live or saved.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -257,6 +283,8 @@ pub struct Meter {
     /// When each player was last named or last fought.
     seen: HashMap<i32, i64>,
     rec: Option<Recording>,
+    /// Where you are, once the game said.
+    zone: Option<Zone>,
 }
 
 /// Cut a name to what a recording takes.
@@ -303,10 +331,10 @@ impl Meter {
         self.me == Some(id) || self.names.contains_key(&id) || (self.classes.contains_key(&id) && !self.npcs.contains(&id))
     }
 
-    /// Take what the game said. With `auto_start`, your first hit (any
-    /// player's, while the game hasn't said who you are) starts a recording,
-    /// named by `name` from your character's name.
-    pub fn apply(&mut self, event: CombatEvent, now: i64, auto_start: bool, name: impl FnOnce(Option<&str>) -> String) -> bool {
+    /// Take what the game said. Unless `start` is by hand, your first hit
+    /// (any player's, while the game hasn't said who you are; on a boss, by
+    /// dungeon) starts a recording, named by `name` from your character's name.
+    pub fn apply(&mut self, event: CombatEvent, now: i64, start: Start, name: impl FnOnce(Option<&str>) -> String) -> bool {
         let mut started = false;
         match event {
             CombatEvent::Me { id, name, class } => {
@@ -367,12 +395,17 @@ impl Meter {
                     }
                     return false;
                 }
-                if self.rec.is_none() && auto_start && self.me.is_none_or(|me| me == who) {
+                let boss = self.bosses.get(&target).copied();
+                let starts = match start {
+                    Start::Hit => true,
+                    Start::Button => false,
+                    Start::Dungeon => boss.is_some(),
+                };
+                if self.rec.is_none() && starts && self.me.is_none_or(|me| me == who) {
                     let n = name(self.my_name());
                     self.begin(n, true, now);
                     started = true;
                 }
-                let boss = self.bosses.get(&target).copied();
                 let mine = self.me == Some(who);
                 if let Some(rec) = &mut self.rec {
                     // Boss or not as it was when hit: the game hands a dead
@@ -409,6 +442,25 @@ impl Meter {
             }
         }
         started
+    }
+
+    /// You came into the open world or a dungeon. By dungeon, the recording
+    /// under way ends (returned, to keep) and one starts in a dungeon, to run
+    /// until you come out; otherwise the place changes nothing.
+    pub fn enter(&mut self, zone: Zone, now: i64, start: Start, name: impl FnOnce(Option<&str>) -> String) -> Option<Fight> {
+        if self.zone == Some(zone) {
+            return None;
+        }
+        self.zone = Some(zone);
+        if start != Start::Dungeon {
+            return None;
+        }
+        let ended = if self.rec.is_some() { self.finish(now) } else { None };
+        if zone == Zone::Instance {
+            let n = format!("Dungeon · {}", name(self.my_name()));
+            self.begin(n, false, now);
+        }
+        ended
     }
 
     /// A buff or debuff going on or off.
@@ -637,7 +689,7 @@ mod tests {
             CombatEvent::Npc { id: MOB, code: 2_000_002 },
             CombatEvent::Npc { id: BOSS, code: BOSS_CODE },
         ] {
-            m.apply(e, 0, false, named);
+            m.apply(e, 0, Start::Button, named);
         }
         m
     }
@@ -653,8 +705,8 @@ mod tests {
     #[test]
     fn your_first_hit_starts_and_counts() {
         let mut m = meter();
-        assert!(!m.apply(hit(MATE, MOB, GLADIATOR, 500), 0, true, named), "a mate's hit");
-        assert!(m.apply(hit(ME, MOB, CLERIC, 40), 500, true, named));
+        assert!(!m.apply(hit(MATE, MOB, GLADIATOR, 500), 0, Start::Hit, named), "a mate's hit");
+        assert!(m.apply(hit(ME, MOB, CLERIC, 40), 500, Start::Hit, named));
         let f = m.current(1_000).unwrap();
         assert_eq!(f.name, "Leozin luta");
         assert_eq!(f.players.len(), 1);
@@ -673,7 +725,7 @@ mod tests {
             hit(ME, MATE, CLERIC, 25),
             CombatEvent::Heal { actor: ME, target: ME, amount: 25 },
         ] {
-            m.apply(e, 500, false, named);
+            m.apply(e, 500, Start::Button, named);
         }
         let f = m.stop(1_000).unwrap();
         assert_eq!((f.players[0].name.as_str(), f.players[0].class), ("Amigo", Some(Class::Gladiator)));
@@ -692,7 +744,7 @@ mod tests {
             (hit(MATE, BOSS, GLADIATOR, 200), 2_000),
             (hit(ME, BOSS, CLERIC + 7, 30), 4_000),
         ] {
-            m.apply(e, at, false, named);
+            m.apply(e, at, Start::Button, named);
         }
         let f = m.stop(9_000).unwrap();
         assert_eq!(f.bosses.len(), 1);
@@ -708,10 +760,10 @@ mod tests {
     fn a_boss_entity_handed_to_another_npc_keeps_its_damage_as_boss() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(hit(ME, BOSS, CLERIC, 70), 500, false, named);
+        m.apply(hit(ME, BOSS, CLERIC, 70), 500, Start::Button, named);
         // The boss died and the game gave its entity to a plain monster.
-        m.apply(CombatEvent::Npc { id: BOSS, code: 2_000_002 }, 600, false, named);
-        m.apply(hit(ME, BOSS, CLERIC, 30), 700, false, named);
+        m.apply(CombatEvent::Npc { id: BOSS, code: 2_000_002 }, 600, Start::Button, named);
+        m.apply(hit(ME, BOSS, CLERIC, 30), 700, Start::Button, named);
         let f = m.stop(1_000).unwrap();
         let me = &f.players[0];
         assert_eq!((me.boss_damage, me.mob_damage), (70, 30));
@@ -731,11 +783,11 @@ mod tests {
             CombatEvent::Npc { id: OTHER, code: 2_301_300 },
             CombatEvent::Summon { id: 555, owner: MATE },
         ] {
-            m.apply(e, 0, false, named);
+            m.apply(e, 0, Start::Button, named);
         }
         m.start("x".into(), 0);
         for e in [hit(ME, BOSS, CLERIC, 50), hit(555, BOSS, 2_100_000, 30), hit(MATE, OTHER, GLADIATOR, 500), hit(ME, OTHER, CLERIC, 10)] {
-            m.apply(e, 500, false, named);
+            m.apply(e, 500, Start::Button, named);
         }
         let f = m.stop(1_000).unwrap();
         let by = |code| f.bosses.iter().find(|b| b.code == code).unwrap().players.iter().map(|p| (p.id, p.damage)).collect::<Vec<_>>();
@@ -744,12 +796,42 @@ mod tests {
     }
 
     #[test]
+    fn by_dungeon_a_recording_runs_from_going_in_to_coming_out() {
+        let verteron = Zone::Field { map: 1010 };
+        let mut m = meter();
+        assert_eq!(m.enter(verteron, 0, Start::Dungeon, named), None);
+        // In the open world, only a hit on a boss starts one.
+        assert!(!m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Dungeon, named));
+        assert!(m.apply(hit(ME, BOSS, CLERIC, 50), 2_000, Start::Dungeon, named));
+        // Going into a dungeon keeps that one and starts another.
+        let field = m.enter(Zone::Instance, 10_000, Start::Dungeon, named).unwrap();
+        assert_eq!(field.players[0].boss_damage, 50);
+        assert_eq!(m.current(10_000).unwrap().name, "Dungeon · Leozin luta");
+        m.apply(hit(ME, MOB, CLERIC, 30), 20_000, Start::Dungeon, named);
+        // A long pull, and a pause: it keeps going.
+        assert_eq!(m.tick(20_000 + 10 * IDLE_END_MS), None);
+        m.apply(hit(ME, BOSS, CLERIC, 70), 400_000, Start::Dungeon, named);
+        let run = m.enter(verteron, 500_000, Start::Dungeon, named).unwrap();
+        assert_eq!((run.started_ms, run.ended_ms, run.players[0].mob_damage, run.players[0].boss_damage), (10_000, 500_000, 30, 70));
+        assert!(!m.recording());
+    }
+
+    #[test]
+    fn the_place_changes_nothing_unless_by_dungeon() {
+        let mut m = meter();
+        m.apply(hit(ME, MOB, CLERIC, 10), 0, Start::Hit, named);
+        assert_eq!(m.enter(Zone::Instance, 1_000, Start::Hit, named), None);
+        assert!(m.recording());
+        assert_eq!(m.current(1_000).unwrap().name, "Leozin luta");
+    }
+
+    #[test]
     fn summons_count_for_their_owner() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
-        m.apply(hit(ME, MOB, CLERIC, 10), 0, false, named);
-        m.apply(hit(555, MOB, 2_100_000, 90), 0, false, named);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, Start::Button, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 0, Start::Button, named);
+        m.apply(hit(555, MOB, 2_100_000, 90), 0, Start::Button, named);
         let f = m.current(1_000).unwrap();
         assert_eq!(f.players.len(), 1);
         assert_eq!(f.players[0].mob_damage, 100);
@@ -759,7 +841,7 @@ mod tests {
     fn monsters_are_not_players() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(hit(MOB, ME, 2_000_100, 99), 0, false, named);
+        m.apply(hit(MOB, ME, 2_000_100, 99), 0, Start::Button, named);
         assert_eq!(m.stop(1_000), None);
     }
 
@@ -777,7 +859,7 @@ mod tests {
             // A spawn the meter missed: code 0.
             hit(7777, ME, 2_000_100, 5),
         ] {
-            m.apply(e, 500, false, named);
+            m.apply(e, 500, Start::Button, named);
         }
         let f = m.stop(1_000).unwrap();
         let me = f.players.iter().find(|p| p.id == ME).unwrap();
@@ -797,14 +879,14 @@ mod tests {
     #[test]
     fn damage_taken_does_not_start_a_recording() {
         let mut m = meter();
-        assert!(!m.apply(hit(BOSS, ME, 2_301_001, 400), 0, true, named));
+        assert!(!m.apply(hit(BOSS, ME, 2_301_001, 400), 0, Start::Hit, named));
         assert!(!m.recording());
     }
 
     #[test]
     fn an_automatic_recording_ends_when_the_fighting_does() {
         let mut m = meter();
-        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, true, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Hit, named);
         assert_eq!(m.tick(1_000 + IDLE_END_MS - 1), None);
         let ended = m.tick(1_000 + IDLE_END_MS).unwrap();
         assert_eq!((ended.started_ms, ended.ended_ms), (1_000, 1_000));
@@ -815,7 +897,7 @@ mod tests {
     fn a_recording_by_hand_waits_for_the_button() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Button, named);
         assert_eq!(m.tick(10 * IDLE_END_MS), None);
         assert!(m.recording());
     }
@@ -832,7 +914,7 @@ mod tests {
             (CombatEvent::Hit { actor: ME, target: MOB, skill: 17_030_000, value: 5, dot: true, crit: false }, 9_000),
             (hit(MATE, BOSS, GLADIATOR, 10), 2_000),
         ] {
-            m.apply(e, now, false, named);
+            m.apply(e, now, Start::Button, named);
         }
         let f = m.current(10_000).unwrap();
         let me = f.players.iter().find(|p| p.id == ME).unwrap();
@@ -851,7 +933,7 @@ mod tests {
             hit(ME, BOSS, 17_020_000, 50),
             CombatEvent::Hit { actor: ME, target: BOSS, skill: 17_010_000, value: 20, dot: true, crit: false },
         ] {
-            m.apply(e, 0, false, named);
+            m.apply(e, 0, Start::Button, named);
         }
         let f = m.current(1_000).unwrap();
         let s = &f.players[0].skills;
@@ -867,9 +949,9 @@ mod tests {
     fn a_summons_skills_are_its_owners() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
-        m.apply(hit(555, MOB, 16_990_001, 90), 0, false, named);
-        m.apply(hit(555, MOB, 16_990_001, 60), 0, false, named);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, Start::Button, named);
+        m.apply(hit(555, MOB, 16_990_001, 90), 0, Start::Button, named);
+        m.apply(hit(555, MOB, 16_990_001, 60), 0, Start::Button, named);
         let f = m.current(1_000).unwrap();
         assert_eq!(f.players[0].skills, vec![SkillStat { skill: 16_990_000, dot: false, mob: Tally { damage: 150, hits: 2, crits: 0, max_hit: 90 }, ..Default::default() }]);
     }
@@ -881,9 +963,9 @@ mod tests {
         let mut m = meter();
         m.apply_effect(on(ME, 1, ME), 0);
         m.start("x".into(), 1_000);
-        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 1_000, false, named);
-        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, false, named);
-        m.apply(hit(MATE, BOSS, GLADIATOR, 500), 1_000, false, named);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 1_000, Start::Button, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Button, named);
+        m.apply(hit(MATE, BOSS, GLADIATOR, 500), 1_000, Start::Button, named);
         m.apply_effect(on(BOSS, 2, 555), 2_000);
         m.apply_effect(on(MOB, 3, ME), 2_000);
         let f = m.stop(5_000).unwrap();
@@ -891,7 +973,7 @@ mod tests {
         let got: Vec<_> = f.effects.list.iter().map(|u| (u.entity, u.abnormal, u.caster, u.uptime_ms)).collect();
         assert_eq!(got, vec![(ME, 1, ME, 4_000), (BOSS, 2, ME, 3_000)]);
         m.start("y".into(), 6_000);
-        m.apply(hit(ME, MOB, CLERIC, 10), 6_000, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 6_000, Start::Button, named);
         let got: Vec<_> = m.current(7_000).unwrap().effects.list.iter().map(|u| (u.entity, u.abnormal, u.uptime_ms)).collect();
         assert_eq!(got, vec![(ME, 1, 1_000), (MOB, 3, 1_000)], "a new recording counts from its start");
     }
@@ -899,10 +981,10 @@ mod tests {
     #[test]
     fn the_roster_puts_fighters_first_and_leaves_you_out() {
         let mut m = meter();
-        m.apply(CombatEvent::Player { id: 300, name: "Passante".into() }, 5_000, false, named);
-        m.apply(CombatEvent::Player { id: 301, name: "Antigo".into() }, 0, false, named);
+        m.apply(CombatEvent::Player { id: 300, name: "Passante".into() }, 5_000, Start::Button, named);
+        m.apply(CombatEvent::Player { id: 301, name: "Antigo".into() }, 0, Start::Button, named);
         m.start("x".into(), 6_000);
-        m.apply(hit(MATE, MOB, GLADIATOR, 50), 6_000, false, named);
+        m.apply(hit(MATE, MOB, GLADIATOR, 50), 6_000, Start::Button, named);
         let names: Vec<_> = m.roster(1).into_iter().map(|p| (p.name, p.fighting)).collect();
         assert_eq!(names, [("Amigo".to_string(), true), ("Passante".to_string(), false)]);
         assert_eq!(m.roster(1)[0].class, Some(Class::Gladiator));
@@ -911,7 +993,7 @@ mod tests {
     #[test]
     fn the_roster_lists_a_name_once() {
         let mut m = meter();
-        m.apply(CombatEvent::Player { id: 400, name: "Amigo".into() }, 9_000, false, named);
+        m.apply(CombatEvent::Player { id: 400, name: "Amigo".into() }, 9_000, Start::Button, named);
         let list = m.roster(0);
         assert_eq!(list.iter().filter(|p| p.name == "Amigo").count(), 1);
         assert_eq!(list[0].seen_ms, 9_000);
@@ -933,10 +1015,10 @@ mod tests {
     fn the_timeline_has_damage_by_second() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
-        m.apply(hit(ME, MOB, CLERIC, 10), 200, false, named);
-        m.apply(hit(555, BOSS, 2_100_000, 5), 900, false, named);
-        m.apply(hit(ME, MOB, CLERIC, 7), 2_500, false, named);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, Start::Button, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 200, Start::Button, named);
+        m.apply(hit(555, BOSS, 2_100_000, 5), 900, Start::Button, named);
+        m.apply(hit(ME, MOB, CLERIC, 7), 2_500, Start::Button, named);
         let f = m.current(3_000).unwrap();
         assert_eq!(f.players[0].timeline, vec![15, 0, 7, 0]);
     }
@@ -945,7 +1027,7 @@ mod tests {
     fn standing_still_is_three_seconds_without_your_own_hits() {
         let mut m = meter();
         m.start("x".into(), 0);
-        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, false, named);
+        m.apply(CombatEvent::Summon { id: 555, owner: ME }, 0, Start::Button, named);
         for (at, e) in [
             // 0..4 s: the button, then nothing.
             (4_000, hit(ME, MOB, CLERIC, 10)),
@@ -957,7 +1039,7 @@ mod tests {
             (10_000, hit(ME, MATE, CLERIC, 10)),
             (11_000, hit(ME, MOB, CLERIC, 10)),
         ] {
-            m.apply(e, at, false, named);
+            m.apply(e, at, Start::Button, named);
         }
         let me = m.stop(20_000).unwrap().players.into_iter().find(|p| p.id == ME).unwrap();
         assert_eq!(me.idle, vec![[0, 4_000], [6_000, 10_000], [11_000, 20_000]]);
@@ -967,8 +1049,8 @@ mod tests {
     #[test]
     fn an_automatic_recording_starts_and_ends_on_a_hit() {
         let mut m = meter();
-        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, true, named);
-        m.apply(hit(ME, MOB, CLERIC, 10), 3_000, true, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Hit, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 3_000, Start::Hit, named);
         let f = m.tick(3_000 + IDLE_END_MS).unwrap();
         assert_eq!((f.players[0].idle_ms, f.players[0].timeline.len()), (0, 3));
     }
@@ -977,21 +1059,21 @@ mod tests {
     fn clearing_starts_a_recording_by_hand_over() {
         let mut m = meter();
         m.start("Treino".into(), 0);
-        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Button, named);
         m.clear(2_000);
         let f = m.current(2_000).unwrap();
         assert_eq!((f.name.as_str(), f.started_ms, f.players.len()), ("Treino", 2_000, 0));
-        m.apply(hit(ME, MOB, CLERIC, 7), 3_000, false, named);
+        m.apply(hit(ME, MOB, CLERIC, 7), 3_000, Start::Button, named);
         assert_eq!(m.stop(4_000).unwrap().players[0].mob_damage, 7);
     }
 
     #[test]
     fn clearing_an_automatic_recording_waits_for_the_next_hit() {
         let mut m = meter();
-        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, true, named);
+        m.apply(hit(ME, MOB, CLERIC, 10), 1_000, Start::Hit, named);
         m.clear(2_000);
         assert!(!m.recording() && m.tick(2_000 + IDLE_END_MS).is_none());
-        m.apply(hit(ME, MOB, CLERIC, 4), 3_000, true, named);
+        m.apply(hit(ME, MOB, CLERIC, 4), 3_000, Start::Hit, named);
         assert_eq!(m.current(3_000).unwrap().players[0].mob_damage, 4);
     }
 
