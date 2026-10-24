@@ -57,8 +57,9 @@ export type DpsBars = "damage" | "heal" | "both";
 
 export interface DpsSettings {
   overlay: boolean;
-  /** "hit": recording starts on your first hit; "button": by hand. */
-  start: "hit" | "button";
+  /** "hit": recording starts on your first hit; "button": by hand;
+   *  "dungeon": each dungeon whole, and in the open world on a boss hit. */
+  start: "hit" | "button" | "dungeon";
   target: DpsTarget;
   bars: DpsBars;
 }

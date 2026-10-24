@@ -848,7 +848,7 @@ clickThrough.addEventListener("change", () => setClickThrough(clickThrough.check
 check("#timer-overlay").addEventListener("change", (e) => update((s) => { s.timer_overlay = (e.target as HTMLInputElement).checked; }));
 check("#pet-overlay").addEventListener("change", (e) => update((s) => { s.pet_overlay = (e.target as HTMLInputElement).checked; }));
 check("#dps-overlay").addEventListener("change", (e) => update((s) => { s.dps.overlay = (e.target as HTMLInputElement).checked; }));
-$<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button"; }));
+$<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button" | "dungeon"; }));
 check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
 check("#overlays-with-focus").addEventListener("change", (e) => update((s) => { s.overlays_with_focus = (e.target as HTMLInputElement).checked; }));
 // A new channel looks for updates on it right away.
