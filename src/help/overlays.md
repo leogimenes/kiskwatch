@@ -8,6 +8,7 @@ Janelas pequenas por cima do jogo, com o que importa sem sair dele.
 - **Limpar** zera a gravação em andamento e tira a última da tela.
 - Os botões de baixo escolhem o alvo (**todos**, **monstros**, **chefes**) e as barras (**dano**, **cura** ou os dois).
 - Mostra até 6 jogadores, com a cor da classe, o nível do equipamento e o poder de combate.
+- O atalho **Ctrl+Alt+O** (trocável em **Configurações**) mostra e esconde o overlay sem sair do jogo.
 
 ## Overlay de pets
 
@@ -15,7 +16,7 @@ Os últimos 5 pets de que você farmou alma (o mais recente no topo), o próximo
 
 ## Lembrete dos timers
 
-Aparece no topo da janela do AION 2 quando toca um aviso que você marcou na aba **Timers**, e some sozinho.
+Aparece no topo da janela do AION 2 quando toca um aviso que você marcou na aba **Timers**, e some sozinho, ou antes, no **×**.
 
 ## Mover e redimensionar
 

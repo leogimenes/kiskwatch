@@ -14,6 +14,10 @@ A **engrenagem ⚙** de um overlay abre estas configurações; o **?** abre esta
 
 ## Atalhos de teclado
 
+- **Gravar e parar o DPS**: Ctrl+Alt+D por padrão.
+- **Ligar e desligar os cliques passando para o jogo**: Ctrl+Alt+X por padrão.
+- **Mostrar e esconder o overlay de DPS**: Ctrl+Alt+O por padrão. É o mesmo que marcar ou desmarcar o overlay de DPS aqui, e ele continua aparecendo só com o jogo aberto e na frente.
+
 Funcionam mesmo com o jogo na frente. Clique num atalho e aperte a nova combinação; **Esc** cancela e **Backspace** desliga. Ctrl, Alt e Shift também chegam ao jogo (o Shift faz o personagem dar dash), então uma tecla sozinha como F9 pode ser melhor.
 
 ## Acessibilidade

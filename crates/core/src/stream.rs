@@ -11,6 +11,7 @@ use crate::combat::{self, CombatEvent};
 use crate::effects::{self, EffectRecord};
 use crate::framing::{self, FrameKind, MAX_BUNDLE_DEPTH};
 use crate::pets::{self, PetRecord};
+use crate::zone::{Zone, ZoneTrace};
 
 /// Bytes kept waiting for the rest of a packet before giving up on them.
 const MAX_BUFFER_BYTES: usize = 2 * 1024 * 1024;
@@ -22,6 +23,10 @@ pub enum GameEvent {
     Pets(PetRecord),
     Combat(CombatEvent),
     Effect(EffectRecord),
+    /// A line for the log (the dungeon diagnostic, `zone`).
+    Log(String),
+    /// You came into the open world or a dungeon (see `zone`).
+    Zone(Zone),
 }
 
 /// Decode one whole packet (length varint included).
@@ -36,11 +41,12 @@ pub fn decode(packet: &[u8], now_ms: i64) -> Option<GameEvent> {
 pub struct GameStream {
     buffer: Vec<u8>,
     combat: combat::Reader,
+    zone: ZoneTrace,
 }
 
 impl Default for GameStream {
     fn default() -> Self {
-        Self { buffer: Vec::new(), combat: combat::Reader::new(combat::SkillLists::bundled()) }
+        Self { buffer: Vec::new(), combat: combat::Reader::new(combat::SkillLists::bundled()), zone: ZoneTrace::default() }
     }
 }
 
@@ -58,9 +64,11 @@ impl GameStream {
         let walked = framing::walk(&self.buffer);
         let mut events = Vec::new();
         for frame in &walked.frames {
-            read_frame(&mut self.combat, frame.kind, frame.bytes(&self.buffer), frame.payload(&self.buffer), 1, now_ms, &mut events);
+            read_frame(&mut self.combat, &mut self.zone, frame.kind, frame.bytes(&self.buffer), frame.payload(&self.buffer), 1, now_ms, &mut events);
         }
         self.buffer.drain(..walked.consumed);
+        events.extend(self.zone.take_zones().into_iter().map(GameEvent::Zone));
+        events.extend(self.zone.take_lines().into_iter().map(GameEvent::Log));
         events
     }
 
@@ -69,22 +77,31 @@ impl GameStream {
     }
 }
 
-fn read_frame(reader: &mut combat::Reader, kind: FrameKind, bytes: &[u8], payload: &[u8], depth: usize, now_ms: i64, out: &mut Vec<GameEvent>) {
+#[allow(clippy::too_many_arguments)]
+fn read_frame(reader: &mut combat::Reader, zone: &mut ZoneTrace, kind: FrameKind, bytes: &[u8], payload: &[u8], depth: usize, now_ms: i64, out: &mut Vec<GameEvent>) {
     match kind {
-        FrameKind::Packet => match decode(bytes, now_ms) {
-            Some(event) => out.push(event),
-            None => match effects::parse(bytes) {
-                Some(record) => out.push(GameEvent::Effect(record)),
-                None => out.extend(reader.read(bytes).into_iter().map(GameEvent::Combat)),
-            },
-        },
+        FrameKind::Packet => {
+            zone.packet(bytes, now_ms);
+            match decode(bytes, now_ms) {
+                Some(event) => out.push(event),
+                None => match effects::parse(bytes) {
+                    Some(record) => out.push(GameEvent::Effect(record)),
+                    None => {
+                        for e in reader.read(bytes) {
+                            zone.event(&e, now_ms);
+                            out.push(GameEvent::Combat(e));
+                        }
+                    }
+                },
+            }
+        }
         FrameKind::Bundle => {
             if depth > MAX_BUNDLE_DEPTH {
                 return;
             }
             let Some(inner) = framing::decompress_bundle(payload) else { return };
             for frame in framing::walk_inner(&inner).frames {
-                read_frame(reader, frame.kind, frame.bytes(&inner), frame.payload(&inner), depth + 1, now_ms, out);
+                read_frame(reader, zone, frame.kind, frame.bytes(&inner), frame.payload(&inner), depth + 1, now_ms, out);
             }
         }
     }

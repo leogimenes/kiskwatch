@@ -24,7 +24,7 @@ export interface Row {
   heal: number;
   /** What the row is sorted and measured by. */
   total: number;
-  /** Per second over the recording. */
+  /** Per second in combat (on the bosses, for Boss); see `secondsFor`. */
   rate: number;
   share: number;
   color: string;
@@ -32,12 +32,83 @@ export interface Row {
 
 export const seconds = (f: Fight) => Math.max(1, (f.ended_ms - f.started_ms) / 1000);
 
+/** A filter: All, Mob, Boss, or one boss by its NPC code. */
+export type Target = DpsTarget | number;
+
+/** One boss of a recording, by its NPC code. */
+export const bossOf = (f: Fight, code: number) => f.bosses?.find((b) => b.code === code);
+
+/** The bosses a recording can be filtered by, most damaged first: the ones
+ *  it kept each player's damage on (recordings from before kept none). */
+export const fightBosses = (f: Fight) => (f.bosses ?? []).filter((b) => b.damage > 0 && b.players?.length);
+
+/** The time on the bosses (or on one), from the first hit anyone landed on
+ *  one to the last (at least a second), as the boss history counts it; null
+ *  when the recording hit none or is from before bosses were kept. */
+export function bossMs(f: Fight, code?: number): number | null {
+  const hit = (f.bosses ?? []).filter((b) => b.damage > 0 && (code == null || b.code === code));
+  if (!hit.length) return null;
+  return Math.max(1000, Math.max(...hit.map((b) => b.last_ms)) - Math.min(...hit.map((b) => b.first_ms)));
+}
+
+/** The time a filter's /s goes by, in ms, when it's the time on a boss. */
+export const bossTime = (f: Fight, target: Target) => typeof target === "number" ? bossMs(f, target) : target === "boss" ? bossMs(f) : null;
+
+/** Stretches of a recording, [from, to] in seconds from the start. */
+export type Windows = [number, number][];
+
+/** When the group was fighting: the recording minus the stretches of 3 s
+ *  or more nobody acted in (each player's `idle`). Recordings from before
+ *  the timeline count whole. */
+export function combatWindows(f: Fight): Windows {
+  const secs = Math.max(1, (f.ended_ms - f.started_ms) / 1000);
+  if (!f.players.some((p) => p.timeline.length)) return [[0, secs]];
+  let calm: Windows = [[0, secs]];
+  for (const p of f.players) {
+    const idle = p.idle.map(([a, b]) => [a / 1000, b / 1000] as [number, number]);
+    const both: Windows = [];
+    for (const [a, b] of calm) for (const [c, d] of idle) {
+      const [x, y] = [Math.max(a, c), Math.min(b, d)];
+      if (y > x) both.push([x, y]);
+    }
+    calm = both;
+  }
+  calm = calm.filter(([a, b]) => b - a >= 3).sort((x, y) => x[0] - y[0]);
+  const out: Windows = [];
+  let from = 0;
+  for (const [a, b] of calm) {
+    if (a > from) out.push([from, a]);
+    from = Math.max(from, b);
+  }
+  if (secs > from) out.push([from, secs]);
+  return out;
+}
+
+/** The seconds the group was fighting (see `combatWindows`). */
+export const combatSeconds = (f: Fight) => Math.max(1, combatWindows(f).reduce((n, [a, b]) => n + b - a, 0));
+
+/** The seconds a target's numbers go per: the time on the bosses for Boss
+ *  (on that one, for one boss); the time the group was fighting otherwise,
+ *  without the walks and waits between pulls. Either way, recordings of
+ *  different stretches of the same play come out alike, whenever each one
+ *  started or stopped. */
+export function secondsFor(f: Fight, target: Target) {
+  const boss = bossTime(f, target);
+  return boss ? boss / 1000 : combatSeconds(f);
+}
+
+/** A player's damage on a target. */
+export function damageOn(f: Fight, p: FightPlayer, target: Target) {
+  if (typeof target === "number") return bossOf(f, target)?.players?.find((x) => x.id === p.id)?.damage ?? 0;
+  return target === "boss" ? p.boss_damage : target === "mob" ? p.mob_damage : p.boss_damage + p.mob_damage;
+}
+
 /** The rows for a target and a kind of bar, biggest first. With `limit`,
  *  your own row stays in even when it would be cut. */
-export function rows(f: Fight, target: DpsTarget, bars: DpsBars, limit = Infinity): Row[] {
-  const secs = seconds(f);
+export function rows(f: Fight, target: Target, bars: DpsBars, limit = Infinity): Row[] {
+  const secs = secondsFor(f, target);
   const all = f.players.map((p) => {
-    const damage = target === "boss" ? p.boss_damage : target === "mob" ? p.mob_damage : p.boss_damage + p.mob_damage;
+    const damage = damageOn(f, p, target);
     const heal = p.heal;
     const total = bars === "damage" ? damage : bars === "heal" ? heal : damage + heal;
     return { player: p, damage, heal, total, rate: total / secs, share: 0, color: p.class ? CLASS[p.class].color : UNKNOWN_COLOR };

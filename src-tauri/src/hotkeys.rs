@@ -14,14 +14,21 @@ pub enum Action {
     Dps,
     /// Let clicks pass through the overlays, or take them back.
     ClickThrough,
+    /// Show the DPS overlay, or hide it.
+    DpsOverlay,
 }
 
-const WHAT: [(Action, &str); 2] = [(Action::Dps, "gravar e parar o DPS"), (Action::ClickThrough, "cliques nos overlays")];
+const WHAT: [(Action, &str); 3] = [
+    (Action::Dps, "gravar e parar o DPS"),
+    (Action::ClickThrough, "cliques nos overlays"),
+    (Action::DpsOverlay, "mostrar e esconder o overlay de DPS"),
+];
 
 fn text(keys: &Hotkeys, action: Action) -> &str {
     match action {
         Action::Dps => &keys.dps,
         Action::ClickThrough => &keys.click_through,
+        Action::DpsOverlay => &keys.dps_overlay,
     }
 }
 
@@ -93,12 +100,23 @@ mod tests {
     use super::*;
 
     fn keys(dps: &str, click_through: &str) -> Hotkeys {
-        Hotkeys { dps: dps.into(), click_through: click_through.into() }
+        Hotkeys { dps: dps.into(), click_through: click_through.into(), dps_overlay: String::new() }
     }
 
     #[test]
     fn defaults_are_valid() {
-        assert_eq!(check(&Hotkeys::default()).unwrap().len(), 2);
+        assert_eq!(check(&Hotkeys::default()).unwrap().len(), 3);
+    }
+
+    #[test]
+    fn new_default_gives_way_to_a_key_in_use() {
+        let mut k: Hotkeys = serde_json::from_str(r#"{"dps":"Ctrl+Alt+O","click_through":"F10"}"#).unwrap();
+        k.migrate();
+        assert_eq!(k.dps_overlay, "");
+        let mut k: Hotkeys = serde_json::from_str(r#"{"dps":"Ctrl+Alt+D","click_through":"F10"}"#).unwrap();
+        k.migrate();
+        assert_eq!(k.dps_overlay, "Ctrl+Alt+O");
+        assert!(check(&k).is_ok());
     }
 
     #[test]
@@ -117,6 +135,8 @@ mod tests {
         assert_eq!(action(&k, &Shortcut::from_str("Ctrl+Shift+D").unwrap()), Some(Action::Dps));
         assert_eq!(action(&k, &Shortcut::from_str("Alt+F9").unwrap()), Some(Action::ClickThrough));
         assert_eq!(action(&k, &Shortcut::from_str("Ctrl+D").unwrap()), None);
+        let k = Hotkeys { dps_overlay: "Ctrl+Alt+O".into(), ..k };
+        assert_eq!(action(&k, &Shortcut::from_str("Ctrl+Alt+O").unwrap()), Some(Action::DpsOverlay));
     }
 
     #[test]

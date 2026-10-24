@@ -1,9 +1,10 @@
-# Recebe os relatórios de códigos sem nome do Kiskwatch e abre uma issue no
-# GitHub. Publicar: veja worker/README.md.
+# Guarda num banco D1 os códigos sem nome que o Kiskwatch envia e serve os
+# nomes achados para eles. Publicar: veja worker/README.md.
 name = "kiskwatch-codigos"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
-[vars]
-REPO = "leogimenes/kiskwatch"
-LABEL = "codigos-desconhecidos"
+[[d1_databases]]
+binding = "DB"
+database_name = "kiskwatch-codigos"
+database_id = "troque-pelo-id-do-banco"

@@ -5,9 +5,10 @@ import { Attempt, Comparison, bossHistory, dpsCompare } from "./api";
 import { GameData, iconUrl, loadGameData } from "./buildData";
 import { clock, short } from "./dpsView";
 import bossNames from "../data/boss_names.json";
+import { sharedName } from "./sharedNames";
 
 const NAMES = bossNames as Record<string, string>;
-export const bossName = (code: number) => NAMES[code] ?? `Chefe ${code}`;
+export const bossName = (code: number) => NAMES[code] ?? sharedName("npcs", code) ?? `Chefe ${code}`;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string, unknown> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const e = Object.assign(document.createElement(tag), props);
@@ -36,8 +37,9 @@ function delta(now: number, then: number, lowerIsBetter = false) {
   return el("span", { className: Math.abs(d) < 0.005 ? "hint" : good ? "up" : "down" }, text);
 }
 
-/** The bosses with their recordings; `pick` opens one. */
-export async function renderBosses(box: HTMLElement, pick: (fightId: string) => void) {
+/** The bosses with their recordings; `pick` opens or closes one, and the open
+ *  one shows `detail` right under its line. */
+export async function renderBosses(box: HTMLElement, open: string | null, pick: (fightId: string) => void, detail: (fightId: string) => HTMLElement) {
   const list = await bossHistory();
   if (!list.length) {
     box.replaceChildren(el("p", { className: "hint" }, "Nenhuma gravação contra chefe ainda. As gravações feitas a partir desta versão guardam o chefe em que você mais bateu."));
@@ -48,21 +50,23 @@ export async function renderBosses(box: HTMLElement, pick: (fightId: string) => 
     const line = (a: Attempt) => {
       const bar = el("span", { className: "boss-bar" });
       bar.style.width = `${top ? (100 * a.my_dps) / top : 0}%`;
-      const b = el("button", { type: "button", className: a.fight_id === h.best_id ? "best" : "" },
+      const b = el("button", { type: "button", className: `${a.fight_id === h.best_id ? "best" : ""}${a.fight_id === open ? " open" : ""}` },
         el("span", {}, `${a.fight_id === h.best_id ? "★ " : ""}${when(a.started_ms)}`),
         el("span", { className: "dps-num" }, clock(a.kill_ms)),
         el("span", { className: "dps-num" }, `${short(a.my_dps)}/s`),
         el("span", { className: "dps-num hint" }, `grupo ${short(a.group_dps)}/s · ${a.players}`),
+        el("span", { className: "boss-open" }, a.fight_id === open ? "Fechar ▴" : "Detalhes ▾"),
         el("span", { className: "boss-track" }, bar));
-      b.title = a.name;
+      b.title = `${a.name}: ${a.fight_id === open ? "clique para fechar" : "clique para ver o detalhamento"}`;
+      b.setAttribute("aria-expanded", String(a.fight_id === open));
       b.addEventListener("click", () => pick(a.fight_id));
-      return el("li", {}, b);
+      return el("li", {}, b, ...(a.fight_id === open ? [detail(a.fight_id)] : []));
     };
     return el("section", { className: "boss-card" },
       el("h3", {}, bossName(h.code)),
       el("p", { className: "hint" },
         `${h.attempts.length} gravação(ões) · tempo médio ${clock(h.avg_kill_ms)} · mais rápida ${clock(h.fastest_kill_ms)} · seu DPS médio ${short(h.avg_my_dps)}/s · grupo ${short(h.avg_group_dps)}/s`),
-      el("div", { className: "boss-head hint" }, el("span", {}, "Quando"), el("span", {}, "Tempo"), el("span", {}, "Seu DPS"), el("span", {}, "Grupo")),
+      el("div", { className: "boss-head hint" }, el("span", {}, "Quando"), el("span", {}, "Tempo no chefe"), el("span", {}, "Seu DPS"), el("span", {}, "Grupo"), el("span", {})),
       el("ol", { className: "boss-attempts" }, ...h.attempts.map(line)));
   }));
 }

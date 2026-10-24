@@ -27,7 +27,7 @@ const TOURS: Record<string, Step[]> = {
   timers: [
     { at: "#tab-timers .filters", title: "Busca e filtros", text: "Ache um boss ou evento pelo nome ou pelo lugar, ou veja só um tipo: field bosses, bosses agendados, eventos ou só os que têm aviso." },
     { at: "#timers .alarm", title: "Avisos", text: "Clique no sino de um timer e escolha com quanto tempo de antecedência quer ser avisado, de 1 hora a 1 minuto." },
-    { overlay: "overlay", note: "Lembrete dos timers: aparece aqui quando um aviso toca.", title: "O lembrete", text: "Quando um aviso toca, um lembrete aparece no topo da janela do AION 2 com o nome e o tempo que falta, e some sozinho. Ele está na tela agora, de exemplo." },
+    { overlay: "overlay", note: "Lembrete dos timers: aparece aqui quando um aviso toca.", title: "O lembrete", text: "Quando um aviso toca, um lembrete aparece no topo da janela do AION 2 com o nome e o tempo que falta, e some sozinho ou no ×. Ele está na tela agora, de exemplo." },
     { at: "#resets", title: "Resets", text: "O reset diário e o semanal ficam aqui em cima. Os field bosses se atualizam quando você abre o mapa no jogo." },
     HELP_STEP("timers"),
   ],

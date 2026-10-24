@@ -13,7 +13,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Field bosses pelo mapa do jogo (`01 91`) | ✅ ao abrir o mapa no jogo |
 | Pets: nível, almas, quanto falta, filtros, ordenação | ✅ com edição manual |
 | Pets: leitura automática (`00 90`, `0D 90`, `14 90`) | ✅ no login e a cada alma coletada |
-| Mapa dos spawns dos pets faltantes | ✅ esquemático com zoom, zonas e seleção; arte do mapa via link para o Aion 2 Timers |
+| Mapa dos spawns dos pets faltantes | ✅ esquemático com zoom, áreas das zonas e seleção; print do mapa do próprio jogador como fundo (alinhado por 3 Kibelisks); arte do mapa via link para o Aion 2 Timers |
 | Overlay de pets (almas recentes, próximo da rota, fixados) | ✅ |
 | Rota de farm (caminho mínimo com Kibelisks, sem IA) | ✅ no mapa e no overlay de pets |
 | Ritmo de farm: almas/hora por pet e tempo até o nível 3 | ✅ no overlay de pets e na lista do painel |
@@ -26,7 +26,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Comparar build com outro jogador (equipamento, skills, Daevanion, atributos) e salvar builds como referência | ✅ |
 | Overlay de DPS: dano e cura por jogador, All/Mob/Boss, gravações no painel | 🧪 parser próprio, a validar no jogo |
 | DPS: uso das recargas por skill (usos feitos x possíveis, tempo pronta sem uso) | 🧪 a validar no jogo |
-| Atalhos globais: gravar/parar o DPS e ligar/desligar os cliques nos overlays | ✅ Ctrl+Alt+D e Ctrl+Alt+X, trocáveis em Configurações |
+| Atalhos globais: gravar/parar o DPS, ligar/desligar os cliques nos overlays e mostrar/esconder o overlay de DPS | ✅ Ctrl+Alt+D, Ctrl+Alt+X e Ctrl+Alt+O, trocáveis em Configurações |
 | Dano recebido de cada monstro, skill a skill (golpes, maior golpe), nas gravações | 🧪 parser próprio, a validar no jogo |
 | Checklist diária e semanal por personagem, zerada sozinha nos resets | ✅ |
 | Calculadora de encantamento: tentativas, Kinah e pedras até o alvo, com sorte/azar e pior caso | ✅ chances oficiais (KR) e custos por nível do item |

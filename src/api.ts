@@ -49,6 +49,7 @@ export interface Onboarding {
 export interface Hotkeys {
   dps: string;
   click_through: string;
+  dps_overlay: string;
 }
 
 export type DpsTarget = "all" | "mob" | "boss";
@@ -56,8 +57,9 @@ export type DpsBars = "damage" | "heal" | "both";
 
 export interface DpsSettings {
   overlay: boolean;
-  /** "hit": recording starts on your first hit; "button": by hand. */
-  start: "hit" | "button";
+  /** "hit": recording starts on your first hit; "button": by hand;
+   *  "dungeon": each dungeon whole, and in the open world on a boss hit. */
+  start: "hit" | "button" | "dungeon";
   target: DpsTarget;
   bars: DpsBars;
 }
@@ -116,7 +118,12 @@ export interface SkillDamage { skill: number; damage: number; hits: number }
 
 export interface FightBoss {
   code: number; first_ms: number; last_ms: number; damage: number; my_damage: number; my_skills: SkillDamage[];
+  /** Each player's damage on it, most first (missing in recordings from before). */
+  players?: BossPlayer[];
 }
+
+/** A player's damage on one boss; the skills' hits are under `boss`. */
+export interface BossPlayer { id: number; damage: number; skills: SkillStat[] }
 
 /** One recording against a boss: time from its first to last hit. */
 export interface Attempt {
@@ -316,6 +323,10 @@ export const openHelp = (topic: string) => invoke<void>("open_help", { topic });
 export const openTour = (tab: string) => invoke<void>("open_tour", { tab });
 /** A tour step about an overlay shows it with a note; null puts it back as the settings say. */
 export const tourOverlay = (overlay: TourOverlay | null, note: string | null = null) => invoke<void>("tour_overlay", { overlay, note });
+/** Size the reminder to what it shows (`null`: its whole default size). */
+export const reminderFit = (size: { width: number; height: number } | null) => invoke<void>("reminder_fit", { size });
+/** The reminder's ×, on the last one: it goes. */
+export const reminderClose = () => invoke<void>("reminder_close");
 export type TourOverlay = "overlay" | "pets" | "dps";
 export const setSettings = (settings: Settings) => invoke("set_settings", { settings });
 export const setAlarm = (id: string, leads: number[]) => invoke("set_alarm", { id, leads });

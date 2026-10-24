@@ -6,6 +6,7 @@ import {
 import { Drop, GENUS, GENUS_MARK, PETS, Pet, REGIONS, SERVERS, SOULS_PER_LEVEL, mapLink, name, soulsToMax, t } from "./data";
 import { farming, paceText } from "./farm";
 import { Stop, leg, plan, totals } from "./route";
+import { Affine, Print, Pt, ZoneShape, apply, deletePrint, getPrint, invert, putPrint, readPrint, solveAffine, zoneColor, zoneShapes } from "./mapBackdrop";
 import { renderBuild } from "./build";
 import { renderDps } from "./dpsPanel";
 import { renderGroup } from "./group";
@@ -14,6 +15,7 @@ import "./enchant";
 import "./update";
 import "./titlebar";
 import "./share";
+import { reloadNames } from "./sharedNames";
 import { applyLook, chime } from "./look";
 import { initTour, tourSettings, tourTab } from "./tour";
 
@@ -328,8 +330,10 @@ function renderPets() {
 
 // ---- Map ----
 // A schematic map in the game's world units: where each monster spawns (`at`)
-// and the nearest Kibelisk (`to`). The map art is on Aion 2 Timers, linked
-// from the selected point.
+// and the nearest Kibelisk (`to`). Under them, the zones sketched from the
+// spawns and, if the player loaded one, their own print of the game's map.
+// The app ships no map art (it is the game's); Aion 2 Timers shows it,
+// linked from the selected point.
 const mapSel = $<HTMLSelectElement>("#map-select");
 const zoneSel = $<HTMLSelectElement>("#map-zone");
 const mapNames = $<HTMLInputElement>("#map-names");
@@ -344,8 +348,113 @@ let spots: Spot[] = [];
 /** The visible part, in map units (0..SIZE). */
 let view = { x: 0, y: 0, w: SIZE };
 let fit = (_p: [number, number]): [number, number] => [0, 0];
+/** The map `fit` was made for: it stays put while the list changes, so zones and prints line up. */
+let fitFor = NaN;
+let fitM: Affine = [1, 0, 0, 1, 0, 0];
+let zones: ZoneShape[] = [];
 
-mapSel.addEventListener("change", () => { zoneSel.value = ""; renderPets(); resetView(); });
+const mapZones = $<HTMLInputElement>("#map-zones");
+const printFile = $<HTMLInputElement>("#print-file");
+const printOp = $<HTMLInputElement>("#print-op");
+let print: Print | null = null;
+let printUrl = "";
+let printFor = NaN;
+/** Aligning the print: Kibelisks picked so far, and where each is on the print. */
+let calib: { pairs: { world: Pt; px: Pt }[]; pick: { teleport: number; world: Pt } | null } | null = null;
+
+mapZones.addEventListener("change", () => drawMap());
+$("#print-load").addEventListener("click", () => printFile.click());
+printFile.addEventListener("change", async () => {
+  const file = printFile.files?.[0];
+  printFile.value = "";
+  if (!file) return;
+  const mapId = Number(mapSel.value);
+  try {
+    const img = await readPrint(file);
+    setPrint({ ...img, toWorld: null, opacity: print?.opacity ?? 0.8 });
+    await putPrint(mapId, print!);
+  } catch {
+    $("#print-step").hidden = false;
+    $("#print-step-text").textContent = "Não consegui abrir essa imagem. Tente um print em PNG ou JPG.";
+    return;
+  }
+  startAlign();
+});
+$("#print-align").addEventListener("click", () => startAlign());
+$("#print-cancel").addEventListener("click", () => { calib = null; drawMap(); });
+$("#print-drop").addEventListener("click", async () => {
+  await deletePrint(Number(mapSel.value)).catch(() => {});
+  calib = null;
+  setPrint(null);
+  drawMap();
+});
+printOp.addEventListener("input", () => {
+  if (!print) return;
+  print.opacity = Number(printOp.value) / 100;
+  drawMap();
+});
+printOp.addEventListener("change", () => { if (print) putPrint(Number(mapSel.value), print).catch(() => {}); });
+
+function setPrint(p: Print | null) {
+  if (printUrl) URL.revokeObjectURL(printUrl);
+  print = p;
+  printUrl = p ? URL.createObjectURL(p.image) : "";
+  if (p) printOp.value = String(Math.round(p.opacity * 100));
+}
+
+function startAlign() {
+  calib = { pairs: [], pick: null };
+  resetView();
+}
+
+/** Where the print's pixels land on the svg, in map units. */
+function printMatrix(): Affine | null {
+  if (!print) return null;
+  if (!print.toWorld) {
+    // Not aligned yet: fit it in the box.
+    const s = SIZE / Math.max(print.w, print.h);
+    return [s, 0, 0, s, (SIZE - print.w * s) / 2, (SIZE - print.h * s) / 2];
+  }
+  const m = print.toWorld, f = fitM;
+  return [f[0] * m[0] + f[2] * m[1], f[1] * m[0] + f[3] * m[1], f[0] * m[2] + f[2] * m[3], f[1] * m[2] + f[3] * m[3],
+    f[0] * m[4] + f[2] * m[5] + f[4], f[1] * m[4] + f[3] * m[5] + f[5]];
+}
+
+/** Every Kibelisk on the map, from all the pets' monsters. */
+function mapKibelisks(mapId: number) {
+  const out = new Map<number, { teleport: number; world: Pt; name: string }>();
+  for (const p of PETS) for (const d of p.drops) {
+    if (d.mapId === mapId && d.kibelisk && !out.has(d.kibelisk.teleport)) out.set(d.kibelisk.teleport, { teleport: d.kibelisk.teleport, world: d.kibelisk.to, name: t(d.kibelisk.name) });
+  }
+  return [...out.values()];
+}
+
+svg.addEventListener("click", async (e) => {
+  if (!calib?.pick || !print || drag?.moved) return;
+  const inv = invert(printMatrix()!);
+  if (!inv) return;
+  const px = apply(inv, svgPoint(e));
+  if (px[0] < 0 || px[1] < 0 || px[0] > print.w || px[1] > print.h) return;
+  calib.pairs.push({ world: calib.pick.world, px });
+  calib.pick = null;
+  if (calib.pairs.length === 3) {
+    const m = solveAffine(calib.pairs.map((p) => p.px), calib.pairs.map((p) => p.world));
+    if (!m) {
+      calib = { pairs: [], pick: null };
+      drawMap();
+      $("#print-step-text").textContent = "Esses Kibelisks estão quase em linha. Recomece com três bem espalhados pelo mapa.";
+      return;
+    }
+    print.toWorld = m;
+    calib = null;
+    await putPrint(Number(mapSel.value), print).catch(() => {});
+    resetView();
+    return;
+  }
+  drawMap();
+});
+
+mapSel.addEventListener("change", () => { zoneSel.value = ""; calib = null; renderPets(); resetView(); });
 zoneSel.addEventListener("change", () => { renderPets(); resetView(); });
 mapNames.addEventListener("change", () => drawMap());
 mapKibs.addEventListener("change", () => drawMap());
@@ -360,8 +469,17 @@ $("#map-wide").addEventListener("click", (e) => {
   drawMap();
 });
 
+/** Frame what is shown: the points, or the whole map while aligning a print. */
 function resetView() {
-  view = { x: 0, y: 0, w: SIZE };
+  const pts = calib ? [[0, 0], [SIZE, SIZE]] : spots.flatMap(({ d }) => [fit(d.kibelisk!.to), fit(d.kibelisk!.at)]);
+  if (!pts.length) {
+    view = { x: 0, y: 0, w: SIZE };
+  } else {
+    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+    const w = Math.min(SIZE, Math.max(x1 - x0, y1 - y0, SIZE / 20) * 1.12);
+    view = { x: (x0 + x1 - w) / 2, y: (y0 + y1 - w) / 2, w };
+  }
   drawMap();
 }
 
@@ -419,17 +537,42 @@ function renderMap(rows: PetRow[]) {
     ...zones.map((z) => el("option", { value: z, textContent: t(z), selected: z === keepZone })));
   spots = onMap.filter(({ d }) => !zoneSel.value || d.zones[0] === zoneSel.value);
 
-  // Fit what is shown, spawns and Kibelisks, into the box, north up.
-  const pts = spots.flatMap(({ d }) => [d.kibelisk!.to, d.kibelisk!.at]);
+  const fresh = mapId !== fitFor;
+  if (fresh) fitMap(mapId);
+  if (mapId !== printFor) {
+    printFor = mapId;
+    calib = null;
+    setPrint(null);
+    getPrint(mapId).then((p) => {
+      if (!p || printFor !== mapId) return;
+      setPrint(p);
+      drawMap();
+    });
+  }
+  if (fresh) resetView();
+  else drawMap();
+}
+
+/** Fit the whole map, every pet's spawns and Kibelisks, into the box, north up, and sketch its zones. */
+function fitMap(mapId: number) {
+  fitFor = mapId;
+  const drops = PETS.flatMap((p) => p.drops).filter((d) => d.mapId === mapId && d.kibelisk);
+  const pts = drops.flatMap((d) => [d.kibelisk!.to, d.kibelisk!.at]);
   if (pts.length) {
     const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
     const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
     const span = Math.max(x1 - x0, y1 - y0, 1);
     const pad = 0.06 * SIZE, inner = SIZE - 2 * pad;
     const ox = pad + (inner - ((x1 - x0) / span) * inner) / 2, oy = pad + (inner - ((y1 - y0) / span) * inner) / 2;
-    fit = (p) => [ox + ((p[0] - x0) / span) * inner, SIZE - (oy + ((p[1] - y0) / span) * inner)];
+    const s = inner / span;
+    fitM = [s, 0, 0, -s, ox - x0 * s, SIZE - oy + y0 * s];
+    fit = (p) => apply(fitM, p);
   }
-  drawMap();
+  const spawns = drops.map((d) => ({ zone: d.zones[0] ?? d.map, p: fit(d.kibelisk!.at) }));
+  // How far a spawn's ground reaches: a bit more than the usual gap between spawns.
+  const gaps = spawns.map(({ p }) => Math.min(...spawns.map(({ p: q }) => Math.hypot(q[0] - p[0], q[1] - p[1]) || Infinity))).filter(Number.isFinite).sort((a, b) => a - b);
+  const reach = Math.min(90, Math.max(30, 1.6 * (gaps[gaps.length >> 1] ?? 50)));
+  zones = zoneShapes(spawns, reach);
 }
 
 function add(parent: Element, tag: string, attrs: Record<string, string | number>, text?: string) {
@@ -443,13 +586,16 @@ function add(parent: Element, tag: string, attrs: Record<string, string | number
 function drawMap() {
   svg.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.w}`);
   svg.replaceChildren();
+  const k = view.w / (svgBox().side || 500);
+  drawBackdrop(k);
+  renderPrintTools();
+  if (calib) { drawAlign(k); return; }
   if (!spots.length) {
     add(svg, "text", { x: view.x + view.w / 2, y: view.y + view.w / 2, class: "empty", "font-size": view.w / 28, "text-anchor": "middle" }, "Nenhum pet da lista neste mapa");
     renderMapInfo();
     return;
   }
-  // Sizes are in screen pixels, whatever the zoom and the panel's width.
-  const k = view.w / (svgBox().side || 500);
+  // Sizes are in screen pixels, whatever the zoom and the panel's width (k).
   // Stroke widths and dashes are in map units too, so they scale with k:
   // in CSS pixels they would grow with the zoom and cover the dots.
   const links = add(svg, "g", { class: "links", "stroke-width": 1.5 * k, "stroke-dasharray": `${4 * k} ${3 * k}` });
@@ -501,6 +647,62 @@ function drawMap() {
     if ((names && mapNames.checked) || chosen) add(labels, "text", { x: x + rad + 3 * k, y: y + 4 * k, class: chosen ? "chosen" : "" }, name(r.pet.name));
   }
   renderMapInfo();
+}
+
+/** The print and the zones, under everything. */
+function drawBackdrop(k: number) {
+  const m = printMatrix();
+  if (m) {
+    add(svg, "image", { href: printUrl, width: print!.w, height: print!.h, transform: `matrix(${m.join(" ")})`, opacity: calib ? 1 : print!.opacity, preserveAspectRatio: "none", class: "print" });
+  }
+  if (!mapZones.checked || calib) return;
+  const g = add(svg, "g", { class: "zones" });
+  const labels = add(svg, "g", { class: "zone-labels", "font-size": 11 * k, "stroke-width": 3 * k, "text-anchor": "middle" });
+  zones.forEach((z, i) => {
+    const color = zoneColor(i);
+    add(g, "path", { d: z.fill, fill: color, class: "zone" });
+    add(g, "path", { d: z.edge, stroke: color, "stroke-width": 1.2 * k, class: "zone-edge" });
+    add(labels, "text", { x: z.label[0], y: z.label[1] }, t(z.zone));
+  });
+}
+
+/** Aligning the print: pick a Kibelisk, then click where it is on the print. */
+function drawAlign(k: number) {
+  const kibs = mapKibelisks(Number(mapSel.value));
+  const done = new Set(calib!.pairs.map((p) => p.world.join()));
+  const g = add(svg, "g", { class: "labels", "font-size": 13 * k, "stroke-width": 3 * k });
+  for (const kib of kibs) {
+    const chosen = calib!.pick?.teleport === kib.teleport;
+    // While waiting for the click on the print, only the chosen one stays.
+    if (calib!.pick && !chosen) continue;
+    const [x, y] = fit(kib.world);
+    const s = (chosen ? 7 : 5) * k;
+    const rect = add(svg, "rect", { x: x - s, y: y - s, width: 2 * s, height: 2 * s, class: `kib align${done.has(kib.world.join()) ? " done" : ""}${chosen ? " chosen" : ""}`, "stroke-width": 2 * k });
+    add(rect, "title", {}, `Kibelisk #${kib.teleport} ${kib.name}`);
+    rect.addEventListener("click", (e) => {
+      if (drag?.moved || calib!.pick) return;
+      e.stopPropagation();
+      calib!.pick = { teleport: kib.teleport, world: kib.world };
+      drawMap();
+    });
+    // The names only once zoomed in: there are dozens of Kibelisks.
+    add(g, "text", { x: x + s + 3 * k, y: y + 4 * k, class: "kib-label" }, chosen || view.w <= SIZE * 0.4 ? `#${kib.teleport} ${kib.name}` : `#${kib.teleport}`);
+  }
+}
+
+function renderPrintTools() {
+  const has = !!print;
+  $("#print-load").textContent = has ? "Trocar print…" : "Print do mapa…";
+  $("#print-align").hidden = !has || !!calib;
+  $("#print-drop").hidden = !has;
+  $("#print-op-wrap").hidden = !has || !!calib;
+  const step = $("#print-step");
+  step.hidden = !calib;
+  if (!calib) return;
+  const n = calib.pairs.length + 1;
+  $("#print-step-text").textContent = calib.pick
+    ? `${n} de 3: agora clique no print, no ponto onde fica o Kibelisk #${calib.pick.teleport}. Role e arraste para achar.`
+    : `${n} de 3: clique num Kibelisk (quadrado) que você ache no print.${n === 1 ? " Escolha três bem espalhados pelo mapa." : ""}`;
 }
 
 let selectedDrop: Drop | null = null;
@@ -647,7 +849,7 @@ clickThrough.addEventListener("change", () => setClickThrough(clickThrough.check
 check("#timer-overlay").addEventListener("change", (e) => update((s) => { s.timer_overlay = (e.target as HTMLInputElement).checked; }));
 check("#pet-overlay").addEventListener("change", (e) => update((s) => { s.pet_overlay = (e.target as HTMLInputElement).checked; }));
 check("#dps-overlay").addEventListener("change", (e) => update((s) => { s.dps.overlay = (e.target as HTMLInputElement).checked; }));
-$<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button"; }));
+$<HTMLSelectElement>("#dps-start").addEventListener("change", (e) => update((s) => { s.dps.start = (e.target as HTMLSelectElement).value as "hit" | "button" | "dungeon"; }));
 check("#overlays-with-game").addEventListener("change", (e) => update((s) => { s.overlays_with_game = (e.target as HTMLInputElement).checked; }));
 check("#overlays-with-focus").addEventListener("change", (e) => update((s) => { s.overlays_with_focus = (e.target as HTMLInputElement).checked; }));
 // A new channel looks for updates on it right away.
@@ -780,7 +982,7 @@ function renderConfig(s: Settings) {
 
 // ---- Refresh ----
 async function refresh() {
-  [saved, timers, souls, paces] = await Promise.all([getSaved(), getTimers(), getSouls(), getPaces()]);
+  [saved, timers, souls, paces] = await Promise.all([getSaved(), getTimers(), getSouls(), getPaces(), reloadNames()]);
   const server = SERVERS.find((s) => s.id === saved!.settings.server_id);
   regionSel.value = String(server?.region ?? 4);
   fillServers(Number(regionSel.value), saved.settings.server_id);
