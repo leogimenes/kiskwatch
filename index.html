@@ -110,6 +110,15 @@
               <button id="map-in" aria-label="Aproximar">+</button>
               <button id="map-fit">Ver tudo</button>
             </div>
+            <div class="map-tools">
+              <label title="Áreas desenhadas a partir de onde nascem os monstros"><input id="map-zones" type="checkbox" checked /> Zonas</label>
+              <button id="print-load" title="Use um print do mapa do jogo como fundo. Ele fica só no seu PC.">Print do mapa…</button>
+              <input id="print-file" type="file" accept="image/*" hidden />
+              <button id="print-align" hidden>Alinhar</button>
+              <button id="print-drop" hidden>Tirar print</button>
+              <label id="print-op-wrap" hidden>Fundo <input id="print-op" type="range" min="10" max="100" step="5" aria-label="Opacidade do print" /></label>
+            </div>
+            <div id="print-step" class="print-step" hidden aria-live="polite"><span id="print-step-text"></span> <button id="print-cancel">Cancelar</button></div>
             <svg id="map" viewBox="0 0 1000 1000" role="img" aria-label="Spawns dos pets faltantes"></svg>
             <div id="map-info" class="map-info" aria-live="polite"></div>
             <div class="route-box">
@@ -120,7 +129,7 @@
               <p id="route-sum" class="hint">Calcula a ordem com menos caminhada para farmar os pets da lista neste mapa (e zona), usando os Kibelisks quando compensa. O overlay de pets mostra o próximo da rota.</p>
               <ol id="route"></ol>
             </div>
-            <p class="hint">Cada ponto é onde nasce um monstro que dropa almas de um pet da lista; o tamanho é quanto falta. O quadrado é o Kibelisk mais perto. Role para dar zoom (os nomes aparecem ao aproximar), arraste para mover, clique num ponto ou no nome de um pet da lista para ver os detalhes.</p>
+            <p class="hint">Cada ponto é onde nasce um monstro que dropa almas de um pet da lista; o tamanho é quanto falta. O quadrado é o Kibelisk mais perto. As áreas coloridas são um esboço das zonas, feito a partir dos spawns. Para ver o mapa de verdade por baixo, carregue um print do mapa do jogo e alinhe por três Kibelisks. Role para dar zoom (os nomes aparecem ao aproximar), arraste para mover, clique num ponto ou no nome de um pet da lista para ver os detalhes.</p>
           </aside>
         </div>
       </section>
