@@ -9,7 +9,10 @@
 //! 05 38  a damage-over-time or healing tick:
 //!        <target> <effect u8> <actor> <varint> <skill u32 × 100> <amount>
 //! 33 36  you:      <id> <mask u32> <mask2 u8> <len u8> <name> <server u16> <class u32>
-//! 45 36  a player: <id> <mask u32> <mask2 u8> <len u8> <name>   (44 36 before June 2026)
+//! 45 36  a player: <id> <mask u32> <mask2 u8> <len u8> <name> <class u32>
+//!        <side u8> (01 Elyos, 02 Asmodian)   (44 36 before June 2026)
+//! 00 44  your party (03 44 one member), each member as
+//!        <server u16> <u32> 00 00 <server u16> <len u8> <name>
 //! 41 36  an NPC or a summon: <id> <mask u32> …, the NPC code (u24) before
 //!        00 40 02 or 00 00 02, and a summon's owner after its legion block
 //!        (40 36 before June 2026)
@@ -59,6 +62,10 @@ pub enum CombatEvent {
     /// You: your entity, name and class.
     Me { id: i32, name: String, class: Option<Class> },
     Player { id: i32, name: String },
+    /// Where a player is from, by name: the servers the party list gives
+    /// (the one next to the name first), or else the side, 1 Elyos and 2
+    /// Asmodian. Players from other servers meet in dungeons.
+    Origin { name: String, servers: Vec<u32>, side: Option<u32> },
     /// An NPC spawned, with its code.
     Npc { id: i32, code: i32 },
     /// A summon, a spirit or a lingering spell, and the player it is from.
@@ -301,6 +308,7 @@ impl Reader {
                     }
                 }
             }
+            Some((at, [0x00 | 0x03, 0x44])) => out.extend(party(packet, at)),
             Some((mut at, [0x42, 0x36])) => {
                 if let (Some(id), Some(_), Some(UNSUMMONED)) = (varint(packet, &mut at), varint(packet, &mut at), varint(packet, &mut at)) {
                     out.push(CombatEvent::Unsummoned { id });
@@ -490,6 +498,7 @@ impl Reader {
         }
         let who = name(&p[field.clone()])?;
         let end = field.end;
+        let mut events = Vec::new();
         let event = if me {
             // Your server (1000 to 2999) and class follow the name; without
             // them this is not your record.
@@ -500,10 +509,17 @@ impl Reader {
             let class = u32_at(p, end + 2).and_then(Class::of_record);
             CombatEvent::Me { id, name: who, class }
         } else {
+            // The class, then the side.
+            if u32_at(p, end).and_then(Class::of_record).is_some()
+                && let Some(&side @ (1 | 2)) = p.get(end + 4)
+            {
+                events.push(CombatEvent::Origin { name: who.clone(), servers: Vec::new(), side: Some(side.into()) });
+            }
             CombatEvent::Player { id, name: who }
         };
         self.known.insert(id);
-        Some((end, vec![event]))
+        events.insert(0, event);
+        Some((end, events))
     }
 
     /// `41 36`: an NPC (its code) or a summon (its owner).
@@ -537,6 +553,37 @@ impl Reader {
         }
         (!events.is_empty()).then_some((at, events))
     }
+}
+
+/// A server id: Elyos 1xxx, Asmodian 2xxx.
+fn server_id(v: u16) -> bool {
+    (1000..3000).contains(&v)
+}
+
+/// The members a party record names, with their servers.
+fn party(p: &[u8], from: usize) -> Vec<CombatEvent> {
+    let mut out = Vec::new();
+    let mut j = from;
+    while j + 11 < p.len() {
+        let u16_at = |k: usize| u16::from_le_bytes([p[k], p[k + 1]]);
+        let (first, next) = (u16_at(j), u16_at(j + 8));
+        let len = p[j + 10] as usize;
+        let named = (server_id(first) && p[j + 6..j + 8] == [0, 0] && server_id(next) && NAME_BYTES.contains(&len))
+            .then(|| p.get(j + 11..j + 11 + len).and_then(name))
+            .flatten();
+        let Some(who) = named else {
+            j += 1;
+            continue;
+        };
+        let mut servers = vec![u32::from(next)];
+        if first != next {
+            servers.push(u32::from(first));
+        }
+        let side = Some(u32::from(next) / 1000);
+        out.push(CombatEvent::Origin { name: who, servers, side });
+        j += 11 + len;
+    }
+    out
 }
 
 /// Entity ids the HP and combat records are believed for.
@@ -825,6 +872,26 @@ mod tests {
         assert_eq!(
             Reader::default().read(&p),
             vec![CombatEvent::Me { id: 4715, name: "Leozin".into(), class: Some(Class::Cleric) }, CombatEvent::Player { id: 5123, name: "Amigo".into() }]
+        );
+    }
+
+    #[test]
+    fn reads_where_players_are_from() {
+        // A player record: the class (Elementalist) and the side (Asmodian).
+        let mate = [&[0x45, 0x36][..], &var(1377), &[0, 0, 0, 0, 0x01, 5], b"Amigo", &24u32.to_le_bytes(), &[0x02, 0x02, 0x08]].concat();
+        assert_eq!(
+            Reader::default().read(&packet(&[&[0x99, 0x37, 0x11][..], &mate].concat())),
+            vec![CombatEvent::Player { id: 1377, name: "Amigo".into() }, CombatEvent::Origin { name: "Amigo".into(), servers: vec![], side: Some(2) }]
+        );
+        // The party list: a member from another server, one from yours.
+        let member = |a: u16, b: u16, who: &[u8]| [&a.to_le_bytes()[..], &[0xB0, 0xD4, 0x03, 0x00, 0, 0], &b.to_le_bytes(), &[who.len() as u8], who, &[0x06, 0x2D, 0, 0, 0, 0]].concat();
+        let list = packet(&[&[0x00, 0x44, 0x02, 0x00][..], &member(2405, 2406, b"Amigo"), &[0x00], &member(1406, 1406, b"Vizinho"), &[0x39, 0x22, 0x96, 0x6F, 0xA1, 0x01, 0, 0]].concat());
+        assert_eq!(
+            Reader::default().read(&list),
+            vec![
+                CombatEvent::Origin { name: "Amigo".into(), servers: vec![2406, 2405], side: Some(2) },
+                CombatEvent::Origin { name: "Vizinho".into(), servers: vec![1406], side: Some(1) },
+            ]
         );
     }
 

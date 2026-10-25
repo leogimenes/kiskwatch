@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use kiskwatch_core::presets::Presets;
 use serde_json::Value;
 
-use kiskwatch_core::gear::Gear;
+use kiskwatch_core::gear::{Gear, Origin};
 
 const SITE: &str = "https://aion2.plaync.com";
 const SEARCH: &str = "https://api-search.plaync.com/aion2global/search/v2/character";
@@ -147,11 +147,23 @@ fn board_ids(info: &Value) -> Vec<u32> {
 }
 
 /// The item level and combat power of a player the game named, for the DPS
-/// bars: the exact name, on your server first. `None` when the site doesn't
-/// have them.
-pub async fn gear(region: u32, my_server: u32, name: &str) -> Result<Option<Gear>, String> {
+/// bars: the exact name, on the servers the game said they're from, or else
+/// on their side, your server first. `None` when the site doesn't have them.
+pub async fn gear(region: u32, my_server: u32, name: &str, origin: &Origin) -> Result<Option<Gear>, String> {
     let shard = shard(region).ok_or("região sem perfil oficial")?;
-    let Some(hit) = find(region, my_server, name).await?.into_iter().find(|h| h.name.to_lowercase() == name.to_lowercase()) else {
+    let same = |h: &Hit| h.name.to_lowercase() == name.to_lowercase() && origin.fits(h.server_id);
+    let mut hit = None;
+    if origin.servers.is_empty() {
+        hit = find(region, my_server, name).await?.into_iter().find(same);
+    } else {
+        for &server in &origin.servers {
+            hit = search(region, server, name).await?.into_iter().find(|h| h.server_id == server && same(h));
+            if hit.is_some() {
+                break;
+            }
+        }
+    }
+    let Some(hit) = hit else {
         return Ok(None);
     };
     let query = [

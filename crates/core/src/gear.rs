@@ -48,46 +48,84 @@ pub fn named(name: &str) -> bool {
     !name.is_empty() && !name.strip_prefix("Jogador ").is_some_and(|id| id.chars().all(|c| c.is_ascii_digit()))
 }
 
+/// Where the game says a player is from, so that the lookup finds them and
+/// not someone else with the same name on another server.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Origin {
+    /// From the party list, most likely first.
+    pub servers: Vec<u32>,
+    /// 1 Elyos (servers 1xxx), 2 Asmodian (2xxx).
+    pub side: Option<u32>,
+}
+
+impl Origin {
+    /// Whether a character on this server can be the one the game named.
+    pub fn fits(&self, server: u32) -> bool {
+        if !self.servers.is_empty() {
+            return self.servers.contains(&server);
+        }
+        self.side.is_none_or(|side| server / 1000 == side)
+    }
+}
+
 #[derive(Debug, Default)]
 struct Entry {
     gear: Option<Gear>,
     /// When the last lookup started or ended.
     at_ms: i64,
     busy: bool,
+    /// What was known of where they're from when it started.
+    asked: Origin,
 }
 
 /// The players looked up, by name (any case).
 #[derive(Debug, Default)]
 pub struct Lookups {
     by_name: HashMap<String, Entry>,
+    origins: HashMap<String, Origin>,
 }
 
 impl Lookups {
-    /// What's known of these names, and which of them to look up now (each
-    /// one marked as under way until `done`).
-    pub fn ask(&mut self, names: &[String], now_ms: i64) -> (Vec<Gear>, Vec<String>) {
+    /// The game said where a player is from: the servers replace the ones
+    /// known, the side too. A name looked up before learning it is looked
+    /// up again.
+    pub fn origin(&mut self, name: &str, servers: Vec<u32>, side: Option<u32>) {
+        let o = self.origins.entry(name.to_lowercase()).or_default();
+        if !servers.is_empty() {
+            o.servers = servers;
+        }
+        if side.is_some() {
+            o.side = side;
+        }
+    }
+
+    /// What's known of these names, and which of them to look up now, with
+    /// where they're from (each one marked as under way until `done`).
+    pub fn ask(&mut self, names: &[String], now_ms: i64) -> (Vec<Gear>, Vec<(String, Origin)>) {
         let mut busy = self.by_name.values().filter(|e| e.busy && now_ms - e.at_ms < STUCK_MS).count();
         let (mut known, mut start) = (Vec::new(), Vec::new());
         for name in names {
             if !named(name) {
                 continue;
             }
+            let origin = self.origins.get(&name.to_lowercase()).cloned().unwrap_or_default();
             let e = self.by_name.entry(name.to_lowercase()).or_default();
             if let Some(g) = &e.gear {
                 known.push(Gear { name: name.clone(), ..g.clone() });
             }
             let due = if e.busy {
                 now_ms - e.at_ms >= STUCK_MS
-            } else if e.at_ms == 0 {
+            } else if e.at_ms == 0 || e.asked != origin {
                 true
             } else {
                 now_ms - e.at_ms >= if e.gear.is_some() { FRESH_MS } else { RETRY_MS }
             };
-            if due && busy < AT_ONCE && !start.contains(name) {
+            if due && busy < AT_ONCE && !start.iter().any(|(n, _)| n == name) {
                 busy += 1;
                 e.busy = true;
                 e.at_ms = now_ms;
-                start.push(name.clone());
+                e.asked = origin.clone();
+                start.push((name.clone(), origin));
             }
         }
         (known, start)
@@ -145,7 +183,7 @@ mod tests {
         let mut l = Lookups::default();
         let (known, start) = l.ask(&names(&["Amigo", "Jogador 7"]), 1_000);
         assert!(known.is_empty());
-        assert_eq!(start, ["Amigo"]);
+        assert_eq!(start, [("Amigo".to_string(), Origin::default())]);
         // Under way: not asked again.
         assert!(l.ask(&names(&["amigo"]), 2_000).1.is_empty());
         assert!(l.done("Amigo", Ok(Some(gear("Amigo", 2000))), 3_000));
@@ -155,7 +193,7 @@ mod tests {
         // Half an hour later, read again, still showing the old one meanwhile.
         let (known, start) = l.ask(&names(&["Amigo"]), 3_000 + FRESH_MS);
         assert_eq!(known.len(), 1);
-        assert_eq!(start, ["Amigo"]);
+        assert_eq!(start, [("Amigo".to_string(), Origin::default())]);
     }
 
     #[test]
@@ -168,17 +206,46 @@ mod tests {
         assert!(!l.done("Amigo", Err("o site oficial respondeu 503".into()), FRESH_MS + 2));
         assert_eq!(l.ask(&names(&["Amigo"]), FRESH_MS + 3).0, [gear("Amigo", 2000)]);
         assert!(l.ask(&names(&["Sumido"]), RETRY_MS).1.is_empty());
-        assert_eq!(l.ask(&names(&["Sumido"]), RETRY_MS + 1).1, ["Sumido"]);
+        assert_eq!(l.ask(&names(&["Sumido"]), RETRY_MS + 1).1, [("Sumido".to_string(), Origin::default())]);
+    }
+
+    fn started(l: &mut Lookups, list: &[&str], now_ms: i64) -> Vec<String> {
+        l.ask(&names(list), now_ms).1.into_iter().map(|(n, _)| n).collect()
     }
 
     #[test]
     fn a_few_at_a_time() {
         let mut l = Lookups::default();
-        let (_, start) = l.ask(&names(&["A", "B", "C", "D", "E"]), 0);
-        assert_eq!(start, ["A", "B", "C"]);
+        assert_eq!(started(&mut l, &["A", "B", "C", "D", "E"], 0), ["A", "B", "C"]);
         l.done("A", Ok(None), 10);
-        assert_eq!(l.ask(&names(&["A", "B", "C", "D", "E"]), 20).1, ["D"]);
+        assert_eq!(started(&mut l, &["A", "B", "C", "D", "E"], 20), ["D"]);
         // A lookup that never answered stops holding a place.
-        assert_eq!(l.ask(&names(&["E"]), STUCK_MS + 1).1, ["E"]);
+        assert_eq!(started(&mut l, &["E"], STUCK_MS + 1), ["E"]);
+    }
+
+    #[test]
+    fn looks_up_where_the_game_says_they_are_from() {
+        let mut l = Lookups::default();
+        l.origin("Amigo", Vec::new(), Some(2));
+        assert_eq!(l.ask(&names(&["amigo"]), 0).1, [("amigo".to_string(), Origin { servers: Vec::new(), side: Some(2) })]);
+        l.done("amigo", Ok(Some(gear("Amigo", 62))), 1);
+        assert!(started(&mut l, &["Amigo"], 2).is_empty());
+        // The party list says the server: looked up again, the old one shown meanwhile.
+        l.origin("Amigo", vec![2406, 2405], None);
+        let (known, start) = l.ask(&names(&["Amigo"]), 3);
+        assert_eq!(known.len(), 1);
+        assert_eq!(start, [("Amigo".to_string(), Origin { servers: vec![2406, 2405], side: Some(2) })]);
+        l.done("Amigo", Ok(Some(gear("Amigo", 2000))), 4);
+        assert!(started(&mut l, &["Amigo"], 5).is_empty());
+    }
+
+    #[test]
+    fn an_origin_rules_out_namesakes() {
+        let party = Origin { servers: vec![2406, 2405], side: Some(2) };
+        assert!(party.fits(2406) && party.fits(2405));
+        assert!(!party.fits(1406) && !party.fits(2403));
+        let asmodian = Origin { servers: Vec::new(), side: Some(2) };
+        assert!(asmodian.fits(2403) && !asmodian.fits(1406));
+        assert!(Origin::default().fits(1406));
     }
 }
