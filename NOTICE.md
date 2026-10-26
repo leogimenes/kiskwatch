@@ -22,6 +22,6 @@ Kiskwatch é distribuído sob a GPL-3.0 (veja `LICENSE`) porque reaproveita cód
 Dados consultados em tempo de execução (não distribuídos com o Kiskwatch):
 
 - Perfil público dos personagens no site oficial do AION 2 (aion2.plaync.com). Endpoints como documentados por https://github.com/nuriland/aion2-api (MIT).
-- Pontos de skill, fontes, tabuleiros Daevanion e skills da https://dbaion2.ru, baixados pelo app e guardados em cache na pasta de dados.
+- Pontos de skill, fontes, tabuleiros Daevanion, skills e títulos da https://dbaion2.ru, baixados pelo app e guardados em cache na pasta de dados.
 
 Kiskwatch não tem afiliação com a NCSoft nem com os autores do A2Tools.

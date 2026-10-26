@@ -197,6 +197,12 @@ export interface ProfileInfo {
   };
   daevanion?: { boardList?: { id: number; name: string; icon: string; open: number; openNodeCount: number; totalNodeCount: number }[] };
   stat?: { statList?: ProfileStat[] };
+  /** How many titles it has, all told and by slot (Attack, Defense, Etc). */
+  title?: { ownedCount?: number; totalCount?: number; titleList?: ProfileTitle[] };
+}
+
+export interface ProfileTitle {
+  id: number; name: string; grade: string; equipCategory: string; ownedCount: number; totalCount: number;
 }
 
 export interface ProfileStat {
@@ -260,6 +266,8 @@ export interface Saved {
   dps_cleared_ms: number;
   /** Saved builds, newest first. */
   references: Reference[];
+  /** Titles marked as had, by "server:character" of the one followed ("" with none). */
+  titles: Record<string, number[]>;
 }
 
 export type Period = "daily" | "weekly";
@@ -366,7 +374,9 @@ export const clearProfile = () => invoke("clear_profile");
 /** The profile's last read is skill preset `n`. */
 export const movePreset = (n: number) => invoke("move_preset", { n });
 export const forgetPreset = (n: number) => invoke("forget_preset", { n });
-export const gameData = <T>(name: "skill-points" | "daevanion" | "skills") => invoke<T>("game_data", { name });
+export const gameData = <T>(name: "skill-points" | "daevanion" | "skills" | "titles") => invoke<T>("game_data", { name });
+/** Mark titles as had, or not, for the character followed. */
+export const setTitles = (ids: number[], owned: boolean) => invoke("set_titles", { ids, owned });
 export const dpsLive = () => invoke<Fight | null>("dps_live");
 export const dpsStart = () => invoke("dps_start");
 export const dpsStop = () => invoke("dps_stop");

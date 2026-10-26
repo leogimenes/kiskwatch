@@ -1,7 +1,8 @@
 //! Game data the Build tab compares the profile against (every skill point
-//! source, every Daevanion node and what it costs), from dbaion2.ru, a fan
-//! database read from the Global client. Downloaded on first use and cached
-//! in the app's data folder; nothing of it ships with Kiskwatch.
+//! source, every Daevanion node and what it costs) and the titles the Titles
+//! tab lists, from dbaion2.ru, a fan database read from the Global client.
+//! Downloaded on first use and cached in the app's data folder; nothing of it
+//! ships with Kiskwatch.
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -10,8 +11,8 @@ use serde_json::Value;
 use tauri::{AppHandle, Manager};
 
 const SOURCE: &str = "https://dbaion2.ru/data-en";
-/// The files the Build tab reads.
-const FILES: [&str; 3] = ["skill-points", "daevanion", "skills"];
+/// The files the Build and Titles tabs read.
+const FILES: [&str; 4] = ["skill-points", "daevanion", "skills", "titles"];
 /// A cached copy older than this is downloaded again.
 const MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
 

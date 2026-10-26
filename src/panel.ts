@@ -11,6 +11,7 @@ import { renderBuild } from "./build";
 import { renderDps } from "./dpsPanel";
 import { renderGroup } from "./group";
 import { renderChecklist } from "./checklist";
+import { renderTitles } from "./titles";
 import "./enchant";
 import "./update";
 import "./titlebar";
@@ -997,6 +998,7 @@ async function refresh() {
   renderDps(saved);
   renderGroup(saved);
   renderChecklist();
+  renderTitles(saved);
   renderCapture();
   // The notice first, the first time; the tour of the tab open after it.
   noticeOnce(saved.settings.onboarding, () => tourTab(activeTab()), () => update((s) => { s.onboarding.notice = true; }));
