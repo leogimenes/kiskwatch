@@ -414,3 +414,23 @@ button.link { padding: 0; border: 0; background: none; color: var(--accent); tex
 .tour-actions { display: flex; align-items: center; gap: 6px; }
 .tour-skips { display: flex; gap: 10px; margin-right: auto; font-size: 12px; }
 .tour-skips .link { color: var(--muted); }
+
+/* Titles tab */
+.title-stat { display: inline-flex; align-items: center; gap: 2px; }
+.chip-x { padding: 2px 7px; line-height: 1; }
+.title-summary { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.title-total { margin-bottom: 12px; }
+.title-total summary { cursor: pointer; color: var(--muted); }
+.title-total .title-bonus { columns: 3 220px; margin-top: 6px; }
+.title-bonus { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.title-bonus li.picked { color: var(--gold); font-weight: 600; }
+.titles td:first-child { width: 1%; }
+.titles tr.had .title-name::after { content: " ✓"; color: var(--accent); }
+.title-how { white-space: pre-line; color: var(--muted); font-size: 13px; max-width: 360px; }
+.title-name.g-rare { color: #6fb7ff; }
+.title-name.g-legend { color: #b48cff; }
+.title-name.g-unique { color: var(--gold); }
+.title-name.g-epic, .title-name.g-special { color: #ff9a5a; }
+:root.contrast .title-name { color: inherit; }
+#titles { overflow-x: auto; }
+.title-search { flex: 1 1 320px; min-width: 220px; }

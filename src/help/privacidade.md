@@ -4,7 +4,7 @@ O Kiskwatch não tem conta, anúncios nem telemetria, e não vende nada a ningu�
 
 ## O que fica no seu computador
 
-- **Configurações, pets, checklist, builds salvas, perfil seguido e gravações de DPS**, no `state.json` da pasta de dados do app (`%APPDATA%\io.github.leogimenes.kiskwatch`). As gravações têm os nomes, classes e o dano dos jogadores que lutaram perto de você.
+- **Configurações, pets, checklist, títulos marcados, builds salvas, perfil seguido e gravações de DPS**, no `state.json` da pasta de dados do app (`%APPDATA%\io.github.leogimenes.kiskwatch`). As gravações têm os nomes, classes e o dano dos jogadores que lutaram perto de você.
 - **O registro de erros**, em `%LOCALAPPDATA%\Kiskwatch\logs`.
 - **As imagens que você salva**, em Imagens\Kiskwatch. Por padrão elas mostram só o seu nome; os outros viram "Jogador 2", "Jogador 3"…
 - **O tráfego do jogo** é lido na hora e descartado. Nenhum pacote é guardado nem enviado.
@@ -14,7 +14,7 @@ Para apagar tudo, desinstale o Kiskwatch e apague essas pastas.
 ## O que sai do seu computador
 
 - **Site oficial do AION 2** (aion2.plaync.com): a busca de um personagem e o perfil público dele, quando você pede nas abas Build e Grupo. O perfil que você segue é lido de novo a cada 20 minutos, e só com a aba Build aberta. Com a opção ligada em Configurações, o nível do item e o poder de combate dos jogadores nas barras do DPS são buscados pelo nome, cada um no máximo a cada 2 horas. As figuras de itens e skills vêm do site de arquivos do jogo.
-- **dbaion2.ru**: a lista de skills, pontos e tabuleiros Daevanion, baixada uma vez por semana.
+- **dbaion2.ru**: a lista de skills, pontos, tabuleiros Daevanion e títulos, baixada uma vez por semana.
 - **GitHub**: procura versão nova a cada 6 horas.
 - **Servidor do Kiskwatch (Cloudflare)**: a tabela de nomes achados é baixada a cada 6 horas. Os códigos sem nome só vão se você aceitar o termo em Configurações > Ajudar a traduzir: códigos de monstros, skills e efeitos, contagens, a classe que usou a skill, a versão do app e a região. Nunca vão nomes de personagens, chat, servidor, conta ou pacotes, e o endereço IP não é guardado. A nota opcional aparece na lista pública: não escreva nela seu nome, contato ou dados da sua conta.
 - **Links** (como o mapa do Aion 2 Timers) só abrem no navegador quando você clica.

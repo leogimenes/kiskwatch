@@ -219,6 +219,8 @@ pub struct Saved {
     /// The DPS overlay was widened once to its new default width (see
     /// `widen_dps`), so a size picked after that stays.
     pub dps_widened: bool,
+    /// The titles the player marked as had, by character (see `titles_key`).
+    pub titles: BTreeMap<String, Vec<u32>>,
 }
 
 /// A character's build as it was when saved, to compare against later.
@@ -248,6 +250,12 @@ pub const REFERENCES_KEPT: usize = 50;
 pub const LABEL_MAX: usize = 50;
 
 impl Saved {
+    /// Whose titles are marked: the character followed on the Build tab
+    /// ("server:character"), or "" with none.
+    pub fn titles_key(&self) -> String {
+        self.profile.as_ref().map(|p| format!("{}:{}", p.server_id, p.character_id)).unwrap_or_default()
+    }
+
     pub fn boss(&self, server: u32, boss: u32) -> Option<&BossOnMap> {
         self.boss_maps.get(&server)?.values().flat_map(|m| &m.bosses).find(|b| b.id == boss)
     }

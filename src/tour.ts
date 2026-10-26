@@ -67,6 +67,12 @@ const TOURS: Record<string, Step[]> = {
     { at: "#enchant", title: "O custo", text: "A tabela mostra a chance e o custo esperado de cada passo, e o total. Os passos arriscados ficam em dourado." },
     HELP_STEP("enchant"),
   ],
+  titles: [
+    { at: "#titles .filters", title: "Busca", text: "Ache um título pelo nome ou pelo jeito de obter, e filtre por categoria, tipo, raridade e pelos que você tem ou não." },
+    { at: "#titles .title-stats", title: "Atributos", text: "Escolha até 3 atributos para ver só os títulos que dão todos eles, com o maior valor primeiro." },
+    { at: "#titles-list", title: "Os seus títulos", text: "Marque os que já tem. Com um personagem seguido na aba Build, a contagem do perfil oficial mostra quantos faltam marcar." },
+    HELP_STEP("titles"),
+  ],
   config: [
     { at: "label.row:has(#timer-overlay)", title: "Overlays", text: "Ligue o lembrete dos timers, o overlay de pets e o de DPS, e escolha quando eles aparecem." },
     { at: "label.row:has(#click-through)", title: "Mover os overlays", text: "Com esta opção os cliques passam para o jogo. Desmarque (ou use o atalho) para arrastar e redimensionar os overlays." },
