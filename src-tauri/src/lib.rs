@@ -21,6 +21,7 @@ use kiskwatch_core::dispatch::{DispatchStatus, Dispatcher, Segment};
 use kiskwatch_core::dps::{Fight, Meter, Start};
 use kiskwatch_core::schedule::{self, Event};
 use kiskwatch_core::pets::{self, Pace, PetRecord};
+use kiskwatch_core::combat::CombatEvent;
 use kiskwatch_core::stream::GameEvent;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
@@ -828,10 +829,10 @@ fn player_gear(app: AppHandle, state: State<App>, names: Vec<String>) -> Vec<kis
         return Vec::new();
     }
     let (known, start) = state.gear.lock().unwrap().ask(&names, now_ms());
-    for name in start {
+    for (name, origin) in start {
         let app = app.clone();
         tauri::async_runtime::spawn(async move {
-            let found = profile::gear(region, server, &name).await;
+            let found = profile::gear(region, server, &name, &origin).await;
             if app.state::<App>().gear.lock().unwrap().done(&name, found, now_ms()) {
                 let _ = app.emit("gear-changed", ());
             }
@@ -1103,6 +1104,7 @@ fn read_capture(app: AppHandle, segments: std::sync::mpsc::Receiver<Segment>) {
                 let mut meter = state.meter.lock().unwrap();
                 for e in combat {
                     match e {
+                        GameEvent::Combat(CombatEvent::Origin { name, servers, side }) => state.gear.lock().unwrap().origin(&name, servers, side),
                         GameEvent::Combat(e) => started |= meter.apply(e, now, start, |me| fight_name(&state, me)),
                         GameEvent::Effect(e) => meter.apply_effect(e, now),
                         GameEvent::Zone(z) => {

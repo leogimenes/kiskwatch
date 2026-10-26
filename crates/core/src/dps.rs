@@ -450,6 +450,8 @@ impl Meter {
                 self.owners.insert(id, owner);
                 self.unsummoned.remove(&id);
             }
+            // For the gear lookups (`gear::Lookups::origin`).
+            CombatEvent::Origin { .. } => {}
             CombatEvent::Unsummoned { id } => {
                 if self.owners.contains_key(&id) {
                     self.unsummoned.insert(id);

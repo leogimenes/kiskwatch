@@ -13,7 +13,7 @@ Para apagar tudo, desinstale o Kiskwatch e apague essas pastas.
 
 ## O que sai do seu computador
 
-- **Site oficial do AION 2** (aion2.plaync.com): a busca de um personagem e o perfil público dele, quando você pede nas abas Build e Grupo. O perfil que você segue é lido de novo a cada 20 minutos, e só com a aba Build aberta. Com a opção ligada em Configurações, o nível do item e o poder de combate dos jogadores nas barras do DPS são buscados pelo nome, cada um no máximo a cada 2 horas. As figuras de itens e skills vêm do site de arquivos do jogo.
+- **Site oficial do AION 2** (aion2.plaync.com): a busca de um personagem e o perfil público dele, quando você pede nas abas Build e Grupo. O perfil que você segue é lido de novo a cada 20 minutos, e só com a aba Build aberta. Com a opção ligada em Configurações, o nível do item e o poder de combate dos jogadores nas barras do DPS são buscados pelo nome (no servidor que o jogo informa, quando informa), cada um no máximo a cada 2 horas. As figuras de itens e skills vêm do site de arquivos do jogo.
 - **dbaion2.ru**: a lista de skills, pontos, tabuleiros Daevanion e títulos, baixada uma vez por semana.
 - **GitHub**: procura versão nova a cada 6 horas.
 - **Servidor do Kiskwatch (Cloudflare)**: a tabela de nomes achados é baixada a cada 6 horas. Os códigos sem nome só vão se você aceitar o termo em Configurações > Ajudar a traduzir: códigos de monstros, skills e efeitos, contagens, a classe que usou a skill, a versão do app e a região. Nunca vão nomes de personagens, chat, servidor, conta ou pacotes, e o endereço IP não é guardado. A nota opcional aparece na lista pública: não escreva nela seu nome, contato ou dados da sua conta.
