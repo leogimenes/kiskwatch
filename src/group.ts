@@ -5,7 +5,7 @@ import {
   Hit, Profile, ProfileItem, ProfileSkill, Reference, Saved, SeenPlayer, deleteReference, findPlayer, inspectProfile, nearbyPlayers,
   renameReference, saveReference,
 } from "./api";
-import { BoardPair, boards, delta, differs, gear, grouped, itemLevel, itemPower, sameClass, skillLevel, skills, stats } from "./compare";
+import { BoardPair, SLOT_NAME, boards, delta, differs, gear, grouped, itemLevel, itemPower, sameClass, skillLevel, skills, stats } from "./compare";
 import { CLASS, UNKNOWN_COLOR } from "./dpsView";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -17,12 +17,6 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Record<string,
 
 const CATEGORY: Record<string, string> = { Active: "Ativas", Passive: "Passivas", Dp: "Stigmas", Stigma: "Stigmas" };
 const CATEGORY_ORDER = ["Active", "Passive", "Dp", "Stigma"];
-
-const SLOT: Record<string, string> = {
-  MainHand: "Arma", SubHand: "Mão secundária", Helmet: "Elmo", Shoulder: "Ombreira", Torso: "Peitoral", Pants: "Calça", Gloves: "Luvas",
-  Boots: "Botas", Cape: "Capa", Belt: "Cinto", Necklace: "Colar", Earring1: "Brinco", Earring2: "Brinco", Ring1: "Anel", Ring2: "Anel",
-  Bracelet1: "Bracelete", Bracelet2: "Bracelete", Amulet: "Amuleto",
-};
 
 let saved: Saved | null = null;
 let nearby: SeenPlayer[] = [];
@@ -188,7 +182,7 @@ function item(i?: ProfileItem) {
 }
 
 function equipment(mine: Profile | null, theirs: Profile) {
-  const rows = gear(mine, theirs).map((r) => el("tr", {}, el("th", {}, SLOT[r.label] ?? r.label), item(r.mine), item(r.theirs),
+  const rows = gear(mine, theirs).map((r) => el("tr", {}, el("th", {}, SLOT_NAME[r.label] ?? r.label), item(r.mine), item(r.theirs),
     deltaCell(itemPower(r.mine), itemPower(r.theirs), !!mine)));
   const pw = (p: Profile | null) => p?.equipment.petwing;
   const wing = (p: Profile | null) => pw(p)?.wing;

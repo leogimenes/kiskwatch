@@ -12,6 +12,7 @@ import { renderDps } from "./dpsPanel";
 import { renderGroup } from "./group";
 import { renderChecklist } from "./checklist";
 import { renderTitles } from "./titles";
+import { renderEvolution } from "./evolutionTab";
 import "./enchant";
 import "./update";
 import "./titlebar";
@@ -999,6 +1000,7 @@ async function refresh() {
   renderGroup(saved);
   renderChecklist();
   renderTitles(saved);
+  renderEvolution(saved);
   renderCapture();
   // The notice first, the first time; the tour of the tab open after it.
   noticeOnce(saved.settings.onboarding, () => tourTab(activeTab()), () => update((s) => { s.onboarding.notice = true; }));

@@ -67,6 +67,11 @@ const TOURS: Record<string, Step[]> = {
     { at: "#enchant", title: "O custo", text: "A tabela mostra a chance e o custo esperado de cada passo, e o total. Os passos arriscados ficam em dourado." },
     HELP_STEP("enchant"),
   ],
+  evolution: [
+    { at: "#evolution .stat-row", title: "Onde você está", text: "Os números do personagem seguido na aba Build: poder, nível do item, nós Daevanion e títulos." },
+    { at: "#evolution .evo-group", title: "O que fazer primeiro", text: "Os pontos em que o personagem está atrás, da prioridade alta para a baixa, cada um com os números e um atalho para a aba que mostra o detalhe." },
+    HELP_STEP("evolution"),
+  ],
   titles: [
     { at: "#titles .filters", title: "Busca", text: "Ache um título pelo nome ou pelo jeito de obter, e filtre por categoria, tipo, raridade e pelos que você tem ou não." },
     { at: "#titles .title-stats", title: "Atributos", text: "Escolha até 3 atributos para ver só os títulos que dão todos eles, com o maior valor primeiro." },
