@@ -33,6 +33,7 @@ Overlay e painel para acompanhar seus personagens de AION 2: timers de eventos e
 | Checklist diária e semanal por personagem, zerada sozinha nos resets | ✅ |
 | Calculadora de encantamento: tentativas, Kinah e pedras até o alvo, com sorte/azar e pior caso | ✅ chances oficiais (KR) e custos por nível do item |
 | Atualizador automático: avisa da versão nova e instala com o SHA-256 conferido | ✅ a partir da primeira release |
+| Evolução: onde o personagem está atrás (equipamento, stigmas, skills, Daevanion, títulos, lutas, pets), por prioridade, com regras fixas e sem IA | 🧪 a validar no jogo |
 | Sugestões por IA (opcional, chave própria) | ⏳ |
 
 ## Como funciona

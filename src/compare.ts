@@ -35,6 +35,13 @@ export function stats(mine: Profile | null, theirs: Profile): Pair<number>[] {
 /** The item level, from the attributes. */
 export const itemLevel = (p: Profile | null) => statsOf(p).find((s) => s.type === "ItemLevel")?.value;
 
+/** The game's equipment slots in Portuguese. */
+export const SLOT_NAME: Record<string, string> = {
+  MainHand: "Arma", SubHand: "Mão secundária", Helmet: "Elmo", Shoulder: "Ombreira", Torso: "Peitoral", Pants: "Calça", Gloves: "Luvas",
+  Boots: "Botas", Cape: "Capa", Belt: "Cinto", Necklace: "Colar", Earring1: "Brinco", Earring2: "Brinco", Ring1: "Anel", Ring2: "Anel",
+  Bracelet1: "Bracelete", Bracelet2: "Bracelete", Amulet: "Amuleto",
+};
+
 const gearOf = (p: Profile | null) => p?.equipment.equipment?.equipmentList ?? [];
 
 /** Equipment by slot, in the game's slot order. */
